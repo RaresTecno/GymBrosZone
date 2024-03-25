@@ -1,3 +1,7 @@
+<script setup>
+import TheWelcome from '../components/TheWelcome.vue'
+import Header from '../components/header.vue'
+</script>
 <template>
   <div class="about">
     <h1>This is an about page</h1>

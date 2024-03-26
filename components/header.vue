@@ -20,7 +20,7 @@
 header {
   background-color: var(--dark-blue);
   height: 80px;
-  width: 100vw;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;

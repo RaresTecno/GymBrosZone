@@ -3,7 +3,7 @@
 </script>
 <template>
   <header>
-    <img src="">
+    <img src="../assets/img/logo.png">
     <h1>GymBros Zone</h1>
     <div v-if="false" id="loged">
       <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>

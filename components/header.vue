@@ -4,11 +4,14 @@ import '../assets/header.css'
 </script>
 <template>
   <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/" id="home">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+    <img src="">
+    <h1>GymBros Zone</h1>
+    <div v-if="loged">
+      <button>Login</button>
+    </div>
+    <div v-else>
+      <button>Login</button>
+      <button>Registro</button>
     </div>
   </header>
 </template>

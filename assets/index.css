@@ -9,5 +9,8 @@
 }
 body{
     background-color: var(--bg-color);
-    min-height: 180vh;
+}
+#app{
+    min-height: 140vh;
+
 }

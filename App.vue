@@ -2,11 +2,13 @@
 import { RouterLink, RouterView } from 'vue-router'
 import Header from './components/header.vue'
 import Nav from './components/BarraLateral.vue'
+import HomeIni from './components/HomeIni.vue'
 import './assets/index.css'
 </script>
 <template>
   <Header />
   <Nav />
+  <HomeIni />
   <RouterView />
 </template>
 

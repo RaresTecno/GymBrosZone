@@ -2,14 +2,36 @@
 import { RouterLink, RouterView } from 'vue-router'
 import Header from './components/header.vue'
 import Nav from './components/BarraLateral.vue'
-import HomeIni from './components/HomeIni.vue'
+import Footer from './components/footer.vue'
 import './assets/index.css'
+
+/* 
+const showHeader = ref(true)
+const showNav = ref(false)
+const showFooter = ref(false)
+
+const toggleHeader = () => {
+  showHeader.value = !showHeader.value
+}
+
+const toggleNav = () => {
+  showNav.value = !showNav.value
+}
+
+const toggleFooter = () => {
+  showFooter.value = !showFooter.value
+} 
+*/
 </script>
+
 <template>
-  <Header />
-  <Nav />
-  <HomeIni />
-  <RouterView />
+<!-- <Header v-if="showHeader"/>
+<Nav v-if="showNav"/> 
+<Footer v-if="showFooter"/>
+ -->
+  <Header/>
+  <RouterView/>
+  <Footer/>
 </template>
 
 <style>
@@ -23,6 +45,7 @@ import './assets/index.css'
     --dark-blue:#0B1E44;
     --alt-black:#121212;
     --greeny-cyan:#caeff6;
+    --blue:#3D5A98;
 }
 body{
     background-color: var(--bg-color);

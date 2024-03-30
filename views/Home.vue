@@ -2,21 +2,21 @@
 
 <template>
   <main>
-    <div class="sub-header">
+    <div class="sub-header"> <!--  v-if="no-logged" -->
       <img src="../assets/img/logo.png" alt="logo" class="logo" />
       <h1 class="title">GymBros Zone</h1>
     </div>
-    <div class="container_log-or-reg">
+    <div class="container_log-or-reg"> <!--  v-if="no-logged" -->
       <div class="login_or_register">
         <p>
           <i>Inicia Sesión</i> o <i>Regístrate</i> para acceder a GymBros Zone
         </p>
       </div>
     </div>
-    <button class="button-login_register">
+    <button class="button-login_register"> <!--  v-if="no-logged" -->
       <a href="../components/Login.vue"><i>Login</i> / <i>Registro</i></a>
     </button>
-    <div class="container_services">
+    <div class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
         <p>¿Qué ofrecemos?</p>
         <br>
@@ -76,7 +76,7 @@
   display: flex;
   justify-content: center;
   border-radius: 4px;
-  margin: 15px auto 30px;
+  margin: 10px auto;
   padding: 20px 30px;
   background-color: var(--dark-blue);
   box-shadow: 0 2px 5px var(--alt-black);

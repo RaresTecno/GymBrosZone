@@ -7,6 +7,6 @@ import './assets/index.css'
 </script>
 <template>
   <Header />
-  <Nav />
   <RouterView />
+  <Nav />
 </template>

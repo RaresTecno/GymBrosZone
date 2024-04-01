@@ -1,10 +1,32 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { ref } from 'vue';
+
+const posicionAnt = ref(0);
+const mostrar = ref(true);
+const altura = ref(80);
+
+window.addEventListener('scroll', () => {
+  const posicionActual = window.scrollY;
+
+  if (posicionActual > 100) {
+    altura.value = 0;
+
+    if (posicionActual < posicionAnt.value) {
+        altura.value = 80;
+
+    }
+  } else {
+    altura.value = 80;
+
+  }
+  posicionAnt.value = posicionActual;
+});
 
 </script>
 
 <template>
-    <nav>
+    <nav :style="{ top: altura + 'px' }">
         <div>
             <font-awesome-icon class="icon" :icon="['fas', 'house']" />
             <h2>Home</h2>
@@ -45,8 +67,8 @@ nav {
     flex-direction: column;
     padding: 0 12px;
     height: 100vh;
-    position: sticky;
-    top: 0;
+    position: fixed;
+    top: 80px;
 }
 
 h2 {
@@ -68,7 +90,8 @@ div {
     margin-top: 20px;
     cursor: pointer;
 }
-.icon{
+
+.icon {
     color: white;
     width: 36px;
     height: 36px;

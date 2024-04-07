@@ -29,8 +29,9 @@ const toggleFooter = () => {
 <Nav v-if="showNav"/> 
 <Footer v-if="showFooter"/>
  -->
-  <Header/>
-  <RouterView/>
+  <Header />
+  <RouterView />
+  <Nav />
   <Footer/>
 </template>
 

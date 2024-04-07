@@ -1,68 +1,99 @@
 <script setup>
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { ref } from 'vue';
+
+const posicionAnt = ref(0);
+const mostrar = ref(true);
+const altura = ref(80);
+
+window.addEventListener('scroll', () => {
+  const posicionActual = window.scrollY;
+
+  if (posicionActual > 100) {
+    altura.value = 0;
+
+    if (posicionActual < posicionAnt.value) {
+        altura.value = 80;
+
+    }
+  } else {
+    altura.value = 80;
+
+  }
+  posicionAnt.value = posicionActual;
+});
 
 </script>
 
 <template>
-    <nav>
+    <nav :style="{ top: altura + 'px' }">
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'house']" />
             <h2>Home</h2>
         </div>
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" />
             <h2>Publicar</h2>
         </div>
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" />
             <h2>Buscar</h2>
         </div>
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
             <h2>Likes</h2>
         </div>
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'bookmark']" />
             <h2>Guardados</h2>
         </div>
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'table']" />
             <h2>Tablas</h2>
         </div>
         <div>
-            <img src="../assets/icons/icono-casa.svg">
+            <font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" />
             <h2>Mensajes</h2>
         </div>
     </nav>
 </template>
 
 <style scoped>
-nav{
+nav {
     background-color: var(--dark-blue);
     color: white;
-    height: calc(100vh - 80px);
     width: 60px;
     display: flex;
     flex-direction: column;
     padding: 0 12px;
+    height: 100vh;
+    position: fixed;
+    top: 80px;
 }
-h2{
+
+h2 {
     display: none;
     margin-left: 10px;
 }
+
+nav:hover {
+    width: fit-content;
+}
+
 nav:hover h2 {
     display: inline;
 }
-nav:hover{
-    width: fit-content;
-}
-div{
+
+div {
     display: flex;
     align-items: center;
     margin-top: 20px;
     cursor: pointer;
 }
-img{
-    height: 36px;
+
+.icon {
     color: white;
+    width: 36px;
+    height: 36px;
 }
 </style>

@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import Publicacion from '../components/Publicacion.vue'
+</script>
 
 <template>
   <main>
@@ -16,7 +18,12 @@
     <button class="button-login_register"> <!--  v-if="no-logged" -->
       <a href="../components/Login.vue"><i>Login</i> / <i>Registro</i></a>
     </button>
-    <div class="container_services"> <!--  v-if="no-logged" -->
+    <div id="reja">
+     <template v-for="n in 50" :key="n">
+        <Publicacion />
+      </template>
+    </div>
+    <div v-if="no-logged" class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
         <p>¿Qué ofrecemos?</p>
         <br>
@@ -30,6 +37,17 @@
 </template>
 
 <style scoped>
+main{
+  width: fit-content;
+  padding-top: 80px ;
+  padding-left: 80px ;
+  margin: auto;
+}
+#reja{
+  width: fit-content;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
 .sub-header {
   background-color: var(--alt-black);
   text-align: center;

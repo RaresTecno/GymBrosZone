@@ -1,8 +1,25 @@
 <script setup>
+import { ref } from 'vue';
 
+const posicionAnt = ref(0);
+const mostrar = ref(true);
+
+window.addEventListener('scroll', () => {
+  const posicionActual = window.scrollY;
+
+  if (posicionActual > 100) {
+    mostrar.value = false;
+    if (posicionActual < posicionAnt.value) {
+      mostrar.value = true;
+    }
+  } else {
+    mostrar.value = true;
+  }
+  posicionAnt.value = posicionActual;
+});
 </script>
 <template>
-  <header>
+  <header v-if="mostrar">
     <img src="../assets/img/logo.png">
     <h1>GymBros Zone</h1>
     <div v-if="false" id="loged">
@@ -25,6 +42,8 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  position: fixed;
+  z-index: 100;
 }
 
 img {

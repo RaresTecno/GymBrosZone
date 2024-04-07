@@ -1,6 +1,7 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
+import { loginGoogle, logOut } from '../js/firebase.js'
 
 function irARegister(){
     
@@ -43,8 +44,8 @@ function irARegister(){
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
                     <div class="facebook"><img src="../assets/img/logo_facebook.png" alt="Logo Facebook"></div>
-                    <div class="twitter"><img src="../assets/img/logo_x.png" alt="Logo X"></div>
-                    <div class="google"><img src="../assets/img/logo_google.webp" alt="Logo Google"></div>
+                    <div class="twitter" @click="logOut"><img src="../assets/img/logo_x.png" alt="Logo X"></div>
+                    <div class="google" @click="loginGoogle"><img src="../assets/img/logo_google.webp" alt="Logo Google"></div>
                 </div>
             </div>
             <div class="cuenta_existente">

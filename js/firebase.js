@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
+import { ref } from 'vue';
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 const firebaseConfig = {
@@ -20,10 +21,12 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+export const userActive  = ref(false);
 
 export function loginGoogle() {
     signInWithPopup(auth, provider)
         .then((result) => {
+            estadoUser();
             console.log("dentro")
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;
@@ -41,5 +44,19 @@ export function logOut() {
 
     }).catch((error) => {
         console.log('Fallo al cerrar sesión');
+    });
+}
+export function estadoUser() {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // https://firebase.google.com/docs/reference/js/auth.user
+            const uid = user.uid;
+            userActive.value = true;
+            console.log("cambiado a true");
+        } else {
+            userActive.value = false;
+            console.log("cambiado a true");
+
+        }
     });
 }

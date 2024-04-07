@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { logOut, loginGoogle } from '../js/firebase.js';
+import { userActive } from '../js/firebase.js'
 
 const posicionAnt = ref(0);
 const mostrar = ref(true);
@@ -25,10 +25,10 @@ window.addEventListener('scroll', () => {
   <header v-if="mostrar">
     <img src="../assets/img/logo.png">
     <h1>GymBros Zone</h1>
-    <div v-if="false" id="loged">
+    <div v-if="userActive" id="loged">
       <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
     </div>
-    <div v-if="true" id="no-loged">
+    <div v-if="!userActive" id="no-loged">
       <RouterLink to="/Log" class="btn-loged" id="btn-login">Login</RouterLink>
       <RouterLink to="/Log" class="btn-loged" id="btn-register">Registro</RouterLink>
     </div>

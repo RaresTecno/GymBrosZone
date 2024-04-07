@@ -1,10 +1,13 @@
 <script setup>
 import Publicacion from '../components/Publicacion.vue'
+import { userActive } from '../js/firebase.js'
+
 </script>
 
 <template>
   <main>
-    <div class="sub-header"> <!--  v-if="no-logged" -->
+    <template v-if="!userActive">
+    <div class="portada"> <!--  v-if="no-logged" -->
       <img src="../assets/img/logo.png" alt="logo" class="logo" />
       <h1 class="title">GymBros Zone</h1>
     </div>
@@ -18,12 +21,7 @@ import Publicacion from '../components/Publicacion.vue'
     <button class="button-login_register"> <!--  v-if="no-logged" -->
       <a href="../components/Login.vue"><i>Login</i> / <i>Registro</i></a>
     </button>
-    <div id="reja">
-     <template v-for="n in 50" :key="n">
-        <Publicacion />
-      </template>
-    </div>
-    <div v-if="no-logged" class="container_services"> <!--  v-if="no-logged" -->
+    <div class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
         <p>¿Qué ofrecemos?</p>
         <br>
@@ -33,6 +31,12 @@ import Publicacion from '../components/Publicacion.vue'
         </cite>
       </div>
     </div>
+  </template>
+    <div v-if="userActive" id="reja">
+     <template v-for="n in 50" :key="n">
+        <Publicacion />
+      </template>
+    </div>
   </main>
 </template>
 
@@ -40,7 +44,6 @@ import Publicacion from '../components/Publicacion.vue'
 main{
   width: fit-content;
   padding-top: 80px ;
-  padding-left: 80px ;
   margin: auto;
 }
 #reja{
@@ -48,7 +51,7 @@ main{
   display: grid;
   grid-template-columns: repeat(3, 1fr);
 }
-.sub-header {
+.portada {
   background-color: var(--alt-black);
   text-align: center;
   width: 100%;
@@ -189,5 +192,11 @@ button.button-login_register:active::before {
   box-shadow: 0 0 0 2px rgb(65, 58, 58), 0 0 rgb(192, 178, 178);
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
+}
+button a{
+  color: white;
+}
+button:hover a{
+  color: black;
 }
 </style>

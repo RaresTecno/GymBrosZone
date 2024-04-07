@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { logOut, loginGoogle } from '../js/firebase.js';
 
 const posicionAnt = ref(0);
 const mostrar = ref(true);
@@ -17,6 +18,8 @@ window.addEventListener('scroll', () => {
   }
   posicionAnt.value = posicionActual;
 });
+
+
 </script>
 <template>
   <header v-if="mostrar">
@@ -25,7 +28,8 @@ window.addEventListener('scroll', () => {
     <div v-if="false" id="loged">
       <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
     </div>
-
+    <button @click="loginGoogle">Iniciar sesión con Google</button>
+    <button  @click="logOut">Cerrar sesion</button>
     <div v-if="true" id="no-loged">
       <RouterLink to="/" class="btn-loged" id="btn-login">Login</RouterLink>
       <RouterLink to="/profile" class="btn-loged" id="btn-register">Registro</RouterLink>

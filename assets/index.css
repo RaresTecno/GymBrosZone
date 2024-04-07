@@ -1,15 +1,26 @@
-*{
+* {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
-:root{
-    --bg-color:#DBE4F6;
-    --dark-blue:#0B1E44;
+
+:root {
+    --bg-color: #dbe4f6;
+    --dark-blue: #0b1e44;
+    --very-dark-blue: #010e25;
+    --black: #141414;
+    --light-blue-text: #eef2fa;
+    --blue-inputs: #3D5A98;
+    --blue-buttons: #CAEFF6;
+    --grey-buttons-inputs-border: #eef2fa81;
 }
-body{
+
+body {
     background-color: var(--bg-color);
 }
 #app{
     min-height: 140vh;
+    height: fit-content;
+    /* min-height: 180vh; */
+    overflow-x: hidden;
 }

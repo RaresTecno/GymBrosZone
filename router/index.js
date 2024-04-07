@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import Profile from '../views/Profile.vue'
+import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
 
 const router = createRouter({
@@ -16,6 +17,11 @@ const router = createRouter({
       name: 'profile',
       component: Profile
     },
+    // {
+    //   path: '/politicas_y_condiciones',
+    //   name: 'politicas_y_condiciones',
+    //   component: Politicas_y_condiciones
+    // }
   ]
 })
 

@@ -28,11 +28,9 @@ window.addEventListener('scroll', () => {
     <div v-if="false" id="loged">
       <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
     </div>
-    <button @click="loginGoogle">Iniciar sesión con Google</button>
-    <button  @click="logOut">Cerrar sesion</button>
     <div v-if="true" id="no-loged">
-      <RouterLink to="/" class="btn-loged" id="btn-login">Login</RouterLink>
-      <RouterLink to="/profile" class="btn-loged" id="btn-register">Registro</RouterLink>
+      <RouterLink to="/Log" class="btn-loged" id="btn-login">Login</RouterLink>
+      <RouterLink to="/Log" class="btn-loged" id="btn-register">Registro</RouterLink>
     </div>
   </header>
 </template>

@@ -1,34 +1,13 @@
 <script setup>
-import Header from './components/header.vue'
+import Header from './components/Header.vue'
 import Nav from './components/BarraLateral.vue'
-import Footer from './components/footer.vue'
+import Footer from './components/Footer.vue'
 import Log from './views/Log.vue'
 import './assets/index.css'
 
-/* 
-const showHeader = ref(true)
-const showNav = ref(false)
-const showFooter = ref(false)
-
-const toggleHeader = () => {
-  showHeader.value = !showHeader.value
-}
-
-const toggleNav = () => {
-  showNav.value = !showNav.value
-}
-
-const toggleFooter = () => {
-  showFooter.value = !showFooter.value
-} 
-*/
 </script>
 
 <template>
-<!-- <Header v-if="showHeader"/>
-<Nav v-if="showNav"/> 
-<Footer v-if="showFooter"/>
- -->
   <Header />
   <RouterView />
   <Nav />

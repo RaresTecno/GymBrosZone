@@ -1,4 +1,7 @@
-<script setup></script>
+<script setup>
+
+</script>
+
 <template>
   <footer>
     <div class="footer">
@@ -17,7 +20,6 @@ footer {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  position: fixed;
   bottom: 0;
 }
 

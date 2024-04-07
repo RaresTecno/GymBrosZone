@@ -7,7 +7,7 @@ import Publicacion from '../components/Publicacion.vue'
 <template>
   <main>
     <div id="reja">
-    <template v-for="n in 10" :key="n">
+     <template v-for="n in 50" :key="n">
         <Publicacion />
       </template>
     </div>

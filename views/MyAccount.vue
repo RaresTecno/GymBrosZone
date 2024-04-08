@@ -102,7 +102,7 @@ const submitForm = () => {
     </form>
   </div>
   <button class="cerrar-sesion">
-    <a href="../views/Home.vue"  @click="logOut"><i>Cerrar Sesión</i></a>
+    <a href="../"  @click="logOut"><i>Cerrar Sesión</i></a>
   </button>
 </template>
 

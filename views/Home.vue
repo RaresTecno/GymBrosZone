@@ -12,23 +12,33 @@ import { userActive } from '../clients/supabase'
       <img src="../assets/img/logo.png" alt="logo" class="logo" />
       <h1 class="title">GymBros Zone</h1>
     </div>
-    <div class="container_log-or-reg"> <!--  v-if="no-logged" -->
+    <div class="container_log-or-reg">
+      <!--  v-if="no-logged" -->
       <div class="login_or_register">
         <p>
           <i>Inicia Sesión</i> o <i>Regístrate</i> para acceder a GymBros Zone
         </p>
       </div>
     </div>
-    <button class="button-login_register"> <!--  v-if="no-logged" -->
+    <button class="button-login_register">
+      <!--  v-if="no-logged" -->
       <a href="../components/Login.vue"><i>Login</i> / <i>Registro</i></a>
     </button>
     <div class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
         <p>¿Qué ofrecemos?</p>
-        <br>
-        <cite>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea recusandae obcaecati quod alias esse aperiam aut necessitatibus odit eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis fugit.
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione velit minus consectetur impedit corrupti eum explicabo optio non numquam sunt mollitia!
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum temporibus inventore animi in nihil eius voluptates dolore maxime cumque facere doloribus, ex ab voluptatem blanditiis, eos soluta odit. Facere, tempore.
+        <br />
+        <cite
+          >Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea
+          recusandae obcaecati quod alias esse aperiam aut necessitatibus odit
+          eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis
+          fugit. Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+          Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione velit
+          minus consectetur impedit corrupti eum explicabo optio non numquam
+          sunt mollitia! Lorem ipsum dolor sit amet consectetur adipisicing
+          elit. Cum temporibus inventore animi in nihil eius voluptates dolore
+          maxime cumque facere doloribus, ex ab voluptatem blanditiis, eos
+          soluta odit. Facere, tempore.
         </cite>
       </div>
     </div>
@@ -42,12 +52,12 @@ import { userActive } from '../clients/supabase'
 </template>
 
 <style scoped>
-main{
+main {
   width: fit-content;
   padding-top: 80px ;
   margin: auto;
 }
-#reja{
+#reja {
   width: fit-content;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -77,7 +87,8 @@ main{
   margin-right: 20px;
   width: 12.5%;
 }
-.login_or_register, .services {
+.login_or_register,
+.services {
   color: aliceblue;
   text-align: center;
   align-items: center;
@@ -93,7 +104,8 @@ main{
   margin-left: auto;
   margin-right: auto;
 }
-.container_log-or-reg, .container_services {
+.container_log-or-reg,
+.container_services {
   margin-top: 2%;
   display: flex;
   justify-content: center;
@@ -107,11 +119,12 @@ main{
 }
 
 a {
+  padding: 27px;
   text-decoration: none;
-  color: aliceblue
+  color: aliceblue;
 }
 
-a:hover{
+a:hover {
   color: black;
 }
 
@@ -125,7 +138,7 @@ button {
   text-decoration: none;
   font-family: inherit;
   font-size: 15px;
-  margin:10%
+  margin: 10%;
 }
 
 button.button-login_register {
@@ -169,13 +182,14 @@ button.button-login_register::before {
     -webkit-box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
 }
 
-button.button-login_register:hover {
+.button-login_register:hover {
+  color: black;
   background: aliceblue;
   -webkit-transform: translate(0, 0.25em);
   transform: translate(0, 0.25em);
 }
 
-button.button-login_register:hover::before {
+.button-login_register:hover::before {
   -webkit-box-shadow: 0 0 0 2px var(--alt-black), 0 0.5em 0 0 black;
   box-shadow: 0 0 0 2px grey, 0 0.5em 0 0 whitesmoke;
   -webkit-transform: translate3d(0, 0.5em, -1em);

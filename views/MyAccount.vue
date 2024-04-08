@@ -1,8 +1,42 @@
-<script setup></script>
+<script setup>
+import { userActive, logOut } from '@/js/firebase';
+import { ref } from 'vue';
+
+const formData = ref({
+  nombre: '',
+  edad: '',
+  peso: '',
+  localidad: '',
+  apellidos: '',
+  sexo: '',
+  altura: '',
+  gym: ''
+});
+
+const submitForm = () => {
+  fetch('url_del_servidor', { //Utilizar ref() y ruta Realtime Database de Firebase
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(formData.value)
+  })
+  .then(response => {
+    if (response.ok) {
+      console.log('Datos enviados correctamente');
+    } else {
+      console.error('Error al enviar datos al servidor');
+    }
+  })
+  .catch(error => {
+    console.error('Error al enviar datos al servidor:', error);
+  });
+};
+</script>
+
 
 <template>
   <div class="sub-header">
-    <!--  v-if="logged" -->
     <img src="../assets/img/logo.png" alt="logo" class="logo" />
     <h1 class="title">GymBros Zone</h1>
   </div>
@@ -13,7 +47,6 @@
   </div>
   <div class="container_formulario">
     <form action="Profile.vue" method="POST" class="formulario" novalidation>
-      <!--  v-if="logged" -->
       <div class="column">
         <label for="nombre">Nombre: &nbsp &nbsp</label>
         <input type="text" name="nombre" placeholder="Escriba su nombre" />
@@ -69,8 +102,7 @@
     </form>
   </div>
   <button class="cerrar-sesion">
-    <!--  v-if="logged" -->
-    <a href="../components/Login.vue"><i>Cerrar Sesión</i></a>
+    <a href="../views/Home.vue"  @click="logOut"><i>Cerrar Sesión</i></a>
   </button>
 </template>
 
@@ -205,6 +237,7 @@ button {
   font-family: inherit;
   font-size: 15px;
   margin: 1%;
+  margin-bottom: 6%;
 }
 
 button.cerrar-sesion {
@@ -272,5 +305,11 @@ button.cerrar-sesion:active::before {
   box-shadow: 0 0 0 2px rgb(65, 58, 58), 0 0 rgb(192, 178, 178);
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
+}
+button a{
+  color: white;
+}
+button:hover a{
+  color: black;
 }
 </style>

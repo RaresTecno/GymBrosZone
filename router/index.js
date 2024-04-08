@@ -5,6 +5,7 @@ import Log from '../views/Log.vue'
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
 import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
+import MiCuenta from '../views/MyAccount.vue'
 
 
 const router = createRouter({

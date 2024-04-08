@@ -8,12 +8,11 @@ import { userActive } from '../clients/supabase'
 <template>
   <main>
     <template v-if="!userActive">
-    <div class="portada"> <!--  v-if="no-logged" -->
+    <div class="portada">
       <img src="../assets/img/logo.png" alt="logo" class="logo" />
       <h1 class="title">GymBros Zone</h1>
     </div>
     <div class="container_log-or-reg">
-      <!--  v-if="no-logged" -->
       <div class="login_or_register">
         <p>
           <i>Inicia Sesión</i> o <i>Regístrate</i> para acceder a GymBros Zone
@@ -21,7 +20,7 @@ import { userActive } from '../clients/supabase'
       </div>
     </div>
     <button class="button-login_register">
-      <!--  v-if="no-logged" -->
+
       <a href="../components/Login.vue"><i>Login</i> / <i>Registro</i></a>
     </button>
     <div class="container_services"> <!--  v-if="no-logged" -->

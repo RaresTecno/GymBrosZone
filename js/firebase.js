@@ -26,7 +26,6 @@ export const userActive  = ref(false);
 export function loginGoogle() {
     signInWithPopup(auth, provider)
         .then((result) => {
-            estadoUser();
             console.log("dentro")
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential.accessToken;

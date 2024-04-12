@@ -2,7 +2,6 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
 import { loginGoogle, logOut } from '../js/firebase.js'
-
 function irARegister(){
     
 }

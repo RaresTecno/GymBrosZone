@@ -1,7 +1,17 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
+import { createAcount } from '../supabase/supabase.js';
 
+const username = ref('');
+const email = ref('');
+const password = ref('');
+
+createAcount(email, password).then((response) => {
+  if (response.error) {
+    alert(`An error occurred: ${response.error.message}`); // eslint-disable-line no-alert
+  }
+});
 
 
 
@@ -156,7 +166,7 @@ function segundaParte() {
             <div class="email">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="text" name="email" class="input" required autocomplete="off">
+                        <input v-model="email" type="text" name="email" class="input" required autocomplete="off">
                         <label class="label">Email</label>
                     </div>
                 </div>
@@ -164,7 +174,7 @@ function segundaParte() {
             <div class="password">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="password" name="password" class="input" required autocomplete="off">
+                        <input v-model="password" type="password" name="password" class="input" required autocomplete="off">
                         <label class="label">Contraseña</label>
                     </div>
                 </div>
@@ -207,7 +217,7 @@ function segundaParte() {
                 <div class="siguiente_texto"><button class="siguiente_button" @click="siguiente">Siguiente</button></div>
             </div>
             <div class="crear">
-                <div class="crear_texto"><button>Crear cuenta</button></div>
+                <div class="crear_texto" @click="createAcount"><button>Crear cuenta</button></div>
             </div>
         </div>
     </div>

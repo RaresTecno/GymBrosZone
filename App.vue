@@ -12,6 +12,9 @@ import { userActive } from './js/firebase.js'
   <Header />
   <RouterView />
   <Nav v-if="userActive" />
+  <ul>
+      <li v-for="country in countries" :key="country.id">{{ country.name }}</li>
+    </ul>
   <Footer/>
 </template>
 

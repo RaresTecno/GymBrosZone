@@ -1,130 +1,211 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { createAcount } from '../supabase/supabase.js';
 
-const username = ref('');
-const email = ref('');
-const password = ref('');
+const nombre = ref('');
+const apellidos = ref('');
+const gymtag = ref('');
+const mostrarMensaje = ref(false);
+const mensajeError = ref('');
 
-createAcount(email, password).then((response) => {
-  if (response.error) {
-    alert(`An error occurred: ${response.error.message}`); // eslint-disable-line no-alert
-  }
+// const email = ref('');
+// const password = ref('');
+const windowWidth = ref(window.innerWidth);
+const mostrarPrimeraParte = ref(true);
+const pantallaGrande = computed(() => {
+    return windowWidth.value >= 1140;
 });
 
+// createAcount(email, password).then((response) => {
+//     if (response.error) {
+//         alert(`An error occurred: ${response.error.message}`);
+//     }
+// });
 
+//Cambio el valor del ancho de la pantalla cuando cambia de tamaño
+const updateWidth = () => {
+    windowWidth.value = window.innerWidth;
+};
 
-    function siguiente(){
-        const mensaje_texto = document.querySelector('.mensaje_texto');
-        //Oculto el mensaje de aviso.
-        mensaje_texto.style.visibility = "hidden";
-        //Obtengo los valores de los inputs de la primera parte del registro para móvil.
-        const nombreInput = document.querySelector('input[name="nombre"]');
-        const apellidosInput = document.querySelector('input[name="apellidos"]');
-        const gymtagInput = document.querySelector('input[name="gymtag"]');
+onMounted(() => {
+    window.addEventListener('resize', updateWidth);
+});
 
-        let nombre = nombreInput.value;
-        let apellidos = apellidosInput.value;
-        let gymtag = gymtagInput.value;
+onUnmounted(() => {
+    window.removeEventListener('resize', updateWidth);
+});
 
-        if (nombre) nombre.toLowerCase();
-        if (apellidos) nombre.toLowerCase();
-        if (gymtag) nombre.toLowerCase();
+function segundaParte() {
+    mostrarPrimeraParte.value = false;
+}
 
-        //Compruebo que el nombre tiene entre 3 y 14 letras, puede contener espacios.
-        if (/^[a-zñáéíóú\s]{3,14}$/.test(nombre)) {
-            //Compruebo que los apellidos tienen entre 3 y 24 letras, puede contener espacios.
-            if (/^[a-zñáéíóú\s]{5,24}$/.test(apellidos)) {
-                if (validarGymtag(gymtagInput, gymtag, mensaje_texto)) {
-                    segundaParte();
-                }
-            } else {
-                mensaje_texto.style.visibility = "visible";
-                mensaje_texto.innerHTML = 'Los apellidos deben contener entre 5 y 24 letras.';
-                apellidosInput.value = '';
-                apellidosInput.focus();
-            }
-        } else {
-            mensaje_texto.style.visibility = "visible";
-            mensaje_texto.innerHTML = 'El nombre debe contener entre 3 y 14 letras.';
-            nombreInput.value = '';
-            nombreInput.focus();
-        }
+function validarNombre() {
+    mostrarMensaje.value = false;
+    if (!/^[a-zñáéíóú\s]{3,14}$/i.test(nombre.value)) {
+        mensajeError.value = 'El nombre debe contener entre 3 y 14 letras.';
+        mostrarMensaje.value = true;
+        return false;
     }
-        
+    return true;
+}
 
+function validarApellidos() {
+    mostrarMensaje.value = false;
+    if (!/^[a-zñáéíóú\s-]{5,24}$/i.test(apellidos.value)) {
+        mensajeError.value = 'Los apellidos deben contener entre 5 y 24 letras.';
+        mostrarMensaje.value = true;
+        return false;
+    }
+    return true;
+}
 
+function validarGymtag() {
+    mostrarMensaje.value = false;
+    mensajeError.value = '';
 
+    const gymtagMin = gymtag.value.toLowerCase();
+    gymtag.value = gymtagMin;
 
-
-
-function validarGymtag(gymtagInput, gymtag, mensaje_texto) {
-    if (gymtag.length >= 1 && gymtag.length <= 14) {
-        if (/^[a-z0-9ñ._]+$/.test(gymtag)) {
-            let disponible = true;
+    if (gymtagMin.length >= 3 && gymtagMin.length <= 14) {
+        if (/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
+            
+            let disponible = true; 
 
             if (disponible) {
                 return true;
+
+
             } else {
-                mensaje_texto.style.visibility = "visible";
-                mensaje_texto.innerHTML = 'El GymTag ingresado ya está en uso.';
-                gymtagInput.value = '';
-                gymtagInput.focus();
+                mensajeError.value = 'El GymTag ingresado ya está en uso.';
+                mostrarMensaje.value = true;
+                gymtag.value = '';
                 return false;
             }
         } else {
-            //Aviso al usuario de que ha ingresado algún caracter invalido.
-            mensaje_texto.style.visibility = "visible";
-            //Cambiamos la altura del contenedor del mensaje para una buena apariencia.
-            if (document.querySelector('.register').style.width < 364) {
-                document.querySelector('.mensaje').style.marginBottom = '20px';
-            }
-            if (document.querySelector('.register').style.width < 263) {
-                document.querySelector('.mensaje').style.marginBottom = '35px';
-            }
-            mensaje_texto.innerHTML = 'Tu GymTag solo puede tener entre letras, números y algunos caracteres especiales.';
-            gymtagInput.value = '';
-            gymtagInput.focus();
+            mensajeError.value = 'Tu GymTag solo puede tener letras, números y algunos caracteres especiales.';
+            mostrarMensaje.value = true;
+            gymtag.value = '';
             return false;
         }
-    }
-    else {
-        //Aviso al usuario de que el GymTag no tiene la longitud adecuada.
-        mensaje_texto.style.visibility = "visible";
-        mensaje_texto.innerHTML = 'Tu GymTag debe tener entre 3 y 12 caracteres.';
-        gymtagInput.value = '';
-        gymtagInput.focus();
+    } else {
+        mensajeError.value = 'Tu GymTag debe tener entre 3 y 14 caracteres.';
+        mostrarMensaje.value = true;
+        gymtag.value = '';
         return false;
     }
-
 }
 
-function segundaParte() {
-    const nombre_y_apellidosInput = document.querySelector('.nombre_y_apellidos');
-    const gymtagInput = document.querySelector('.gymtag');
-    const siguiente = document.querySelector('.siguiente');
-    const emailInput = document.querySelector('.email');
-    const password = document.querySelector('.password');
-    const password2 = document.querySelector('.password2');
-    const fecha_nacimiento = document.querySelector('.fecha_nacimiento');
-    const crear = document.querySelector('.crear');
 
-    nombre_y_apellidosInput.style.display = "none";
-    gymtagInput.style.display = "none";
-    siguiente.style.display = "none";
-    emailInput.style.display = "block";
-    password.style.display = "block";
-    password2.style.display = "block";
-    fecha_nacimiento.style.display = "block";
-    crear.style.display = "flex";
-
+function siguiente() {
+    mostrarMensaje.value = false;
+    mensajeError.value = '';
+    console.log('aaa');
+    if (!validarNombre() || !validarApellidos() || !validarGymtag()) {
+        
+        return;
+    }
+    console.log(gymtag.value);
+    segundaParte();
 }
+
+
+
+// function siguiente() {
+//     const mensaje_texto = document.querySelector('.mensaje_texto');
+//     //Oculto el mensaje de aviso.
+//     mensaje_texto.style.visibility = "hidden";
+//     //Obtengo los valores de los inputs de la primera parte del registro para móvil.
+//     const nombreInput = document.querySelector('input[name="nombre"]');
+//     const apellidosInput = document.querySelector('input[name="apellidos"]');
+//     const gymtagInput = document.querySelector('input[name="gymtag"]');
+
+//     let nombre = nombreInput.value;
+//     let apellidos = apellidosInput.value;
+//     let gymtag = gymtagInput.value;
+
+//     if (nombre) nombre.toLowerCase();
+//     if (apellidos) nombre.toLowerCase();
+//     if (gymtag) nombre.toLowerCase();
+
+//     //Compruebo que el nombre tiene entre 3 y 14 letras, puede contener espacios.
+//     if (/^[a-zñáéíóú\s]{3,14}$/.test(nombre)) {
+//         //Compruebo que los apellidos tienen entre 3 y 24 letras, puede contener espacios.
+//         if (/^[a-zñáéíóú\s]{5,24}$/.test(apellidos)) {
+//             if (validarGymtag(gymtagInput, gymtag, mensaje_texto)) {
+//                 segundaParte();
+//             }
+//         } else {
+//             mensaje_texto.style.visibility = "visible";
+//             mensaje_texto.innerHTML = 'Los apellidos deben contener entre 5 y 24 letras.';
+//             apellidosInput.value = '';
+//             apellidosInput.focus();
+//         }
+//     } else {
+//         mensaje_texto.style.visibility = "visible";
+//         mensaje_texto.innerHTML = 'El nombre debe contener entre 3 y 14 letras.';
+//         nombreInput.value = '';
+//         nombreInput.focus();
+//     }
+// }
+
+
+
+
+
+
+
+// function validarGymtag(gymtagInput, gymtag, mensaje_texto) {
+//     mostrarMensaje.value = false;
+//     mensajeError.value = '';
+//     if (gymtag.value.length >= 1 && gymtag.value.length <= 14) {
+//         if (/^[a-z0-9ñ._]+$/.test(gymtag.value)) {
+//             let disponible = true;
+
+//             if (disponible) {
+//                 return true;
+//             } else {
+//                 mensaje_texto.style.visibility = "visible";
+//                 mensaje_texto.innerHTML = 'El GymTag ingresado ya está en uso.';
+//                 gymtagInput.value = '';
+//                 gymtagInput.focus();
+//                 return false;
+//             }
+//         } else {
+//             //Aviso al usuario de que ha ingresado algún caracter invalido.
+//             mensaje_texto.style.visibility = "visible";
+//             //Cambiamos la altura del contenedor del mensaje para una buena apariencia.
+//             if (document.querySelector('.register').style.width < 364) {
+//                 document.querySelector('.mensaje').style.marginBottom = '20px';
+//             }
+//             if (document.querySelector('.register').style.width < 263) {
+//                 document.querySelector('.mensaje').style.marginBottom = '35px';
+//             }
+            
+            
+//             mostrarMensaje.value = true;
+//             mensajeError.value = 'Tu GymTag solo puede tener entre letras, números y algunos caracteres especiales.';
+//             gymtag.value = '';
+//             gymtag.value.focus();
+//             return false;
+
+//         }
+//     }
+//     else {
+//         //Aviso al usuario de que el GymTag no tiene la longitud adecuada.
+//         mensaje_texto.style.visibility = "visible";
+//         mensaje_texto.innerHTML = 'Tu GymTag debe tener entre 3 y 12 caracteres.';
+//         gymtagInput.value = '';
+//         gymtagInput.focus();
+//         return false;
+//     }
+
+// }
 
 </script>
 <template>
     <div class="todo_register">
-        <div class="header_register">
+        <!-- <div class="header_register">
             <div class="logo">
                 <div class="circulo">
                     <img src="../assets/img/logo.png" alt="">
@@ -133,14 +214,14 @@ function segundaParte() {
             <div class="nombre">
                 <div class="nombre_contenido">GymBros Zone</div>
             </div>
-        </div>
+        </div> -->
         <div class="register">
             <div class="titulo">Registro</div>
-            <div class="nombre_y_apellidos">
+            <div class="nombre_y_apellidos" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="nombre">
                     <div class="container">
                         <div class="subcontainer">
-                            <input type="text" name="nombre" class="input" required autocomplete="off">
+                            <input type="text" name="nombre" class="input" required autocomplete="off" v-model="nombre">
                             <label class="label">Nombre</label>
                         </div>
                     </div>
@@ -148,22 +229,22 @@ function segundaParte() {
                 <div class="apellidos">
                     <div class="container">
                         <div class="subcontainer">
-                            <input type="text" name="apellidos" class="input" required autocomplete="off">
+                            <input type="text" name="apellidos" class="input" required autocomplete="off" v-model="apellidos">
                             <label class="label">Apellidos</label>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="gymtag">
+            <div class="gymtag" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="text" name="gymtag" class="input" required autocomplete="off">
+                        <input type="text" name="gymtag" class="input" required autocomplete="off" v-model="gymtag">
                         <label class="label">GymTag</label>
-                        <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" />
+                        <!-- <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" /> -->
                     </div>
                 </div>
             </div>
-            <div class="email">
+            <div class="email" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
                         <input v-model="email" type="text" name="email" class="input" required autocomplete="off">
@@ -171,15 +252,16 @@ function segundaParte() {
                     </div>
                 </div>
             </div>
-            <div class="password">
+            <div class="password" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input v-model="password" type="password" name="password" class="input" required autocomplete="off">
+                        <input v-model="password" type="password" name="password" class="input" required
+                            autocomplete="off">
                         <label class="label">Contraseña</label>
                     </div>
                 </div>
             </div>
-            <div class="password2">
+            <div class="password2" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
                         <input type="password" name="password2" class="input" required autocomplete="off">
@@ -187,7 +269,7 @@ function segundaParte() {
                     </div>
                 </div>
             </div>
-            <div class="fecha_nacimiento">
+            <div class="fecha_nacimiento" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
                         <input type="date" name="fecha_nacimiento" class="input" required autocomplete="off">
@@ -199,7 +281,7 @@ function segundaParte() {
                     </div>
                 </div>
             </div>
-            <div class="aceptar_politicas">
+            <div class="aceptar_politicas" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <label class="container_checkbox">
                     <input type="checkbox">
                     <svg viewBox="0 0 64 64" height="1.2em" width="1.2em">
@@ -210,13 +292,14 @@ function segundaParte() {
                 </label>
                 <label class="aceptar">Aceptar políticas y condiciones de GymBros Zone.</label>
             </div>
-            <div class="mensaje">
-                <div class="mensaje_texto">hola</div>
+            <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
+                {{ mensajeError }}
             </div>
-            <div class="siguiente">
-                <div class="siguiente_texto"><button class="siguiente_button" @click="siguiente">Siguiente</button></div>
+            <div class="siguiente" v-if="mostrarPrimeraParte && !pantallaGrande">
+                <div class="siguiente_texto"><button class="siguiente_button" @click="siguiente">Siguiente</button>
+                </div>
             </div>
-            <div class="crear">
+            <div class="crear" v-if="!mostrarPrimeraParte || pantallaGrande">
                 <div class="crear_texto" @click="createAcount"><button>Crear cuenta</button></div>
             </div>
         </div>
@@ -230,9 +313,10 @@ function segundaParte() {
     display: flex;
     align-items: center;
     flex-direction: column;
+    padding-top: 140px;
 }
 
-.header_register {
+/* .header_register {
     width: 100%;
     display: flex;
     height: 150px;
@@ -280,7 +364,7 @@ function segundaParte() {
     font-size: 28px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     border-radius: 30px;
-}
+} */
 
 .register {
     width: 75%;
@@ -481,9 +565,9 @@ function segundaParte() {
     border: 2px solid var(--grey-buttons-inputs-border);
 }
 
-.siguiente {
+/* .siguiente {
     display: none;
-}
+} */
 
 .aceptar_politicas {
     color: var(--light-blue-text);
@@ -677,14 +761,14 @@ function segundaParte() {
         height: 75px;
     }
 
-    .email,
+    /* .email,
     .password,
     .password2,
     .fecha_nacimiento,
     .aceptar_politicas,
     .crear {
         display: none;
-    }
+    } */
 }
 
 @media(max-width: 455px) {

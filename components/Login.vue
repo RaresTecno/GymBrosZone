@@ -9,7 +9,7 @@ function irARegister(){
 </script>
 <template>
     <div class="todo_register">
-        <div class="header_register">
+        <!-- <div class="header_register">
             <div class="logo">
                 <div class="circulo">
                     <img src="../assets/img/logo.png" alt="">
@@ -18,7 +18,7 @@ function irARegister(){
             <div class="nombre">
                 <div class="nombre_contenido">GymBros Zone</div>
             </div>
-        </div>
+        </div> -->
         <div class="register">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
@@ -64,9 +64,10 @@ function irARegister(){
     display: flex;
     align-items: center;
     flex-direction: column;
+    padding-top: 140px;
 }
 
-.header_register {
+/* .header_register {
     width: 100%;
     display: flex;
     height: 150px;
@@ -114,7 +115,7 @@ function irARegister(){
     font-size: 28px;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     border-radius: 30px;
-}
+} */
 
 .register {
     width: 75%;
@@ -330,4 +331,84 @@ function irARegister(){
     border: 2px solid #eef2fa81;
 }
 
+@media(max-width: 1140px) {
+    .header_register {
+        height: 180px;
+        margin-bottom: 20px;
+    }
+
+    .header_register .nombre {
+        display: none;
+    }
+
+    .header_register .logo {
+        width: 100%;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .logo .circulo {
+        /* background-color: #3d5a98; */
+        width: 160px;
+        height: 160px;
+    }
+
+    .register {
+        width: 88%;
+    }
+
+    .titulo {
+        margin-top: 30px;
+        font-size: 52px;
+    }
+
+    .gymtag_o_email .input,
+    .password .input {
+        height: 70px;
+    }
+
+    .container .label {
+        font-size: 30px;
+        top: 17.5px;
+    }
+
+    .container .input:valid~.label,
+    .container .input:focus~.label,
+    .fecha_nacimiento .input~.label {
+        transition: 0.3s;
+        padding-left: 2px;
+        transform: translateY(-52.5px);
+    }
+
+    .subcontainer, .iniciar_texto {
+        display: flex;
+        justify-content: start;
+        width: 85%;
+    }
+
+    .input {
+        font-size: 26px;
+    }
+
+    .gymtag_o_email .container,
+    .password .container,
+    .iniciar_texto button {
+        width: 100%;
+    }
+
+    .gymtag_o_email .container .subcontainer,
+    .password .container .subcontainer {
+        width: 85%;
+        min-width: 0;
+        padding: 0;
+    }
+
+    .iniciar_texto button {
+        height: 65px;
+    }
+    .iniciar {
+        height: 100px;
+        padding-top: 10px;
+    }
+}
 </style>

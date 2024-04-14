@@ -19,8 +19,5 @@ body {
     background-color: var(--bg-color);
 }
 #app{
-    min-height: 140vh;
-    height: fit-content;
-    /* min-height: 180vh; */
     overflow-x: hidden;
 }

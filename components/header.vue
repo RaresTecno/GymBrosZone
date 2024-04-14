@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { userActive } from '../js/firebase.js'
+// import { userActive } from '../js/firebase.js'
 
 const posicionAnt = ref(0);
 const mostrar = ref(true);

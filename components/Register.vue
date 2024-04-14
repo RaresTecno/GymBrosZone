@@ -1,27 +1,43 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { createAcount } from '../supabase/supabase.js';
+import { supabase } from '../clients/supabase';
+
+const email = ref('');
+const password = ref('');
+
+async function createAcount(){
+    const { data, error} = await supabase.auth.signUp({
+        email: email.value,
+        password: password.value
+    })
+    if (error) {
+        console.log(error);
+    }else{
+        console.log(data);
+    }
+}
+
+
+
+
+
+
+
+
+
 
 const nombre = ref('');
 const apellidos = ref('');
 const gymtag = ref('');
 const mostrarMensaje = ref(false);
 const mensajeError = ref('');
-
-// const email = ref('');
-// const password = ref('');
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
 const pantallaGrande = computed(() => {
     return windowWidth.value >= 1140;
 });
 
-// createAcount(email, password).then((response) => {
-//     if (response.error) {
-//         alert(`An error occurred: ${response.error.message}`);
-//     }
-// });
 
 //Cambio el valor del ancho de la pantalla cuando cambia de tamaño
 const updateWidth = () => {
@@ -109,112 +125,9 @@ function siguiente() {
     segundaParte();
 }
 
-
-
-// function siguiente() {
-//     const mensaje_texto = document.querySelector('.mensaje_texto');
-//     //Oculto el mensaje de aviso.
-//     mensaje_texto.style.visibility = "hidden";
-//     //Obtengo los valores de los inputs de la primera parte del registro para móvil.
-//     const nombreInput = document.querySelector('input[name="nombre"]');
-//     const apellidosInput = document.querySelector('input[name="apellidos"]');
-//     const gymtagInput = document.querySelector('input[name="gymtag"]');
-
-//     let nombre = nombreInput.value;
-//     let apellidos = apellidosInput.value;
-//     let gymtag = gymtagInput.value;
-
-//     if (nombre) nombre.toLowerCase();
-//     if (apellidos) nombre.toLowerCase();
-//     if (gymtag) nombre.toLowerCase();
-
-//     //Compruebo que el nombre tiene entre 3 y 14 letras, puede contener espacios.
-//     if (/^[a-zñáéíóú\s]{3,14}$/.test(nombre)) {
-//         //Compruebo que los apellidos tienen entre 3 y 24 letras, puede contener espacios.
-//         if (/^[a-zñáéíóú\s]{5,24}$/.test(apellidos)) {
-//             if (validarGymtag(gymtagInput, gymtag, mensaje_texto)) {
-//                 segundaParte();
-//             }
-//         } else {
-//             mensaje_texto.style.visibility = "visible";
-//             mensaje_texto.innerHTML = 'Los apellidos deben contener entre 5 y 24 letras.';
-//             apellidosInput.value = '';
-//             apellidosInput.focus();
-//         }
-//     } else {
-//         mensaje_texto.style.visibility = "visible";
-//         mensaje_texto.innerHTML = 'El nombre debe contener entre 3 y 14 letras.';
-//         nombreInput.value = '';
-//         nombreInput.focus();
-//     }
-// }
-
-
-
-
-
-
-
-// function validarGymtag(gymtagInput, gymtag, mensaje_texto) {
-//     mostrarMensaje.value = false;
-//     mensajeError.value = '';
-//     if (gymtag.value.length >= 1 && gymtag.value.length <= 14) {
-//         if (/^[a-z0-9ñ._]+$/.test(gymtag.value)) {
-//             let disponible = true;
-
-//             if (disponible) {
-//                 return true;
-//             } else {
-//                 mensaje_texto.style.visibility = "visible";
-//                 mensaje_texto.innerHTML = 'El GymTag ingresado ya está en uso.';
-//                 gymtagInput.value = '';
-//                 gymtagInput.focus();
-//                 return false;
-//             }
-//         } else {
-//             //Aviso al usuario de que ha ingresado algún caracter invalido.
-//             mensaje_texto.style.visibility = "visible";
-//             //Cambiamos la altura del contenedor del mensaje para una buena apariencia.
-//             if (document.querySelector('.register').style.width < 364) {
-//                 document.querySelector('.mensaje').style.marginBottom = '20px';
-//             }
-//             if (document.querySelector('.register').style.width < 263) {
-//                 document.querySelector('.mensaje').style.marginBottom = '35px';
-//             }
-            
-            
-//             mostrarMensaje.value = true;
-//             mensajeError.value = 'Tu GymTag solo puede tener entre letras, números y algunos caracteres especiales.';
-//             gymtag.value = '';
-//             gymtag.value.focus();
-//             return false;
-
-//         }
-//     }
-//     else {
-//         //Aviso al usuario de que el GymTag no tiene la longitud adecuada.
-//         mensaje_texto.style.visibility = "visible";
-//         mensaje_texto.innerHTML = 'Tu GymTag debe tener entre 3 y 12 caracteres.';
-//         gymtagInput.value = '';
-//         gymtagInput.focus();
-//         return false;
-//     }
-
-// }
-
 </script>
 <template>
     <div class="todo_register">
-        <!-- <div class="header_register">
-            <div class="logo">
-                <div class="circulo">
-                    <img src="../assets/img/logo.png" alt="">
-                </div>
-            </div>
-            <div class="nombre">
-                <div class="nombre_contenido">GymBros Zone</div>
-            </div>
-        </div> -->
         <div class="register">
             <div class="titulo">Registro</div>
             <div class="nombre_y_apellidos" v-if="(mostrarPrimeraParte) || pantallaGrande">

@@ -1,7 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import { loginGoogle, logOut } from '../js/firebase.js'
 function irARegister(){
     
 }
@@ -9,16 +8,6 @@ function irARegister(){
 </script>
 <template>
     <div class="todo_register">
-        <!-- <div class="header_register">
-            <div class="logo">
-                <div class="circulo">
-                    <img src="../assets/img/logo.png" alt="">
-                </div>
-            </div>
-            <div class="nombre">
-                <div class="nombre_contenido">GymBros Zone</div>
-            </div>
-        </div> -->
         <div class="register">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
@@ -67,58 +56,8 @@ function irARegister(){
     padding-top: 140px;
 }
 
-/* .header_register {
-    width: 100%;
-    display: flex;
-    height: 150px;
-}
-
-.header_register .logo {
-    width: 47%;
-    display: flex;
-    justify-content: end;
-    align-items: center;
-    padding-right: 35px;
-}
-
-.header_register .nombre {
-    width: 53%;
-    margin-right: 15px;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    padding-left: 55px;
-
-}
-
-.logo .circulo {
-    background-color: var(--black);
-    border-radius: 50%;
-    margin-top: 10px;
-    height: 118px;
-    width: 118px;
-    background-color: var(--black);
-
-}
-
-.logo .circulo img {
-    height: 112%;
-    width: 112%;
-    border-radius: 50%;
-    transform: translate(-5.5%, -4.5%);
-}
-
-.nombre_contenido {
-    padding: 7px 70px;
-    background-color: var(--dark-blue);
-    color: var(--light-blue-text);
-    font-size: 28px;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    border-radius: 30px;
-} */
-
 .register {
-    width: 75%;
+    width: 50%;
     height: fit-content;
     height: fit-content;
     max-width: 1050px;
@@ -132,9 +71,8 @@ function irARegister(){
 }
 
 .titulo {
-    height: 130px;
     color: var(--light-blue-text);
-    padding: 25px 0;
+    margin: 25px 0;
     font-size: 60px;
     font-weight: bold;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -176,7 +114,7 @@ function irARegister(){
     font-size: 18px;
     background-color: var(--blue-inputs);
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 1);
-    cursor: pointer;
+    cursor: text;
 }
 
 .input:focus {
@@ -202,7 +140,7 @@ function irARegister(){
 }
 
 .password{
-    margin-top: 60px;
+    margin-top: 30px;
 }
 
 .gymtag_o_email .container .subcontainer,
@@ -248,25 +186,24 @@ function irARegister(){
 .inicio_sesion{
     margin-bottom: 40px;
     height: 70px;
-    width: 100%;
+    width: fit-content;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .inicio_sesion_contenido{
-    width: 37%;
+    width: 70%;
     height: 100%;
     background-color: var(--light-blue-text);
     border-radius: 2px;
     border: 3px solid var(--black);
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     text-align: center;
 }
 
 .inicio_sesion_contenido>div{
-    width: 33.33%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -306,7 +243,6 @@ function irARegister(){
 }
 
 .crear_texto {
-    width: 28%;
     height: 100%;
     display: flex;
     justify-content: center;
@@ -314,9 +250,9 @@ function irARegister(){
 }
 
 .crear_texto button {
+    padding: 10px;
     cursor: pointer;
     background-color: var(--blue-inputs);
-    width: 100%;
     border: solid var(--black) 2px;
     color: var(--light-blue-text);
     border-radius: 2px;

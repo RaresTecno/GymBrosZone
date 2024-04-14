@@ -4,34 +4,32 @@ import Nav from './components/BarraLateral.vue'
 import Footer from './components/Footer.vue'
 import Log from './views/Log.vue'
 import './assets/index.css'
-import { userActive } from './js/firebase.js'
 
 </script>
 
 <template>
   <Header />
   <RouterView />
-  <Nav v-if="userActive" />
-  <ul>
-      <li v-for="country in countries" :key="country.id">{{ country.name }}</li>
-    </ul>
-  <Footer/>
+  <!-- <Nav/> -->
+  <!-- <Footer /> -->
 </template>
 
 <style>
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
-:root{
-    --bg-color:#DBE4F6;
-    --dark-blue:#0B1E44;
-    --alt-black:#121212;
-    --greeny-cyan:#caeff6;
-    --blue:#3D5A98;
+
+:root {
+  --bg-color: #DBE4F6;
+  --dark-blue: #0B1E44;
+  --alt-black: #121212;
+  --greeny-cyan: #caeff6;
+  --blue: #3D5A98;
 }
-body{
-    background-color: var(--bg-color);
+
+body {
+  background-color: var(--bg-color);
 }
 </style>

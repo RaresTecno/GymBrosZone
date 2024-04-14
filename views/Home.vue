@@ -1,12 +1,11 @@
 <script setup>
 import Publicacion from '../components/Publicacion.vue'
-import { userActive } from '../js/firebase.js'
 
 </script>
 
 <template>
   <main>
-    <template v-if="!userActive">
+    <template v-if="userActive">
     <div class="portada"> <!--  v-if="no-logged" -->
       <img src="../assets/img/logo.png" alt="logo" class="logo" />
       <h1 class="title">GymBros Zone</h1>

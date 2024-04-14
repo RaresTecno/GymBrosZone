@@ -2,7 +2,7 @@
 import Header from './components/Header.vue'
 import Nav from './components/BarraLateral.vue'
 import Footer from './components/Footer.vue'
-import Log from './views/Log.vue'
+// import Log from './views/Log.vue'
 import './assets/index.css'
 import { userActive } from './js/firebase.js'
 
@@ -12,9 +12,9 @@ import { userActive } from './js/firebase.js'
   <Header />
   <RouterView />
   <Nav v-if="userActive" />
-  <ul>
+  <!-- <ul>
       <li v-for="country in countries" :key="country.id">{{ country.name }}</li>
-    </ul>
+  </ul> -->
   <Footer/>
 </template>
 

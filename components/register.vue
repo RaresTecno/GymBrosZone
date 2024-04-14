@@ -3,9 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { supabase } from '../clients/supabase';
 
-const email = ref('');
-const password = ref('');
-
 async function createAcount(){
     const { data, error} = await supabase.auth.signUp({
         email: email.value,

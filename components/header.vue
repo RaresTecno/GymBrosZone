@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-// import { userActive } from '../js/firebase.js'
+import { userActive } from '../clients/supabase'
 
 const posicionAnt = ref(0);
 const mostrar = ref(true);
@@ -23,21 +23,29 @@ window.addEventListener('scroll', () => {
 </script>
 <template>
   <header v-if="mostrar">
+    <div class="home">
       <div class="logo">
-          <div class="fondo_logo">
-              <img src="../assets/img/logo.png">
-          </div>
+        <div class="fondo_logo">
+          <RouterLink to="/" class="RouterLink">
+            <img src="../assets/img/logo.png">
+          </RouterLink>
+        </div>
       </div>
+
       <div class="titulo_main_header">
+        <RouterLink to="/" class="RouterLink">
           <h1>GymBros Zone</h1>
+        </RouterLink>
       </div>
-      <div v-if="userActive" id="loged">
-          <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
-      </div>
-      <div v-if="!userActive" id="no-loged">
-          <RouterLink to="/log/login" class="btn-loged" id="btn-login" >Login</RouterLink>
-          <RouterLink to="/log/register" class="btn-loged" id="btn-register">Registro</RouterLink>
-      </div>
+
+    </div>
+    <div v-if="userActive" id="loged">
+      <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
+    </div>
+    <div v-if="!userActive" id="no-loged">
+      <RouterLink to="/log/login" class="btn-loged" id="btn-login">Login</RouterLink>
+      <RouterLink to="/log/register" class="btn-loged" id="btn-register">Registro</RouterLink>
+    </div>
   </header>
 </template>
 
@@ -55,7 +63,14 @@ header {
   z-index: 100;
 }
 
-.fondo_logo{
+.home {
+  display: flex;
+  align-items: center;
+}
+.RouterLink{
+  text-decoration: none;
+}
+.fondo_logo {
   border-radius: 50%;
   background-color: black;
   width: 65px;
@@ -119,27 +134,28 @@ h1 {
 
 }
 
-.titulo_main_header{
-    width: 100%;
-    margin-left: 30px;
+.titulo_main_header {
+  width: 100%;
+  margin-left: 30px;
 }
 
-@media(max-width: 875px){
-    #no-loged{
-        flex-direction: column;
-        justify-content: space-around;
-        height: 90%;
-        margin-top: 5px;
-    }
+@media(max-width: 875px) {
+  #no-loged {
+    flex-direction: column;
+    justify-content: space-around;
+    height: 90%;
+    margin-top: 5px;
+  }
 
-    .btn-loged{
+  .btn-loged {
 
-      padding: 4px 10px;
-      margin: 4px 0;
-      width: 78px;
-    }
-    #btn-login{
-        margin: 0;
-    }
+    padding: 4px 10px;
+    margin: 4px 0;
+    width: 78px;
+  }
+
+  #btn-login {
+    margin: 0;
+  }
 }
 </style>

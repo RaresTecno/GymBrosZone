@@ -1,29 +1,41 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import { loginGoogle, logOut } from '../js/firebase.js'
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
+const mensajeError = ref('');
+
+import { supabase, logOut, userState } from '../clients/supabase';
+
+const email = ref("");
+const password = ref("");
+
+async function login(){
+    const { data, error } = await  supabase.auth.signInWithPassword({
+        email: email.value,
+        password: password.value,
+        // options: {
+        // emailRedirectTo: '/',
+        // }
+    })
+    if (error) {
+          console.log(error);
+    }else{
+        userState();
+        window.location.href="/";
+        
+    }
+}
 
 </script>
 <template>
     <div class="todo_login">
-        <!-- <div class="header_register">
-            <div class="logo">
-                <div class="circulo">
-                    <img src="../assets/img/logo.png" alt="">
-                </div>
-            </div>
-            <div class="nombre">
-                <div class="nombre_contenido">GymBros Zone</div>
-            </div>
-        </div> -->
         <div class="login">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="text" name="gymtag_o_email" class="input" required autocomplete="off">
+                        <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off">
                         <label class="label">GymTag o Email</label>
                     </div>
                 </div>
@@ -31,7 +43,7 @@ const mostrarMensaje = ref(false);
             <div class="password">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="password" name="password" class="input" required autocomplete="off">
+                        <input v-model="password" :type="contraVisible ? 'text' : 'password'" name="password" class="input" required autocomplete="off">
                         <label class="label">Contraseña</label>
                         <div class="contenedor_ojo">
                             <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible"/>
@@ -43,7 +55,7 @@ const mostrarMensaje = ref(false);
                 {{ mensajeError }}
             </div>
             <div class="iniciar">
-                <div class="iniciar_texto"><button>Iniciar sesión</button></div>
+                <div class="iniciar_texto"><button @click="login">Iniciar sesión</button></div>
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
@@ -72,9 +84,8 @@ const mostrarMensaje = ref(false);
     padding-top: 140px;
 }
 
-.register {
+.login {
     width: 50%;
-    height: fit-content;
     height: fit-content;
     max-width: 1050px;
     background-color: var(--dark-blue);

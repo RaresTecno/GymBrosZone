@@ -2,15 +2,14 @@
 import Header from './components/Header.vue'
 import Nav from './components/BarraLateral.vue'
 import Footer from './components/Footer.vue'
-// import Log from './views/Log.vue'
 import './assets/index.css'
-
+import { userActive } from './clients/supabase'
 </script>
 
 <template>
   <Header />
   <RouterView />
-  <!-- <Nav/> -->
+  <Nav v-if="userActive"/>
   <!-- <Footer /> -->
 </template>
 

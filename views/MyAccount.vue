@@ -1,5 +1,4 @@
 <script setup>
-import { userActive, logOut } from '@/js/firebase';
 import { ref } from 'vue';
 
 const formData = ref({

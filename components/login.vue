@@ -34,9 +34,7 @@ const mostrarMensaje = ref(false);
                         <input :type="contraVisible ? 'text' : 'password'" name="password" class="input" required autocomplete="off">
                         <label class="label">Contraseña</label>
                         <div class="contenedor_ojo">
-                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"
-                                :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'"
-                                @click="contraVisible = !contraVisible" />
+                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible"/>
                         </div>
                     </div>
                 </div>
@@ -440,7 +438,6 @@ button a{
         padding: 14px 0;
         margin-left: -50px;
     }
-
     .contenedor_ojo {
         font-size: 34px;
         margin-left: -53px;

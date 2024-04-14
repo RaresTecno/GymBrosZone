@@ -510,6 +510,7 @@ function creaCuenta(){
     margin-left: -35px;
     cursor: default;
     position: relative;
+    /* pointer-events: none; */
 }
 
 .calendario, .ojo {

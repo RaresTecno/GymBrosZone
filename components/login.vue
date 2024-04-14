@@ -1,14 +1,24 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-function irARegister(){
-    
-}
+import { loginGoogle, logOut } from '../js/firebase.js'
+const contraVisible = ref(false);
+const mostrarMensaje = ref(false);
 
 </script>
 <template>
-    <div class="todo_register">
-        <div class="register">
+    <div class="todo_login">
+        <!-- <div class="header_register">
+            <div class="logo">
+                <div class="circulo">
+                    <img src="../assets/img/logo.png" alt="">
+                </div>
+            </div>
+            <div class="nombre">
+                <div class="nombre_contenido">GymBros Zone</div>
+            </div>
+        </div> -->
+        <div class="login">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
                 <div class="container">
@@ -23,8 +33,14 @@ function irARegister(){
                     <div class="subcontainer">
                         <input type="password" name="password" class="input" required autocomplete="off">
                         <label class="label">Contraseña</label>
+                        <div class="contenedor_ojo">
+                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible"/>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
+                {{ mensajeError }}
             </div>
             <div class="iniciar">
                 <div class="iniciar_texto"><button>Iniciar sesión</button></div>
@@ -46,7 +62,7 @@ function irARegister(){
     </div>
 </template>
 <style scoped>
-.todo_register {
+.todo_login {
     width: 100vw;
     height: fit-content;
     background: var(--bg-color);
@@ -65,14 +81,15 @@ function irARegister(){
     display: flex;
     text-align: center;
     flex-direction: column;
-    margin-right: 15px;
     border: var(--black) 4px solid;
     border-radius: 6px;
+    margin-bottom: 68px;
 }
 
 .titulo {
+    height: 110px;
     color: var(--light-blue-text);
-    margin: 25px 0;
+    padding: 20px 0;
     font-size: 60px;
     font-weight: bold;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -143,13 +160,37 @@ function irARegister(){
     margin-top: 30px;
 }
 
+.contenedor_ojo {
+    width: 30px;
+    height: 30px;
+    margin-top: 8.5px;
+    background-color: var(--blue-inputs);
+    font-size: 27px;
+    padding: 7.5px 0;
+    margin-left: -38px;
+    position: relative;
+}
+
+.ojo {
+    color: var(--light-blue-text);
+    position: relative;
+    top: -7.5px;
+    right: 3px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.ojo_abierto{
+    transform: translateX(1.505px);
+}
+
 .gymtag_o_email .container .subcontainer,
 .password .container .subcontainer{
     width: 75%;
 }
 
 .iniciar {
-    margin-top: 50px;
+    margin-top: 20px;
     margin-bottom: 35px;
     height: 55px;
     width: 100%;
@@ -234,8 +275,8 @@ function irARegister(){
 
 .crear {
     margin-top: 10px;
-    margin-bottom: 60px;
-    height: 45px;
+    margin-bottom: 40px;
+    height: 55px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -243,6 +284,8 @@ function irARegister(){
 }
 
 .crear_texto {
+    width: 28%;
+    min-width: 275px;
     height: 100%;
     display: flex;
     justify-content: center;
@@ -267,8 +310,20 @@ function irARegister(){
     border: 2px solid #eef2fa81;
 }
 
+.mensaje {
+    font-size: 20px;
+    min-height: 22px;
+    height: fit-content;
+    visibility: hidden;
+    display: flex;
+    justify-content: center;
+    color: var(--light-blue-text);
+    text-align: center;
+    margin-top: 30px;
+}
+
 @media(max-width: 1140px) {
-    .header_register {
+    /* .header_register {
         height: 180px;
         margin-bottom: 20px;
     }
@@ -284,18 +339,27 @@ function irARegister(){
     }
 
     .logo .circulo {
-        /* background-color: #3d5a98; */
+        /* background-color: #3d5a98; 
         width: 160px;
         height: 160px;
-    }
+    } */
 
-    .register {
+    .login {
         width: 88%;
     }
 
     .titulo {
-        margin-top: 30px;
+        margin-top: 20px;
         font-size: 52px;
+        padding: 10px 0;
+    }
+
+    .gymtag_o_email{
+        padding: 0 0 10px;
+    }
+
+    .iniciar{
+        margin-bottom: 20px;
     }
 
     .gymtag_o_email .input,
@@ -316,7 +380,7 @@ function irARegister(){
         transform: translateY(-52.5px);
     }
 
-    .subcontainer, .iniciar_texto {
+    .subcontainer, .iniciar_texto, .crear_texto {
         display: flex;
         justify-content: start;
         width: 85%;
@@ -328,7 +392,8 @@ function irARegister(){
 
     .gymtag_o_email .container,
     .password .container,
-    .iniciar_texto button {
+    .iniciar_texto button,
+    .crear_texto button {
         width: 100%;
     }
 
@@ -339,12 +404,73 @@ function irARegister(){
         padding: 0;
     }
 
-    .iniciar_texto button {
+    .iniciar_texto button, .crear_texto button {
         height: 65px;
     }
-    .iniciar {
+
+    .iniciar, .crear {
         height: 100px;
         padding-top: 10px;
     }
+
+    .crear_texto{
+        min-width: 0;
+    }
+
+    .contenedor_ojo {
+        width: 40px;
+        height: 40px;
+        font-size: 37px;
+        padding: 14px 0;
+        margin-left: -50px;
+    }
+    
+    .contenedor_ojo {
+        font-size: 34px;
+        margin-left: -53px;
+        padding: 17px 0;
+    }
+
+    .mensaje {
+        font-size: 20px;
+        min-height: 22px;
+        height: fit-content;
+        visibility: hidden;
+        display: flex;
+        justify-content: center;
+        color: var(--light-blue-text);
+        text-align: center;
+        margin: 35px 0 0;
+    }
 }
+
+@media(max-width: 600px){
+    .contenedor_calendario, .contenedor_ojo {
+        width: 35px;
+        height: 35px;
+        font-size: 30px;
+        padding: 12px 0;
+        margin-left: -40px;
+    }
+    
+    .contenedor_ojo{
+        font-size: 27px;
+    }
+
+    .gymtag_o_email .input,
+    .password .input{
+        height: 55px;
+    }
+
+    .container .label {
+        font-size: 25px;
+        top: 15px;
+    }
+
+    .container .input:valid~.label,
+    .container .input:focus~.label{
+        transform: translateY(-44.5px);
+    }
+}
+
 </style>

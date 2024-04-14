@@ -35,8 +35,8 @@ window.addEventListener('scroll', () => {
           <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
       </div>
       <div v-if="!userActive" id="no-loged">
-          <RouterLink to="/Log" class="btn-loged" id="btn-login">Login</RouterLink>
-          <RouterLink to="/Log" class="btn-loged" id="btn-register">Registro</RouterLink>
+          <RouterLink to="/log/login" class="btn-loged" id="btn-login" >Login</RouterLink>
+          <RouterLink to="/log/register" class="btn-loged" id="btn-register">Registro</RouterLink>
       </div>
   </header>
 </template>

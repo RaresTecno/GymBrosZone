@@ -2,7 +2,7 @@
 import Header from './components/Header.vue'
 import Nav from './components/BarraLateral.vue'
 import Footer from './components/Footer.vue'
-import Log from './views/Log.vue'
+// import Log from './views/Log.vue'
 import './assets/index.css'
 
 </script>

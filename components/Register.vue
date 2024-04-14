@@ -30,8 +30,17 @@ async function createAcount(){
 const nombre = ref('');
 const apellidos = ref('');
 const gymtag = ref('');
+const contraVisible = ref(false);
+const contraVisible2 = ref(false);
 const mostrarMensaje = ref(false);
 const mensajeError = ref('');
+
+const email = ref('');
+const password = ref('');
+const password2 = ref('');
+const fecha_nacimiento = ref('');
+
+
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
 const pantallaGrande = computed(() => {
@@ -56,29 +65,29 @@ function segundaParte() {
     mostrarPrimeraParte.value = false;
 }
 
+function primeraParte(){
+    mostrarPrimeraParte.value = true;
+}
+
 function validarNombre() {
-    mostrarMensaje.value = false;
     if (!/^[a-zñáéíóú\s]{3,14}$/i.test(nombre.value)) {
         mensajeError.value = 'El nombre debe contener entre 3 y 14 letras.';
         mostrarMensaje.value = true;
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 function validarApellidos() {
-    mostrarMensaje.value = false;
-    if (!/^[a-zñáéíóú\s-]{5,24}$/i.test(apellidos.value)) {
-        mensajeError.value = 'Los apellidos deben contener entre 5 y 24 letras.';
+    if (!/^[a-zñáéíóú\s-]{4,24}$/i.test(apellidos.value)) {
+        mensajeError.value = 'Los apellidos deben contener entre 4 y 24 letras.';
         mostrarMensaje.value = true;
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 function validarGymtag() {
-    mostrarMensaje.value = false;
-    mensajeError.value = '';
 
     const gymtagMin = gymtag.value.toLowerCase();
     gymtag.value = gymtagMin;
@@ -89,46 +98,82 @@ function validarGymtag() {
             let disponible = true; 
 
             if (disponible) {
-                return true;
+                return false;
 
 
             } else {
                 mensajeError.value = 'El GymTag ingresado ya está en uso.';
                 mostrarMensaje.value = true;
                 gymtag.value = '';
-                return false;
+                return true;
             }
         } else {
             mensajeError.value = 'Tu GymTag solo puede tener letras, números y algunos caracteres especiales.';
             mostrarMensaje.value = true;
             gymtag.value = '';
-            return false;
+            return true;
         }
     } else {
         mensajeError.value = 'Tu GymTag debe tener entre 3 y 14 caracteres.';
         mostrarMensaje.value = true;
         gymtag.value = '';
+        return true;
+    }
+}
+
+function validarEmail(){
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(apellidos.value)) {
+        mensajeError.value = 'El email ingresado no es válido';
+        mostrarMensaje.value = true;
+        return true;
+    }
+    return false;
+}
+
+function validarContras(){
+    //Si las contraseñas son iguales y seguras, la contraseña es válida.
+    if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password.value)) {
+        return true;
+    } else {
+        //Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.
+        if (password.value !== password2.value) {
+            let error = document.querySelector("#texto-oculto");
+            error.style.visibility = "visible";
+            error.textContent = "Las contraseñas no coinciden.";
+        } else {
+            let error = document.querySelector("#texto-oculto");
+            error.style.visibility = "visible";
+            error.style.marginBottom = "40px";
+            error.innerHTML = "La contraseña debe contener al menos <br> 8 caracteres e incluir una mayúscula <br> y un número.";
+        }
         return false;
     }
 }
 
-
 function siguiente() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
-    console.log('aaa');
-    if (!validarNombre() || !validarApellidos() || !validarGymtag()) {
-        
+    if (validarNombre() || validarApellidos() || validarGymtag()) {
         return;
     }
-    console.log(gymtag.value);
     segundaParte();
+}
+
+function creaCuenta(){
+    mostrarMensaje.value = false;
+    mensajeError.value = '';
+    if (validarNombre() || validarApellidos() || validarGymtag() ||  validarEmail() || validarContras() || validarEdad()) {
+        return;
+    }
+
+    //Aquí va lo del supa y la redirección a home
 }
 
 </script>
 <template>
     <div class="todo_register">
         <div class="register">
+            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte"><font-awesome-icon :icon="['fas', 'circle-left']" @click="primeraParte"/></div>
             <div class="titulo">Registro</div>
             <div class="nombre_y_apellidos" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="nombre">
@@ -168,24 +213,29 @@ function siguiente() {
             <div class="password" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input v-model="password" type="password" name="password" class="input" required
-                            autocomplete="off">
+                        <input v-model="password" :type="contraVisible ? 'text' : 'password'" name="password" class="input" required autocomplete="off">
                         <label class="label">Contraseña</label>
+                        <div class="contenedor_ojo">
+                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible"/>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="password2" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="password" name="password2" class="input" required autocomplete="off">
+                        <input v-model="password2" :type="contraVisible2 ? 'text' : 'password'" name="password2" class="input" required autocomplete="off">
                         <label class="label">Repetir contraseña</label>
+                        <div class="contenedor_ojo">
+                            <font-awesome-icon :icon="contraVisible2 ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible2 ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible2 = !contraVisible2"/>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="fecha_nacimiento" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="date" name="fecha_nacimiento" class="input" required autocomplete="off">
+                        <input v-model="fecha_nacimiento" type="date" name="fecha_nacimiento" class="input" required autocomplete="off">
                         <label class="label">Fecha de nacimiento</label>
                         <!-- <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" /> -->
                         <div class="contenedor_calendario">
@@ -213,9 +263,10 @@ function siguiente() {
                 </div>
             </div>
             <div class="crear" v-if="!mostrarPrimeraParte || pantallaGrande">
-                <div class="crear_texto" @click="createAcount"><button>Crear cuenta</button></div>
+                <div class="crear_texto" @click="creaCuenta"><button>Crear cuenta</button></div>
             </div>
         </div>
+<!-- <button @click="$emit('irALogin')">Volver al Login</button> -->
     </div>
 </template>
 <style scoped>
@@ -288,10 +339,23 @@ function siguiente() {
     display: flex;
     text-align: center;
     flex-direction: column;
-    margin-right: 15px;
+    /* margin-right: 15px; */
     border: var(--black) 4px solid;
     border-radius: 6px;
     margin-bottom: 55px;
+    position: relative;
+}
+
+.volver_parte_uno{
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    height: 60px;
+    width: 60px;
+    font-size: 50px;
+    text-align: center;
+    color: var(--light-blue-text);
+    cursor: pointer;
 }
 
 .titulo {
@@ -418,7 +482,7 @@ function siguiente() {
     min-width: 741.5px;
 }
 
-.contenedor_calendario {
+.contenedor_calendario, .contenedor_ojo {
     width: 30px;
     height: 30px;
     margin-top: 7px;
@@ -428,14 +492,30 @@ function siguiente() {
     margin-left: -35px;
     cursor: default;
     position: relative;
+    /* pointer-events: none; */
 }
 
-.calendario {
+.calendario, .ojo {
     color: var(--light-blue-text);
     position: relative;
     top: -7.5px;
     right: 3px;
     cursor: default;
+    text-align: center;
+}
+
+.contenedor_ojo {
+    font-size: 27px;
+    margin-left: -38px;
+    margin-top: 8.5px;
+}
+
+.ojo{
+    cursor: pointer;
+}
+
+.ojo_abierto{
+    transform: translateX(1.505px);
 }
 
 .crear,
@@ -531,17 +611,14 @@ function siguiente() {
     visibility: hidden;
     display: flex;
     justify-content: center;
-}
-
-.mensaje .mensaje_texto {
     color: var(--light-blue-text);
-    width: 85%;
+    text-align: center;
+    margin-top: 30px;
 }
 
 @media(max-width: 1254px) {
     .nombre_y_apellidos .container {
-        align-items: start;
-        min-width: 371px;
+        min-width: 405px;
     }
 
     .nombre_y_apellidos .apellidos .container {
@@ -550,7 +627,7 @@ function siguiente() {
 }
 
 @media(max-width: 1140px) {
-    .header_register {
+    /* .header_register {
         height: 180px;
         margin-bottom: 20px;
     }
@@ -566,17 +643,17 @@ function siguiente() {
     }
 
     .logo .circulo {
-        /* background-color: #3d5a98; */
+        /* background-color: #3d5a98; 
         width: 160px;
         height: 160px;
-    }
+    } */
 
     .register {
         width: 88%;
     }
 
     .titulo {
-        margin-top: 30px;
+        margin-top: 20px;
         font-size: 52px;
     }
 
@@ -670,8 +747,8 @@ function siguiente() {
         cursor: pointer;
     }
 
-    .siguiente button {
-        height: 75px;
+    .siguiente button, .crear button {
+        height: 70px;
     }
 
     /* .email,
@@ -682,6 +759,71 @@ function siguiente() {
     .crear {
         display: none;
     } */
+
+    .contenedor_calendario, .contenedor_ojo {
+        width: 40px;
+        height: 40px;
+        font-size: 37px;
+        padding: 14px 0;
+        margin-left: -50px;
+    }
+    
+    .contenedor_ojo {
+        font-size: 34px;
+        margin-left: -53px;
+        padding: 17px 0;
+    }
+}
+
+@media(max-width: 600px){
+    .nombre_y_apellidos .nombre .input,
+    .nombre_y_apellidos .apellidos .input,
+    .gymtag .input,
+    .email .input,
+    .password input,
+    .password2 input,
+    .fecha_nacimiento input,
+    .siguiente button {
+        height: 55px;
+    }
+
+    .container .label {
+        font-size: 25px;
+        top: 15px;
+    }
+
+    .siguiente,
+    .crear {
+        margin-bottom: 35px;
+    }
+
+    .gymtag{
+        margin-bottom: 20px;
+    }
+
+    .contenedor_calendario, .contenedor_ojo {
+        width: 35px;
+        height: 35px;
+        font-size: 30px;
+        padding: 12px 0;
+        margin-left: -40px;
+    }
+    
+    .contenedor_ojo{
+        font-size: 27px;
+    }
+
+    .volver_parte_uno{
+        top: 10px;
+        left: 10px;
+        height: 40px;
+        width: 40px;
+        font-size: 40px;
+    }
+
+    .titulo{
+        padding: 50px 0 30px;
+    }
 }
 
 @media(max-width: 455px) {

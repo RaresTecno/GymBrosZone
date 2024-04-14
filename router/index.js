@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
-import Profile from '../views/Profile.vue'
+import ProfileView from '../views/Profile.vue'
 import Log from '../views/Log.vue'
+import Login from '../components/Login.vue';
+import Register from '../components/Register.vue';
 import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
 
@@ -16,13 +18,22 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: Profile
+      component: ProfileView
     },
     {
-      path: '/log',
-      name: 'log',
-      component: Log
-    },
+      path: '/log/', 
+      component: Log,
+      children: [
+        {
+          path: 'login', 
+          component: Login
+        },
+        {
+          path: 'register',
+          component: Register
+        }
+      ]
+    }
     // {
     //   path: '/politicas_y_condiciones',
     //   name: 'politicas_y_condiciones',

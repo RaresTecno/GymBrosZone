@@ -23,17 +23,24 @@ window.addEventListener('scroll', () => {
 </script>
 <template>
   <header v-if="mostrar">
-    <img src="../assets/img/logo.png">
-    <h1>GymBros Zone</h1>
-    <div v-if="userActive" id="loged">
-      <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
-    </div>
-    <div v-if="!userActive" id="no-loged">
-      <RouterLink to="/Log" class="btn-loged" id="btn-login">Login</RouterLink>
-      <RouterLink to="/Log" class="btn-loged" id="btn-register">Registro</RouterLink>
-    </div>
+      <div class="logo">
+          <div class="fondo_logo">
+              <img src="../assets/img/logo.png">
+          </div>
+      </div>
+      <div class="titulo_main_header">
+          <h1>GymBros Zone</h1>
+      </div>
+      <div v-if="userActive" id="loged">
+          <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
+      </div>
+      <div v-if="!userActive" id="no-loged">
+          <RouterLink to="/log/login" class="btn-loged" id="btn-login" >Login</RouterLink>
+          <RouterLink to="/log/register" class="btn-loged" id="btn-register">Registro</RouterLink>
+      </div>
   </header>
 </template>
+
 
 <style scoped>
 header {
@@ -48,11 +55,21 @@ header {
   z-index: 100;
 }
 
-img {
-  width: 50px;
-  height: 50px;
+.fondo_logo{
+  border-radius: 50%;
+  background-color: black;
+  width: 65px;
+  height: 65px;
+  position: relative;
+}
+
+.logo img {
+  position: absolute;
+  width: 69px;
+  height: 69px;
+  top: -2px;
+  left: -2px;
   border-radius: 50px;
-  border: 1px solid black;
   margin-right: 5%;
 }
 
@@ -61,6 +78,7 @@ h1 {
   background-color: #3D5A98;
   padding: 5px 30px;
   border-radius: 25px;
+  width: fit-content;
 }
 
 #loged {
@@ -76,7 +94,6 @@ h1 {
   font-weight: bold;
   border: none;
   text-decoration: none;
-
 }
 
 #no-loged {
@@ -93,10 +110,36 @@ h1 {
   font-weight: bold;
   cursor: pointer;
   text-decoration: none;
+  width: 90px;
+  text-align: center;
 }
 
 #btn-login {
   margin-right: 10px;
 
+}
+
+.titulo_main_header{
+    width: 100%;
+    margin-left: 30px;
+}
+
+@media(max-width: 875px){
+    #no-loged{
+        flex-direction: column;
+        justify-content: space-around;
+        height: 90%;
+        margin-top: 5px;
+    }
+
+    .btn-loged{
+
+      padding: 4px 10px;
+      margin: 4px 0;
+      width: 78px;
+    }
+    #btn-login{
+        margin: 0;
+    }
 }
 </style>

@@ -5,8 +5,8 @@
 <template>
   <footer>
     <div class="footer">
-      <h6>GymBros Zone®</h6>
-      <h6>2024 Todos los Derechos Reservados</h6>
+      <h5>GymBros Zone®</h5>
+      <h5>2024 Todos los Derechos Reservados</h5>
     </div>
   </footer>
 </template>
@@ -23,7 +23,7 @@ footer {
   bottom: 0;
 }
 
-h6 {
+h5 {
   margin: auto;
   color: aliceblue;
   padding: 5px 30px;
@@ -34,5 +34,19 @@ h6 {
   display: flex;
   text-align: center;
   align-items: center;
+}
+
+@media(max-width: 820px){
+  footer{
+    display: flex;
+    justify-content: space-around;
+    padding: 0;
+  }
+
+  h5{
+    display: block;
+    width: 50%;
+    padding: 0 15px;
+  }
 }
 </style>

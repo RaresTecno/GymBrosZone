@@ -15,13 +15,15 @@ import { userActive } from '../clients/supabase'
     <div class="container_log-or-reg">
       <div class="login_or_register">
         <p>
-          <i>Inicia Sesión</i> o <i>Regístrate</i> para acceder a GymBros Zone
+          <i><b>Inicia Sesión</b></i> o <i><b>Regístrate</b></i> para acceder a GymBros Zone
         </p>
       </div>
     </div>
     <button class="button-login_register">
-
-      <a href="../components/Login.vue"><i>Login</i> / <i>Registro</i></a>
+      <RouterLink to="/log/login"><a href=""><i>Login</i></a></RouterLink>
+    </button>
+    <button class="button-login_register">
+      <RouterLink to="/log/register"><a href=""><i>Registro</i></a></RouterLink>
     </button>
     <div class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
@@ -99,7 +101,7 @@ main {
   font-variation-settings: "width" 100;
   padding: 5px;
   border-radius: 2px;
-  text-shadow: 0 0 1px rgba(255, 255, 255, 0.349), 0 0 20px white;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.301);
   margin-left: auto;
   margin-right: auto;
 }
@@ -137,14 +139,14 @@ button {
   text-decoration: none;
   font-family: inherit;
   font-size: 15px;
-  margin: 10%;
+  margin: 5%;
 }
 
 button.button-login_register {
   font-weight: 600;
   color: black;
   text-transform: uppercase;
-  padding: 1.25em 2em;
+  padding: 1em 0.2em;
   background: var(--blue);
   border: 2px solid var(--alt-black);
   border-radius: 0.75em;

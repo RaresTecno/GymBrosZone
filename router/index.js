@@ -22,6 +22,11 @@ const router = createRouter({
       component: ProfileView
     },
     {
+      path: '/account',
+      name: 'account',
+      component: MiCuenta
+    },
+    {
       path: '/log/', 
       component: Log,
       children: [

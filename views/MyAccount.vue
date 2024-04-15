@@ -1,72 +1,133 @@
 <script setup>
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
+import { supabase, logOut, userState } from '../clients/supabase';
 
-const formData = ref({
-  nombre: '',
-  edad: '',
-  peso: '',
-  localidad: '',
-  apellidos: '',
-  sexo: '',
-  altura: '',
-  gym: ''
-});
+const nombre = ref('');
+  const edad = ref('');
+  const peso = ref('');
+  const localidad = ref('');
+  const apellidos = ref('');
+  const sexo = ref('');
+  const altura = ref('');
+  const gym = ref('');
+  const gymtag = ref('');
+  const mostrarMensaje = ref(false);
+  const mensajeError = ref('');
 
-const submitForm = () => {
-  fetch('url_del_servidor', { //Utilizar ref() y ruta Realtime Database de Firebase
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(formData.value)
-  })
-  .then(response => {
-    if (response.ok) {
-      console.log('Datos enviados correctamente');
-    } else {
-      console.error('Error al enviar datos al servidor');
+  const nombreRegex = /^[a-zñáéíóú\s]{3,14}$/i;
+  const apellidosRegex = /^[a-zñáéíóú\s-]{4,24}$/i;
+  const gymtagRegex = /^[a-z0-9ñ._]{3,14}$/i;
+  
+
+  const validarNombre = () => {
+    if (!nombreRegex.test(nombre.value)) {
+      mensajeError.value = 'El nombre debe contener entre 3 y 14 letras.';
+      mostrarMensaje.value = true;
+      return true;
     }
-  })
-  .catch(error => {
-    console.error('Error al enviar datos al servidor:', error);
-  });
-};
+    return false;
+  }
+
+  const validarApellidos = () => {
+    if (!apellidosRegex.test(apellidos.value)) {
+      mensajeError.value = 'Los apellidos deben contener entre 4 y 24 letras.';
+      mostrarMensaje.value = true;
+      return true;
+    }
+    return false;
+  }
+
+  const validarGym = () => {
+    if (!nombreRegex.test(nombre.value)) {
+      mensajeError.value = 'El Gym debe contener entre 3 y 14 letras.';
+      mostrarMensaje.value = true;
+      return true;
+    }
+    return false;
+  }
+
+  const validarLocalidad = () => {
+    if (!nombreRegex.test(nombre.value)) {
+      mensajeError.value = 'La localidad debe contener entre 3 y 14 letras.';
+      mostrarMensaje.value = true;
+      return true;
+    }
+    return false;
+  }
+
+  const validarGymtag = () => {
+    const gymtagMin = gymtag.value.toLowerCase();
+    gymtag.value = gymtagMin;
+
+    if (gymtagMin.length >= 3 && gymtagMin.length <= 14) {
+      if (!gymtagRegex.test(gymtagMin)) {
+        mensajeError.value = 'Tu GymTag solo puede tener letras, números y algunos caracteres especiales.';
+        mostrarMensaje.value = true;
+        gymtag.value = '';
+        return true;
+      }
+    } else {
+      mensajeError.value = 'Tu GymTag debe tener entre 3 y 14 caracteres.';
+      mostrarMensaje.value = true;
+      gymtag.value = '';
+      return true;
+    }
+
+    // Verificar si GymTag está disponible
+    return false;
+  }
+
+  const validateForm = () => {
+    // Validar que todos los campos estén llenos
+    if (!nombre.value || !edad.value || !peso.value || !localidad.value || !apellidos.value || !sexo.value || !altura.value || !gym.value) {
+      mensajeError.value = 'Por favor, complete todos los campos del formulario.';
+      mostrarMensaje.value = true;
+      return false;
+    }
+    mostrarMensaje.value = false;
+    mensajeError.value = '';
+    if (validarNombre() || validarApellidos() || validarGymtag() || validarGym() || validarLocalidad()) {
+        return;
+    }
+    return true;
+  }
 </script>
 
-
 <template>
-  <div class="sub-header">
-    <img src="../assets/img/logo.png" alt="logo" class="logo" />
-    <h1 class="title">GymBros Zone</h1>
-  </div>
-  <div class="img_perfil">
+  <div class="img_perfil" v-if="!userActive">
     <div class="image-container"></div>
     <img src="../assets/img/logo.png" alt="img-perfil" class="imgPerfil">
     <img src="../assets/icons/imgUpload.png" alt="upload IMG" class="img-icon">
+    <br>
+    <input v-model="gymtag" type="text" class="gym_tag" placeholder="GymTag...">
   </div>
-  <div class="container_formulario">
-    <form action="Profile.vue" method="POST" class="formulario" novalidation>
+  <div class="container_formulario" v-if="!userActive">
+    <form action="Profile.vue" method="POST" class="formulario" novalidation @submit="validateForm">
       <div class="column">
         <label for="nombre">Nombre: &nbsp &nbsp</label>
-        <input type="text" name="nombre" placeholder="Escriba su nombre" />
+        <input v-model="nombre" class="inputs" type="text" name="nombre" placeholder="Escriba su nombre" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="edad">Fecha de Nacimiento: &nbsp &nbsp</label>
-        <input type="date" name="edad" />
+        <input type="date" class="inputs" name="edad" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="peso">Peso: &nbsp &nbsp</label>
-        <input type="number" name="peso" placeholder="Escriba su peso" />
+        <input v-model="peso" type="number" class="inputs" name="peso" placeholder="Escriba su peso" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="localidad">Localidad: &nbsp &nbsp</label>
         <input
+          v-model="localidad"
           type="text"
+          class="inputs"
           name="localidad"
           placeholder="Escriba su localidad"
+          autocomplete="off"
         />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
@@ -75,33 +136,38 @@ const submitForm = () => {
       <div class="column">
         <label for="apellidos">Apellidos: &nbsp &nbsp</label>
         <input
+          v-model="apellidos"
+          class="inputs"
           type="text"
           name="apellidos"
           placeholder="Escriba sus apellidos"
+          autocomplete="off"
         />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="sexo">Sexo: &nbsp &nbsp</label>
-        <input type="text" name="sexo" placeholder="Escriba su sexo" />
+        <input v-model="sexo" type="text" class="inputs" name="sexo" placeholder="Escriba su sexo" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="altura">Altura: &nbsp &nbsp</label>
-        <input type="text" name="altura" placeholder="Escriba su altura" />
+        <input v-model="altura" ype="text" class="inputs" name="altura" placeholder="Escriba su altura" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="gym">Gym: &nbsp &nbsp</label>
-        <input type="text" name="gym" placeholder="¿Dónde entrenas?" />
+        <input type="text" name="gym" placeholder="¿Dónde entrenas?" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
       </div>
+      <div v-if="mostrarMensaje">{{ mensajeError }}</div>
     </form>
+    <button type="submit" class="actualizar" @click="validateForm"><RouterLink to="/"><a href="">Actualizar</a></RouterLink></button>
   </div>
-  <button class="cerrar-sesion">
-    <a href="../"  @click="logOut"><i>Cerrar Sesión</i></a>
+  <button class="cerrar-sesion" v-if="!userActive">
+    <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
   </button>
 </template>
 
@@ -133,12 +199,14 @@ const submitForm = () => {
 }
 
 .img_perfil{
+  margin-top: 3%;
   text-align: center;
 }
 
 .imgPerfil{
   width: 20%;
   height: auto;
+  cursor: pointer;
 }
 
 .img-container {
@@ -175,13 +243,52 @@ const submitForm = () => {
   margin-right: auto;
 }
 
-.formulario > * {
-  margin-bottom: 10px;
+.container_formulario {
+    margin-top: 2%;
+
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin: 15px auto 30px;
+    padding: 20px 30px;
+    background-color: var(--dark-blue);
+    box-shadow: 0 2px 5px var(--alt-black);
+    border: 3px solid black;
+    width: 65%;
+    height: 75%;
+  }
+
+@media (max-width: 805px) and (max-height: 1098px) {
+  .img_perfil{
+    margin-top: 15%;
+  }
+
+  .formulario > * {
+    margin-bottom: 10px;
+  }
+  .container_formulario {
+    margin-top: 2%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin: 15px auto 30px;
+    padding: 20px 30px;
+    background-color: var(--dark-blue);
+    box-shadow: 0 2px 5px var(--alt-black);
+    border: 3px solid black;
+    width: 85%;
+    height: auto;
+  }
 }
+
 
 .container_lapiz {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   margin: 0;
   cursor: pointer;
   width: 20px;
@@ -192,28 +299,16 @@ const submitForm = () => {
   width: 18px;
   height: auto;
   cursor: pointer;
+  position: absolute;
+  right: 5px; 
 }
 
-.container_formulario {
-  margin-top: 2%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  margin: 15px auto 30px;
-  padding: 20px 30px;
-  background-color: var(--dark-blue);
-  box-shadow: 0 2px 5px var(--alt-black);
-  border: 3px solid black;
-  width: 85%;
-  height: auto;
-}
+
 
 .column{
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 a {
@@ -236,10 +331,9 @@ button {
   font-family: inherit;
   font-size: 15px;
   margin: 1%;
-  margin-bottom: 6%;
 }
 
-button.cerrar-sesion {
+button.cerrar-sesion, button.actualizar{
   font-weight: 600;
   color: black;
   text-transform: uppercase;
@@ -259,7 +353,7 @@ button.cerrar-sesion {
   display: block;
 }
 
-button.cerrar-sesion::before {
+button.cerrar-sesion::before, button.actualizar::before{
   position: absolute;
   content: "";
   width: 100%;
@@ -271,7 +365,7 @@ button.cerrar-sesion::before {
   background: var(--dark-blue);
   border-radius: inherit;
   -webkit-box-shadow: 0 0 0 2px var(--blue), 0 0.625em 0 0 var(--dark-blue);
-  box-shadow: 0 0 0 2px rgb(63, 63, 65), 0 0.625em 0 0 var(--greeny-cyan);
+  box-shadow: 0 0 0 2px rgb(63, 63, 65), 0 0.625em 0 0;
   -webkit-transform: translate3d(0, 0.75em, -1em);
   transform: translate3d(0, 0.75em, -1em);
   transition: transform 150ms cubic-bezier(0, 0, 0.58, 1),
@@ -280,26 +374,26 @@ button.cerrar-sesion::before {
     -webkit-box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
 }
 
-button.cerrar-sesion:hover {
+button.cerrar-sesion:hover , button.actualizar:hover {
   background: aliceblue;
   -webkit-transform: translate(0, 0.25em);
   transform: translate(0, 0.25em);
 }
 
-button.cerrar-sesion:hover::before {
+button.cerrar-sesion:hover::before , button.actualizar:hover::before{
   -webkit-box-shadow: 0 0 0 2px var(--alt-black), 0 0.5em 0 0 black;
-  box-shadow: 0 0 0 2px grey, 0 0.5em 0 0 whitesmoke;
+  box-shadow: 0 0 0 2px grey, 0 0.5em 0 0;
   -webkit-transform: translate3d(0, 0.5em, -1em);
   transform: translate3d(0, 0.5em, -1em);
 }
 
-button.cerrar-sesion:active {
+button.cerrar-sesion:active , button.actualizar:active{
   background: whitesmoke;
   -webkit-transform: translate(0em, 0.75em);
   transform: translate(0em, 0.75em);
 }
 
-button.cerrar-sesion:active::before {
+button.cerrar-sesion:active::before , button.actualizar:active::before{
   -webkit-box-shadow: 0 0 0 2px grey, 0 0 rgb(95, 88, 88);
   box-shadow: 0 0 0 2px rgb(65, 58, 58), 0 0 rgb(192, 178, 178);
   -webkit-transform: translate3d(0, 0, -1em);

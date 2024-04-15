@@ -75,6 +75,12 @@ main {
   box-shadow: 0 2px 5px var(--alt-black);
   border: 3px solid black;
 }
+
+.logo {
+    margin-right: 20px;
+    width: 8.5%;
+  }
+
 .title {
   color: aliceblue;
   font-size: 35px;
@@ -84,10 +90,7 @@ main {
   font-style: normal;
   font-variation-settings: "width" 100;
 }
-.logo {
-  margin-right: 20px;
-  width: 12.5%;
-}
+
 .login_or_register,
 .services {
   color: aliceblue;
@@ -107,11 +110,11 @@ main {
 }
 .container_log-or-reg,
 .container_services {
-  margin-top: 2%;
   display: flex;
   justify-content: center;
   border-radius: 4px;
   margin: 10px auto;
+  margin-top: 2%;
   padding: 20px 30px;
   background-color: var(--dark-blue);
   box-shadow: 0 2px 5px var(--alt-black);
@@ -139,7 +142,7 @@ button {
   text-decoration: none;
   font-family: inherit;
   font-size: 15px;
-  margin: 5%;
+  margin: 2.5%;
 }
 
 button.button-login_register {
@@ -174,7 +177,7 @@ button.button-login_register::before {
   background: var(--dark-blue);
   border-radius: inherit;
   -webkit-box-shadow: 0 0 0 2px var(--blue), 0 0.625em 0 0 var(--dark-blue);
-  box-shadow: 0 0 0 2px rgb(63, 63, 65), 0 0.625em 0 0 var(--greeny-cyan);
+  box-shadow: 0 0 0 2px rgb(63, 63, 65), 0 0.625em 0 0;
   -webkit-transform: translate3d(0, 0.75em, -1em);
   transform: translate3d(0, 0.75em, -1em);
   transition: transform 150ms cubic-bezier(0, 0, 0.58, 1),
@@ -214,5 +217,16 @@ button a{
 }
 button:hover a{
   color: black;
+}
+
+@media (max-width: 805px) and (max-height: 1098px) {
+  button{
+    margin: 5%;
+  }
+
+  .logo {
+    margin-right: 20px;
+    width: 12.5%;
+  }
 }
 </style>

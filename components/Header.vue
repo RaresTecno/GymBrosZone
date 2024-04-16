@@ -158,4 +158,8 @@ h1 {
     margin: 0;
   }
 }
+
+@media(max-width: 600px){
+    
+}
 </style>

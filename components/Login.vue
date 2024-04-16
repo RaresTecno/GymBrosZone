@@ -61,10 +61,9 @@ async function login(){
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook"><img src="../assets/img/logo_facebook.png" alt="Logo Facebook"></div>
-                    <div class="twitter" @click="logOut"><img src="../assets/img/logo_x.png" alt="Logo X"></div>
-                    <div class="google" @click="loginGoogle"><img src="../assets/img/logo_google.webp"
-                            alt="Logo Google"></div>
+                    <div class="facebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="twitter" @click="logOut"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
                 </div>
             </div>
             <div class="cuenta_existente">
@@ -210,8 +209,8 @@ button a{
 }
 
 .iniciar {
-    margin-top: 20px;
-    margin-bottom: 35px;
+    margin-top: 10px;
+    margin-bottom: 27px;
     height: 55px;
     width: 100%;
     display: flex;
@@ -245,9 +244,9 @@ button a{
 }
 
 .inicio_sesion {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     height: 70px;
-    width: fit-content;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -256,12 +255,33 @@ button a{
 .inicio_sesion_contenido{
     width: 70%;
     height: 100%;
-    background-color: var(--light-blue-text);
     border-radius: 2px;
-    border: 3px solid var(--black);
+    border: 3px solid #eef2fa81;
     display: flex;
     justify-content: space-around;
     text-align: center;
+    font-size: 50px;
+    text-align: center;
+}
+
+.icono_google{
+    font-size: 35px;
+    background-color: var(--light-blue-text);
+    padding: 5px 6px;
+    border-radius: 6px;
+    color: var(--dark-blue);
+}
+
+.inicio_sesion_contenido:hover{
+    background-color: #eef2fa13;
+}
+
+.inicio_sesion_contenido:hover .icono_google{
+    color:  #22335e;
+}
+
+.icono_iniciar{
+    cursor: pointer;
 }
 
 .inicio_sesion_contenido>div{
@@ -496,5 +516,35 @@ button a{
     .container .input:focus~.label {
         transform: translateY(-44.5px);
     }
+
+    .iniciar {
+        margin-bottom: 15px;
+    }
+
+    .inicio_sesion {
+        height: fit-content;
+    }
+
+    .inicio_sesion_contenido{
+        width: 80%;
+        border: 0px solid #eef2fa81;
+    }
+
+    .inicio_sesion_contenido:hover{
+        background-color: transparent;
+    }
+
+    .inicio_sesion_contenido:hover .icono_google{
+        color: var(--dark-blue);
+    }
+
+    .icono_google{
+        font-size: 35px;
+        background-color: var(--light-blue-text);
+        padding: 5px 6px;
+        border-radius: 6px;
+        color: #0b1e44;
+    }
+
 }
 </style>

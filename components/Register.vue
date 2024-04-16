@@ -41,110 +41,127 @@ const nombreInput = ref(null);
 
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
+
+//Establecemos 'pantallaGrande' como 'true' si la ventana es al menos de 1140px de ancho.
 const pantallaGrande = computed(() => {
     return windowWidth.value >= 1140;
 });
 
-
-//Cambio el valor del ancho de la pantalla cuando cambia de tamaño
+//Cambio el valor del ancho de la pantalla cuando cambia de tamaño.
 const updateWidth = () => {
     windowWidth.value = window.innerWidth;
 };
 
+//Añadimos un addEventListener para el evento 'resize' cuando montamos el componente.
 onMounted(() => {
     window.addEventListener('resize', updateWidth);
 });
 
+//Eliminamos el addEventListener del evento 'resize' cuando desmontamos el componente.
 onUnmounted(() => {
     window.removeEventListener('resize', updateWidth);
 });
 
+//Mostramos la segunda parte del formulario.
 function segundaParte() {
     mostrarPrimeraParte.value = false;
+    mostrarMensaje.value = false;
+    mensajeError.value = '';
 }
 
+//Mostramos la primera parte del formulario.
 function primeraParte(){
     mostrarPrimeraParte.value = true;
+    mostrarMensaje.value = false;
+    mensajeError.value = '';
 }
 
+//Función para mostrar el mensaje de error y limpiar el input que contiene el error.
+function mensaje(mensaje, input){
+    mensajeError.value = mensaje;
+    mostrarMensaje.value = true;
+    input.value = '';
+}
+
+//Comprobamos el nombre ingresado.
 function validarNombre() {
     if (!/^[a-zñáéíóú\s]{3,14}$/i.test(nombre.value)) {
-        mensajeError.value = 'El nombre debe contener entre 3 y 14 letras.';
-        mostrarMensaje.value = true;
-        nombre.value = '';
+        mensaje('El nombre debe contener entre 3 y 14 letras.', 'nombre');
         return false;
     }
     return true;
 }
 
+//Comprobamos los apellidos ingresados.
 function validarApellidos() {
     if (!/^[a-zñáéíóú\s-]{4,24}$/i.test(apellidos.value)) {
-        mensajeError.value = 'Los apellidos deben contener entre 4 y 24 letras.';
-        mostrarMensaje.value = true;
+        mensaje('Los apellidos deben contener entre 4 y 24 letras.', 'apellidos');
         return false;
     }
     return true;
 }
 
+//Comprobamos el GymTag ingresado.
 function validarGymtag() {
     const gymtagMin = gymtag.value.toLowerCase();
     gymtag.value = gymtagMin;
-
+    //Comprobamos que el tamaño del GymTag sea el deseado.
     if (gymtagMin.length >= 3 && gymtagMin.length <= 14) {
+        //Comprobamos que los caracteres ingresados sean válidos.
         if (/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
-            
+            //Comprobamos si el GymTag está disponible.
             let disponible = true; 
-
+            
             if (disponible) {
                 return true;
 
 
             } else {
-                mensajeError.value = 'El GymTag ingresado ya está en uso.';
-                mostrarMensaje.value = true;
-                gymtag.value = '';
+                mensaje('El GymTag ingresado ya está en uso.', 'gymtag');
                 return false;
             }
         } else {
-            mensajeError.value = 'Tu GymTag solo puede tener letras, números y algunos caracteres especiales.';
-            mostrarMensaje.value = true;
-            gymtag.value = '';
+            mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', 'gymtag');
             return false;
         }
     } else {
-        mensajeError.value = 'Tu GymTag debe tener entre 3 y 14 caracteres.';
-        mostrarMensaje.value = true;
-        gymtag.value = '';
+        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', 'gymtag');
         return false;
     }
 }
 
+//Comprobamos si el email ingresado tiene formato de email.
 function validarEmail(){
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        mensajeError.value = 'El email ingresado no es válido';
-        mostrarMensaje.value = true;
+        mensaje('El email ingresado no es válido.', 'email');
         return false;
     }
     return true;
 }
 
+//Comprobamos las contraseñas ingresadas.
 function validarContras(){
     //Si las contraseñas son iguales y seguras, la contraseña es válida.
     if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password.value)) {
         return true;
     } else {
-        console.log('mal');
         //Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.
         if (password.value !== password2.value) {
-            mensajeError.value = 'Las contraseñas no coinciden.';
+            mensaje('Las contraseñas no coinciden.', 'password2');
         } else {
-            mensajeError.value = 'La contraseña debe contener al menos 8 caracteres e incluir una mayúscula y un número.';
+            password.value = '';
+            mensaje('La contraseña debe contener al menos 8 caracteres e incluir una mayúscula y un número.', 'password2');
         }
-        mostrarMensaje.value = true;
         return false;
     }
 }
 
+//Comprobamos si el usuario es mayor de 14 años.
+function validarEdad(){
+
+}
+
+//Llamamos a las funciones que validan los inputs en la primera parte del formulario (pantallas pequeñas).
 function siguiente() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
@@ -154,6 +171,7 @@ function siguiente() {
     return;
 }
 
+//Llamamos a las funciones que validan los inputs de todo el formulario (cualquier pantalla.
 function creaCuenta(){
     mostrarMensaje.value = false;
     mensajeError.value = '';

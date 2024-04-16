@@ -41,6 +41,7 @@ const nombreInput = ref(null);
 
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
+
 const pantallaGrande = computed(() => {
     return windowWidth.value >= 1140;
 });

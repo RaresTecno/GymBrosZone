@@ -547,4 +547,8 @@ button a{
     }
 
 }
+
+@media(max-width: 600px){
+    
+}
 </style>

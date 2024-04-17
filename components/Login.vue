@@ -1,7 +1,7 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
+// import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
  
 // let [captchaToken, setCaptchaToken] = userState()
  

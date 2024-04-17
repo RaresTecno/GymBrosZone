@@ -110,16 +110,16 @@ header {
 }
 
 h1 {
-  color: white;
-  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  background-color: var(--blue-inputs);
   padding: 5px 30px;
   border-radius: 25px;
   width: fit-content;
 }
 
 #btn-profile {
-  color: white;
-  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  background-color: var(--blue-inputs);
   border-radius: 25px;
   padding: 7px;
   font-weight: bold;
@@ -135,7 +135,7 @@ h1 {
 .btn-no-loged {
   display: flex;
   justify-content: center;
-  color: white;
+  color: var(--light-blue-text);
   background-color: #3d5a98;
   border-radius: 25px;
   padding: 7px;

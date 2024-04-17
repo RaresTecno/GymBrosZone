@@ -145,7 +145,7 @@ onMounted(() => {
 <style scoped>
 nav {
   background-color: var(--dark-blue);
-  color: white;
+  color: var(--light-blue-text);
   width: 60px;
   display: flex;
   flex-direction: column;
@@ -158,7 +158,7 @@ nav {
 h2 {
   display: none;
   margin-left: 10px;
-  color: white;
+  color: var(--light-blue-text);
 }
 
 nav:hover {
@@ -177,7 +177,7 @@ div .RouterLink {
 }
 
 .icon {
-  color: white;
+  color:var(--light-blue-text);
   width: 36px;
   height: 36px;
 }

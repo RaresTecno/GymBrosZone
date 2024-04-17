@@ -1,6 +1,9 @@
 <script setup>
 import {logOut, userState } from '../clients/supabase';
+import { ref } from 'vue';
 
+const urlFoto = ref("../assets/img/logo.png");
+console.log(urlFoto)
 
 </script>
 

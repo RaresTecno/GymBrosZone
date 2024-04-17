@@ -2,18 +2,18 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
 import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
-
+ 
 // let [captchaToken, setCaptchaToken] = userState()
-
+ 
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
 const mensajeError = ref('');
-
+ 
 import { supabase, logOut, userState } from '../clients/supabase';
-
+ 
 const email = ref("");
 const password = ref("");
-
+ 
 async function login(){
     const { data, error } = await supabase.auth.signInWithPassword({
         email: email.value,
@@ -30,10 +30,10 @@ async function login(){
     }else{
         userState();
         window.location.href="/";
-        
+       
     }
 }
-
+ 
 </script>
 <template>
     <div class="todo_login">
@@ -58,7 +58,7 @@ async function login(){
                     </div>
                 </div>
             </div>
-            <!-- <VueHcaptcha 
+            <!-- <VueHcaptcha
             sitekey="0fecd1d6-14e7-4a54-9300-5664440506ef"
             /> -->
             <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">

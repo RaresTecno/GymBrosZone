@@ -28,19 +28,11 @@ import { userActive } from '../clients/supabase'
     <div class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
         <p>¿Qué ofrecemos?</p>
-        <br />
-        <cite
-          >Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea
-          recusandae obcaecati quod alias esse aperiam aut necessitatibus odit
-          eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis
-          fugit. Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-          Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione velit
-          minus consectetur impedit corrupti eum explicabo optio non numquam
-          sunt mollitia! Lorem ipsum dolor sit amet consectetur adipisicing
-          elit. Cum temporibus inventore animi in nihil eius voluptates dolore
-          maxime cumque facere doloribus, ex ab voluptatem blanditiis, eos
-          soluta odit. Facere, tempore.
-        </cite>
+        <br>
+        <div>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea recusandae obcaecati quod alias esse aperiam aut necessitatibus odit eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis fugit.
+          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione velit minus consectetur impedit corrupti eum explicabo optio non numquam sunt mollitia!
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum temporibus inventore animi in nihil eius voluptates dolore maxime cumque facere doloribus, ex ab voluptatem blanditiis, eos soluta odit. Facere, tempore.
+        </div>
       </div>
     </div>
   </template>
@@ -104,7 +96,6 @@ main {
   font-variation-settings: "width" 100;
   padding: 5px;
   border-radius: 2px;
-  text-shadow: 0 0 1px rgba(255, 255, 255, 0.301);
   margin-left: auto;
   margin-right: auto;
 }

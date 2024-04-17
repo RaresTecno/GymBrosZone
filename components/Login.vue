@@ -1,19 +1,26 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
+import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
+ 
+// let [captchaToken, setCaptchaToken] = userState()
+ 
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
 const mensajeError = ref('');
-
+ 
 import { supabase, logOut, userState } from '../clients/supabase';
-
+ 
 const email = ref("");
 const password = ref("");
-
+ 
 async function login(){
-    const { data, error } = await  supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
         email: email.value,
         password: password.value,
+        options: {
+        // captchaToken,
+        }
         // options: {
         // emailRedirectTo: '/',
         // }
@@ -23,10 +30,10 @@ async function login(){
     }else{
         userState();
         window.location.href="/";
-        
+       
     }
 }
-
+ 
 </script>
 <template>
     <div class="todo_login">
@@ -51,24 +58,30 @@ async function login(){
                     </div>
                 </div>
             </div>
+            <!-- <VueHcaptcha
+            sitekey="0fecd1d6-14e7-4a54-9300-5664440506ef"
+            /> -->
             <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
-                {{ mensajeError }}
+                <div class="mensaje_texto">
+                    {{ mensajeError }}
+                </div>
             </div>
             <div class="iniciar">
                 <div class="iniciar_texto"><button @click="login">Iniciar sesión</button></div>
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook"><img src="../assets/img/logo_facebook.png" alt="Logo Facebook"></div>
-                    <div class="twitter" @click="logOut"><img src="../assets/img/logo_x.png" alt="Logo X"></div>
-                    <div class="google" @click="loginGoogle"><img src="../assets/img/logo_google.webp" alt="Logo Google"></div>
+                    <div class="facebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="twitter" @click="logOut"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
                 </div>
             </div>
             <div class="cuenta_existente">
                 <div class="cuenta_existente_texto">¿No tienes una cuenta?</div>
             </div>
             <div class="crear">
-                <div class="crear_texto"><button @click="$emit('irARegister')">Crear una nueva cuenta</button></div>
+                <div class="crear_texto"><button><RouterLink to="/log/register" class="btn-loged" id="btn-register">Crear una nueva cuenta</RouterLink></button></div>
+                
             </div>
         </div>
     </div>
@@ -95,6 +108,11 @@ async function login(){
     border: var(--black) 4px solid;
     border-radius: 6px;
     margin-bottom: 68px;
+}
+
+button a{
+    color: var(--light-blue-text);
+    text-decoration: none;
 }
 
 .titulo {
@@ -191,18 +209,18 @@ async function login(){
     cursor: pointer;
 }
 
-.ojo_abierto{
+.ojo_abierto {
     transform: translateX(1.505px);
 }
 
 .gymtag_o_email .container .subcontainer,
-.password .container .subcontainer{
+.password .container .subcontainer {
     width: 75%;
 }
 
 .iniciar {
-    margin-top: 20px;
-    margin-bottom: 35px;
+    margin-top: 10px;
+    margin-bottom: 27px;
     height: 55px;
     width: 100%;
     display: flex;
@@ -235,10 +253,10 @@ async function login(){
     border: 2px solid #eef2fa81;
 }
 
-.inicio_sesion{
-    margin-bottom: 40px;
+.inicio_sesion {
+    margin-bottom: 30px;
     height: 70px;
-    width: fit-content;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -247,12 +265,33 @@ async function login(){
 .inicio_sesion_contenido{
     width: 70%;
     height: 100%;
-    background-color: var(--light-blue-text);
     border-radius: 2px;
-    border: 3px solid var(--black);
+    border: 3px solid #eef2fa81;
     display: flex;
     justify-content: space-around;
     text-align: center;
+    font-size: 50px;
+    text-align: center;
+}
+
+.icono_google{
+    font-size: 35px;
+    background-color: var(--light-blue-text);
+    padding: 5px 6px;
+    border-radius: 6px;
+    color: var(--dark-blue);
+}
+
+.inicio_sesion_contenido:hover{
+    background-color: #eef2fa13;
+}
+
+.inicio_sesion_contenido:hover .icono_google{
+    color:  #22335e;
+}
+
+.icono_iniciar{
+    cursor: pointer;
 }
 
 .inicio_sesion_contenido>div{
@@ -261,17 +300,18 @@ async function login(){
     align-items: center;
 }
 
-.google img, .facebook img{
+.google img,
+.facebook img {
     max-width: 85%;
     max-height: 85%;
 }
 
-.twitter img{
+.twitter img {
     max-width: 115%;
     max-height: 115%;
 }
 
-.cuenta_existente{
+.cuenta_existente {
     width: 100%;
     height: fit-content;
     display: flex;
@@ -279,7 +319,7 @@ async function login(){
     align-items: center;
 }
 
-.cuenta_existente_texto{
+.cuenta_existente_texto {
     color: var(--light-blue-text);
     font-size: 19px;
 }
@@ -315,9 +355,8 @@ async function login(){
 }
 
 .crear_texto button:hover,
-.crear_texto button:active {
+.crear_texto button:active{
     background-color: var(--blue-inputs);
-    color: var(--light-blue-text);
     border: 2px solid #eef2fa81;
 }
 
@@ -365,11 +404,11 @@ async function login(){
         padding: 10px 0;
     }
 
-    .gymtag_o_email{
+    .gymtag_o_email {
         padding: 0 0 10px;
     }
 
-    .iniciar{
+    .iniciar {
         margin-bottom: 20px;
     }
 
@@ -391,7 +430,9 @@ async function login(){
         transform: translateY(-52.5px);
     }
 
-    .subcontainer, .iniciar_texto, .crear_texto {
+    .subcontainer,
+    .iniciar_texto,
+    .crear_texto {
         display: flex;
         justify-content: start;
         width: 85%;
@@ -415,16 +456,18 @@ async function login(){
         padding: 0;
     }
 
-    .iniciar_texto button, .crear_texto button {
+    .iniciar_texto button,
+    .crear_texto button {
         height: 65px;
     }
 
-    .iniciar, .crear {
+    .iniciar,
+    .crear {
         height: 100px;
         padding-top: 10px;
     }
 
-    .crear_texto{
+    .crear_texto {
         min-width: 0;
     }
 
@@ -435,7 +478,6 @@ async function login(){
         padding: 14px 0;
         margin-left: -50px;
     }
-    
     .contenedor_ojo {
         font-size: 34px;
         margin-left: -53px;
@@ -455,21 +497,23 @@ async function login(){
     }
 }
 
-@media(max-width: 600px){
-    .contenedor_calendario, .contenedor_ojo {
+@media(max-width: 600px) {
+
+    .contenedor_calendario,
+    .contenedor_ojo {
         width: 35px;
         height: 35px;
         font-size: 30px;
         padding: 12px 0;
         margin-left: -40px;
     }
-    
-    .contenedor_ojo{
+
+    .contenedor_ojo {
         font-size: 27px;
     }
 
     .gymtag_o_email .input,
-    .password .input{
+    .password .input {
         height: 55px;
     }
 
@@ -479,9 +523,42 @@ async function login(){
     }
 
     .container .input:valid~.label,
-    .container .input:focus~.label{
+    .container .input:focus~.label {
         transform: translateY(-44.5px);
     }
+
+    .iniciar {
+        margin-bottom: 15px;
+    }
+
+    .inicio_sesion {
+        height: fit-content;
+    }
+
+    .inicio_sesion_contenido{
+        width: 80%;
+        border: 0px solid #eef2fa81;
+    }
+
+    .inicio_sesion_contenido:hover{
+        background-color: transparent;
+    }
+
+    .inicio_sesion_contenido:hover .icono_google{
+        color: var(--dark-blue);
+    }
+
+    .icono_google{
+        font-size: 35px;
+        background-color: var(--light-blue-text);
+        padding: 5px 6px;
+        border-radius: 6px;
+        color: #0b1e44;
+    }
+
 }
 
+@media(max-width: 600px){
+    
+}
 </style>

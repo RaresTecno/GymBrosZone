@@ -1,28 +1,64 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const posicionAnt = ref(0);
 const mostrar = ref(true);
 const altura = ref(80);
+const windowWidth = ref(window.innerWidth);
 
-window.addEventListener('scroll', () => {
+function reposicionarBarra(){
   const posicionActual = window.scrollY;
 
-  if (posicionActual > 100) {
-    altura.value = 0;
-
-    if (posicionActual < posicionAnt.value) {
-        altura.value = 80;
-
+  //hacerlo tambien primero con el width 
+  if (windowWidth.value < 601) {
+    if (posicionActual > 100) {
+      altura.value = 0;
+  
+      if (posicionActual < posicionAnt.value) {
+          altura.value = 163;
+  
+      }
+    } else {
+      altura.value = 163;
+  
     }
-  } else {
-    altura.value = 80;
-
-  }
+}else if(windowWidth.value < 875){
+    if (posicionActual > 100) {
+      altura.value = 0;
+  
+      if (posicionActual < posicionAnt.value) {
+          altura.value = 94;
+  
+      }
+    } else {
+      altura.value = 94;
+  
+    }
+}else {
+    if (posicionActual > 100) {
+      altura.value = 0;
+  
+      if (posicionActual < posicionAnt.value) {
+          altura.value = 80;
+  
+      }
+    } else {
+      altura.value = 80;
+  
+    }
+  
+}
   posicionAnt.value = posicionActual;
+}
+function updateWidth() {
+  windowWidth.value = window.innerWidth;
+    reposicionarBarra();
+}
+onMounted(() => {
+    window.addEventListener('scroll', reposicionarBarra);
+    window.addEventListener("resize", updateWidth);
 });
-
 </script>
 
 <template>

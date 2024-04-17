@@ -21,12 +21,15 @@ async function login(){
         options: {
         // captchaToken,
         }
+        // options: {
+        // emailRedirectTo: '/',
+        // }
     })
     if (error) {
           console.log(error);
     }else{
         userState();
-        // window.location.href="/";
+        window.location.href="/";
         
     }
 }
@@ -553,5 +556,9 @@ button a{
         color: #0b1e44;
     }
 
+}
+
+@media(max-width: 600px){
+    
 }
 </style>

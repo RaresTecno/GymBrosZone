@@ -1,4 +1,11 @@
-<script setup></script>
+<script setup>
+import {logOut, userState } from '../clients/supabase';
+import { ref } from 'vue';
+
+const urlFoto = ref("../assets/img/logo.png");
+console.log(urlFoto)
+
+</script>
 
 <template>
   <div class="sub-header">
@@ -68,9 +75,8 @@
       </div>
     </form>
   </div>
-  <button class="cerrar-sesion">
-    <!--  v-if="logged" -->
-    <a href="../components/Login.vue"><i>Cerrar Sesión</i></a>
+  <button class="cerrar-sesion" @click="logOut">
+    <RouterLink to="/" ><i>Cerrar Sesión</i></RouterLink>
   </button>
 </template>
 

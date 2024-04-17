@@ -60,7 +60,7 @@ onMounted(() => {
       </div>
     </div>
     <div v-if="userActive" id="loged">
-      <RouterLink to="" id="btn-profile" class="boton_header">Mi cuenta</RouterLink>
+      <RouterLink to="/account" id="btn-profile">Mi cuenta</RouterLink>
     </div>
     <div v-if="!userActive" id="no-loged">
       <RouterLink to="/log/login" class="btn-no-loged boton_header" id="btn-login"
@@ -92,10 +92,6 @@ header {
   align-items: center;
 }
 
-.RouterLink {
-  text-decoration: none;
-}
-
 .fondo_logo {
   border-radius: 50%;
   background-color: black;
@@ -115,8 +111,8 @@ header {
 }
 
 h1 {
-  color: white;
-  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  background-color: var(--blue-inputs);
   padding: 5px 30px;
   border-radius: 25px;
   width: fit-content;

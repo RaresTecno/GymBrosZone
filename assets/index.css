@@ -18,11 +18,12 @@
 body {
     background-color: var(--bg-color);
 }
-
 html::-webkit-scrollbar { 
     display: none;
 }
-
 #app{
     overflow-x: hidden;
+}
+.RouterLink {
+    text-decoration: none;
 }

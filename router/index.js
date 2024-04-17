@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import ProfileView from '../views/Profile.vue'
 import Log from '../views/Log.vue'
+import Login from '../components/Login.vue';
+import Register from '../components/Register.vue';
 import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
 
@@ -19,25 +21,18 @@ const router = createRouter({
       component: ProfileView
     },
     {
-      path: '/log', 
+      path: '/log/', 
       component: Log,
       children: [
         {
-          path: 'login',
-          name: 'login',
-          component: () => import('../components/Login.vue')
+          path: 'login', 
+          component: Login
         },
         {
           path: 'register',
-          name: 'register',
-          component: () => import('../components/Register.vue')
+          component: Register
         }
       ]
-    },
-    // Ruta comodín para manejar rutas no encontradas
-    {
-      path: '/:catchAll(.*)',
-      redirect: '/'
     }
     // {
     //   path: '/politicas_y_condiciones',

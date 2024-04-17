@@ -10,7 +10,7 @@ import { userActive } from './clients/supabase'
   <Header />
   <RouterView />
   <Nav v-if="userActive"/>
-  <!-- <Footer /> -->
+  <Footer />
 </template>
 
 <style>

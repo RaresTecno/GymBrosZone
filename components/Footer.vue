@@ -21,6 +21,7 @@ footer {
   justify-content: space-between;
   padding: 0 20px;
   bottom: 0;
+  box-shadow: 2px 0 10px var(--black), 3px 0 15px var(--black);
 }
 
 h5 {

@@ -60,13 +60,13 @@ onMounted(() => {
       </div>
     </div>
     <div v-if="userActive" id="loged">
-      <RouterLink to="" id="btn-profile">Mi cuenta</RouterLink>
+      <RouterLink to="" id="btn-profile" class="boton_header">Mi cuenta</RouterLink>
     </div>
     <div v-if="!userActive" id="no-loged">
-      <RouterLink to="/log/login" class="btn-no-loged" id="btn-login"
+      <RouterLink to="/log/login" class="btn-no-loged boton_header" id="btn-login"
         >Login</RouterLink
       >
-      <RouterLink to="/log/register" class="btn-no-loged" id="btn-register"
+      <RouterLink to="/log/register" class="btn-no-loged boton_header" id="btn-register"
         >Registro</RouterLink
       >
     </div>
@@ -84,15 +84,18 @@ header {
   padding: 0 20px;
   position: fixed;
   z-index: 100;
+  box-shadow: 2px 0 15px var(--black), 3px 0 20px var(--black);
 }
 
 .home {
   display: flex;
   align-items: center;
 }
+
 .RouterLink {
   text-decoration: none;
 }
+
 .fondo_logo {
   border-radius: 50%;
   background-color: black;
@@ -119,34 +122,36 @@ h1 {
   width: fit-content;
 }
 
-#btn-profile {
-  color: white;
-  background-color: #3d5a98;
-  border-radius: 25px;
-  padding: 7px;
+.boton_header{
   font-weight: bold;
-  border: none;
   text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
 }
 
-#no-loged {
-  display: flex;
-  justify-content: space-between;
+.boton_header:hover, .boton_header:active{
+  border-color: #eef2fa81;
+}
+
+#btn-profile {
+  padding: 5px 8px;
 }
 
 .btn-no-loged {
   display: flex;
   justify-content: center;
-  color: white;
-  background-color: #3d5a98;
-  border-radius: 25px;
-  padding: 7px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  text-decoration: none;
+  padding: 5px 7px;
   width: 90px;
-  text-align: center;
+}
+
+#no-loged {
+  display: flex;
+  justify-content: space-between;
 }
 
 #btn-login {
@@ -162,18 +167,22 @@ h1 {
   header{
     min-height: 94px;
   }
+
   #loged{
     margin: 20px;
   }
+
   #no-loged {
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin: 5px;
   }
+
   #btn-login {
   margin-right: 0;
   }
+
   .btn-no-loged {
     margin: 5px 0;
   }
@@ -183,19 +192,25 @@ h1 {
   header {
     flex-direction: column;
   }
+
   .logo{
     margin-top: 10px;
+    margin-bottom: 5px;
   }
+
   #no-loged {
     flex-direction: row;
   }
+
   .btn-no-loged {
     margin: 10px;
   }
+
   .fondo_logo{
     width: 95px;
     height: 95px;
   }
+
   .logo img {
     margin: 0;
     width: 99px;

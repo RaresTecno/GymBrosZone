@@ -1,7 +1,7 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
+// import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
  
 // let [captchaToken, setCaptchaToken] = userState()
  
@@ -94,7 +94,7 @@ async function login(){
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 140px;
+    padding-top: 145px;
 }
 
 .login {
@@ -107,7 +107,7 @@ async function login(){
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 68px;
+    margin-bottom: 88px;
 }
 
 button a{
@@ -182,7 +182,8 @@ button a{
 }
 
 .gymtag_o_email {
-    margin-top: 30px;
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
 .password{
@@ -234,6 +235,7 @@ button a{
     display: flex;
     justify-content: center;
     text-align: center;
+    min-width: 247px;
 }
 
 .iniciar_texto button {
@@ -250,7 +252,7 @@ button a{
 .iniciar_texto button:active {
     background-color: var(--blue-inputs);
     color: var(--light-blue-text);
-    border: 2px solid #eef2fa81;
+    border-color: #eef2fa81;
 }
 
 .inicio_sesion {
@@ -263,10 +265,11 @@ button a{
 }
 
 .inicio_sesion_contenido{
-    width: 70%;
+    width: 40%;
+    min-width: 330px;
     height: 100%;
     border-radius: 2px;
-    border: 3px solid #eef2fa81;
+    /* border: 3px solid #eef2fa81; */
     display: flex;
     justify-content: space-around;
     text-align: center;
@@ -282,13 +285,13 @@ button a{
     color: var(--dark-blue);
 }
 
-.inicio_sesion_contenido:hover{
+/* .inicio_sesion_contenido:hover{
     background-color: #eef2fa13;
-}
+} */
 
-.inicio_sesion_contenido:hover .icono_google{
-    color:  #22335e;
-}
+/* .inicio_sesion_contenido:hover .icono_google{
+    color: #22335e;
+} */
 
 .icono_iniciar{
     cursor: pointer;
@@ -356,7 +359,6 @@ button a{
 
 .crear_texto button:hover,
 .crear_texto button:active{
-    background-color: var(--blue-inputs);
     border: 2px solid #eef2fa81;
 }
 
@@ -373,27 +375,6 @@ button a{
 }
 
 @media(max-width: 1140px) {
-    /* .header_register {
-        height: 180px;
-        margin-bottom: 20px;
-    }
-
-    .header_register .nombre {
-        display: none;
-    }
-
-    .header_register .logo {
-        width: 100%;
-        justify-content: center;
-        padding: 0;
-    }
-
-    .logo .circulo {
-        /* background-color: #3d5a98; 
-        width: 160px;
-        height: 160px;
-    } */
-
     .login {
         width: 88%;
     }
@@ -497,7 +478,16 @@ button a{
     }
 }
 
+@media(max-width: 875px){
+    .todo_login {
+        padding-top: 159px;
+    }
+}
+
 @media(max-width: 600px) {
+    .todo_login {
+        padding-top: 232px;
+    }
 
     .contenedor_calendario,
     .contenedor_ojo {
@@ -537,7 +527,7 @@ button a{
 
     .inicio_sesion_contenido{
         width: 80%;
-        border: 0px solid #eef2fa81;
+        border-width: 0px;
     }
 
     .inicio_sesion_contenido:hover{
@@ -556,9 +546,5 @@ button a{
         color: #0b1e44;
     }
 
-}
-
-@media(max-width: 600px){
-    
 }
 </style>

@@ -59,8 +59,8 @@ onMounted(() => {
         </RouterLink>
       </div>
     </div>
-    <div v-if="userActive" id="loged">
-      <RouterLink to="/account" id="btn-profile">Mi cuenta</RouterLink>
+    <div v-if="userActive" id="loged" >
+      <RouterLink to="/account" id="btn-profile" class="boton_header">Mi cuenta</RouterLink>
     </div>
     <div v-if="!userActive" id="no-loged">
       <RouterLink to="/log/login" class="btn-no-loged boton_header" id="btn-login"

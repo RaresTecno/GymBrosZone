@@ -2,15 +2,21 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { supabase } from '../clients/supabase';
+//https://www.youtube.com/watch?v=efNX5x7O0cY
 
-async function createAcount(){
-    const { data, error} = await supabase.auth.signUp({
+async function createAccount() {
+    const { data, error } = await supabase.auth.signUp({
         email: email.value,
-        password: password.value
+        password: password.value,
+        options: {
+            data: { 
+                'gymtag': gymtag.value
+            }
+        }
     })
     if (error) {
         console.log(error);
-    }else{
+    } else {
         console.log(data);
     }
 }
@@ -77,14 +83,14 @@ function segundaParte() {
 }
 
 //Mostramos la primera parte del formulario.
-function primeraParte(){
+function primeraParte() {
     mostrarPrimeraParte.value = true;
     mostrarMensaje.value = false;
     mensajeError.value = '';
 }
 
 //Función para mostrar el mensaje de error y limpiar el input que contiene el error.
-function mensaje(mensaje, input, Input){
+function mensaje(mensaje, input, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
     input.value = '';
@@ -102,10 +108,10 @@ function validarNombre() {
 
 //Comprobamos los apellidos ingresados.
 function validarApellidos() {
-    if (/^[a-zñáéíóú\s-]{4,24}$/i.test(apellidos.value)) {
+    if (/^[a-zñáéíóú\s-]{3,24}$/i.test(apellidos.value)) {
         return true;
     }
-    mensaje('Los apellidos deben contener entre 4 y 24 letras.', apellidos, apellidosInput);
+    mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidos, apellidosInput);
     return false;
 }
 
@@ -118,8 +124,8 @@ function validarGymtag() {
         //Comprobamos que los caracteres ingresados sean válidos.
         if (/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
             //Comprobamos si el GymTag está disponible.
-            let disponible = true; 
-            
+            let disponible = true;
+
             if (disponible) {
                 return true;
 
@@ -139,7 +145,7 @@ function validarGymtag() {
 }
 
 //Comprobamos si el email ingresado tiene formato de email.
-function validarEmail(){
+function validarEmail() {
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
         return true;
     }
@@ -148,7 +154,7 @@ function validarEmail(){
 }
 
 //Comprobamos las contraseñas ingresadas.
-function validarContras(){
+function validarContras() {
     //Si las contraseñas son iguales y seguras, la contraseña es válida.
     if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password.value)) {
         return true;
@@ -166,7 +172,7 @@ function validarContras(){
 }
 
 //Comprobamos si el usuario es mayor de 14 años.
-function validarEdad(){
+function validarEdad() {
     var fechaActual = new Date();
     var annoActual = fechaActual.getFullYear();
     const anno = parseInt(fecha_nacimiento.value.split("-")[0], 10);
@@ -179,10 +185,10 @@ function validarEdad(){
 }
 
 //Comprobamos que el usuario haya aceptado las políticas y condiciones de GymBros Zone.
-function validarAceptar(){
-    if(aceptar.value){
+function validarAceptar() {
+    if (aceptar.value) {
         return true;
-    }else{
+    } else {
         mensajeError.value = "Para continuar acepta nuestras políticas y condiciones.";
         mostrarMensaje.value = true;
         return false;
@@ -200,13 +206,14 @@ function siguiente() {
 }
 
 //Llamamos a las funciones que validan los inputs de todo el formulario (cualquier pantalla.
-function creaCuenta(){
+function creaCuenta() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
-    if (validarNombre() && validarApellidos() && validarGymtag() &&  validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
+    if (validarNombre() && validarApellidos() && validarGymtag() && validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
         //Aquí va lo del supa y la redirección a home
         console.log('supa');
-    }else{
+        createAccount();
+    } else {
         return;
     }
 }
@@ -215,13 +222,15 @@ function creaCuenta(){
 <template>
     <div class="todo_register">
         <div class="register">
-            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte"><font-awesome-icon :icon="['fas', 'circle-left']" @click="primeraParte"/></div>
+            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte"><font-awesome-icon
+                    :icon="['fas', 'circle-left']" @click="primeraParte" /></div>
             <div class="titulo">Registro</div>
             <div class="nombre_y_apellidos" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="nombre">
                     <div class="container">
                         <div class="subcontainer">
-                            <input type="text" id="nombre" class="input" required autocomplete="off" v-model="nombre" ref="nombreInput">
+                            <input type="text" id="nombre" class="input" required autocomplete="off" v-model="nombre"
+                                ref="nombreInput">
                             <label class="label" for="nombre">Nombre</label>
                         </div>
                     </div>
@@ -229,7 +238,8 @@ function creaCuenta(){
                 <div class="apellidos">
                     <div class="container">
                         <div class="subcontainer">
-                            <input type="text" id="apellidos" class="input" required autocomplete="off" v-model="apellidos" ref="apellidosInput">
+                            <input type="text" id="apellidos" class="input" required autocomplete="off"
+                                v-model="apellidos" ref="apellidosInput">
                             <label class="label" for="apellidos">Apellidos</label>
                         </div>
                     </div>
@@ -238,7 +248,8 @@ function creaCuenta(){
             <div class="gymtag" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="text" id="gymtag" class="input" required autocomplete="off" v-model="gymtag" ref="gymtagInput">
+                        <input type="text" id="gymtag" class="input" required autocomplete="off" v-model="gymtag"
+                            ref="gymtagInput">
                         <label class="label" for="gymtag">GymTag</label>
                         <!-- <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" /> -->
                     </div>
@@ -247,7 +258,8 @@ function creaCuenta(){
             <div class="email" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="text" id="email" class="input" required autocomplete="off" v-model="email" ref="emailInput">
+                        <input type="text" id="email" class="input" required autocomplete="off" v-model="email"
+                            ref="emailInput">
                         <label class="label" for="email">Email</label>
                     </div>
                 </div>
@@ -255,10 +267,13 @@ function creaCuenta(){
             <div class="password" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input :type="contraVisible ? 'text' : 'password'" id="password" class="input" required autocomplete="off" v-model="password" ref="passwordInput">
+                        <input :type="contraVisible ? 'text' : 'password'" id="password" class="input" required
+                            autocomplete="off" v-model="password" ref="passwordInput">
                         <label class="label" for="password">Contraseña</label>
                         <div class="contenedor_ojo">
-                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible"/>
+                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"
+                                :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'"
+                                @click="contraVisible = !contraVisible" />
                         </div>
                     </div>
                 </div>
@@ -266,10 +281,13 @@ function creaCuenta(){
             <div class="password2" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input :type="contraVisible2 ? 'text' : 'password'" id="password2" class="input" required autocomplete="off" v-model="password2" ref="password2Input">
+                        <input :type="contraVisible2 ? 'text' : 'password'" id="password2" class="input" required
+                            autocomplete="off" v-model="password2" ref="password2Input">
                         <label class="label" for="password2">Repetir contraseña</label>
                         <div class="contenedor_ojo">
-                            <font-awesome-icon :icon="contraVisible2 ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible2 ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible2 = !contraVisible2"/>
+                            <font-awesome-icon :icon="contraVisible2 ? 'fas fa-eye' : 'fas fa-eye-slash'"
+                                :class="contraVisible2 ? 'ojo  ojo_abierto' : 'ojo'"
+                                @click="contraVisible2 = !contraVisible2" />
                         </div>
                     </div>
                 </div>
@@ -277,7 +295,8 @@ function creaCuenta(){
             <div class="fecha_nacimiento" v-if="(!pantallaGrande && !mostrarPrimeraParte) || pantallaGrande">
                 <div class="container">
                     <div class="subcontainer">
-                        <input type="date" id="fecha_nacimiento" class="input" required autocomplete="off" v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
+                        <input type="date" id="fecha_nacimiento" class="input" required autocomplete="off"
+                            v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
                         <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label>
                         <div class="contenedor_calendario">
                             <font-awesome-icon :icon="['fas', 'calendar']" class="calendario" />
@@ -309,7 +328,7 @@ function creaCuenta(){
                 <div class="crear_texto" @click="creaCuenta"><button>Crear cuenta</button></div>
             </div>
         </div>
-    <!-- <button @click="$emit('irALogin')">Volver al Login</button> -->
+        <!-- <button @click="$emit('irALogin')">Volver al Login</button> -->
     </div>
 </template>
 <style scoped>
@@ -338,7 +357,7 @@ function creaCuenta(){
     position: relative;
 }
 
-.volver_parte_uno{
+.volver_parte_uno {
     position: absolute;
     top: 20px;
     left: 20px;
@@ -472,7 +491,8 @@ function creaCuenta(){
     min-width: 741.5px;
 }
 
-.contenedor_calendario, .contenedor_ojo {
+.contenedor_calendario,
+.contenedor_ojo {
     width: 30px;
     height: 30px;
     margin-top: 7px;
@@ -485,7 +505,8 @@ function creaCuenta(){
     /* pointer-events: none; */
 }
 
-.calendario, .ojo {
+.calendario,
+.ojo {
     color: var(--light-blue-text);
     position: relative;
     top: -7.5px;
@@ -500,11 +521,11 @@ function creaCuenta(){
     margin-top: 8.5px;
 }
 
-.ojo{
+.ojo {
     cursor: pointer;
 }
 
-.ojo_abierto{
+.ojo_abierto {
     transform: translateX(1.505px);
 }
 
@@ -539,7 +560,7 @@ function creaCuenta(){
     transition: background-color 0.5s, border 0.5s, color 0.5s;
 }
 
-.siguiente{
+.siguiente {
     margin-top: 30px;
 }
 
@@ -607,7 +628,7 @@ function creaCuenta(){
     width: 100%;
 }
 
-.mensaje_texto{
+.mensaje_texto {
     width: 80%;
 }
 
@@ -721,18 +742,20 @@ function creaCuenta(){
         cursor: pointer;
     }
 
-    .siguiente button, .crear button {
+    .siguiente button,
+    .crear button {
         height: 70px;
     }
 
-    .contenedor_calendario, .contenedor_ojo {
+    .contenedor_calendario,
+    .contenedor_ojo {
         width: 40px;
         height: 40px;
         font-size: 37px;
         padding: 14px 0;
         margin-left: -50px;
     }
-    
+
     .contenedor_ojo {
         font-size: 34px;
         margin-left: -53px;
@@ -746,7 +769,7 @@ function creaCuenta(){
     }
 }
 
-@media(max-width: 600px){
+@media(max-width: 600px) {
     .todo_register {
         padding-top: 232px;
     }
@@ -772,23 +795,24 @@ function creaCuenta(){
         margin-bottom: 35px;
     }
 
-    .gymtag{
+    .gymtag {
         margin-bottom: 20px;
     }
 
-    .contenedor_calendario, .contenedor_ojo {
+    .contenedor_calendario,
+    .contenedor_ojo {
         width: 35px;
         height: 35px;
         font-size: 30px;
         padding: 12px 0;
         margin-left: -40px;
     }
-    
-    .contenedor_ojo{
+
+    .contenedor_ojo {
         font-size: 27px;
     }
 
-    .volver_parte_uno{
+    .volver_parte_uno {
         top: 10px;
         left: 10px;
         height: 40px;
@@ -796,19 +820,19 @@ function creaCuenta(){
         font-size: 40px;
     }
 
-    .titulo{
+    .titulo {
         padding: 50px 0 30px;
     }
 
-    .contenedor_calendario{
+    .contenedor_calendario {
         pointer-events: none;
     }
 
-    .calendario{
+    .calendario {
         cursor: pointer;
     }
 
-    .aceptar{
+    .aceptar {
         width: 60%;
         margin-left: 15px;
     }
@@ -875,12 +899,13 @@ function creaCuenta(){
         align-items: center;
     }
 
-    .siguiente{
+    .siguiente {
         margin-top: 20px;
     }
 }
 
 @media(max-width: 330px) {
+
     .email .input~.label,
     .password .input~.label,
     .password2 .input~.label {

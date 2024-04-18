@@ -92,6 +92,10 @@ const nombre = ref('');
     }
     return true;
   }
+
+const urlFoto = ref("../assets/img/logo.png");
+console.log(urlFoto)
+
 </script>
 
 <template>

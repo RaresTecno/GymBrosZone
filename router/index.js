@@ -3,8 +3,7 @@ import HomeView from '../views/Home.vue'
 import ProfileView from '../views/Profile.vue'
 import NotFound from '../views/NotFound.vue'
 
-import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
-import MiCuenta from '../views/MyAccount.vue'
+// import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
 
 const router = createRouter({

@@ -9,7 +9,7 @@ import { userActive } from './clients/supabase'
 <template>
   <Header />
   <RouterView />
-  <router-link to="/account">Account</router-link>
+  <!-- <router-link to="/account">Account</router-link> -->
   <Nav v-if="userActive"/>
   <Footer />
 </template>

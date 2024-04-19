@@ -45,7 +45,7 @@ onMounted(() => {
 <template>
   <header v-if="mostrar">
     <div class="home">
-      <div class="logo">
+      <div class="logo_header">
         <div class="fondo_logo">
           <RouterLink to="/" class="RouterLink">
             <img src="../assets/img/logo.png" />
@@ -100,7 +100,7 @@ header {
   position: relative;
 }
 
-.logo img {
+.logo_header img {
   position: absolute;
   width: 69px;
   height: 69px;
@@ -189,9 +189,20 @@ h1 {
     flex-direction: column;
   }
 
-  .logo{
+  .logo_header{
     margin-top: 10px;
     margin-bottom: 5px;
+  }
+
+  .logo_header img {
+    margin: 0;
+    width: 99px;
+    height: 99px;
+  }
+
+  .fondo_logo{
+    width: 95px;
+    height: 95px;
   }
 
   #no-loged {
@@ -200,17 +211,6 @@ h1 {
 
   .btn-no-loged {
     margin: 10px;
-  }
-
-  .fondo_logo{
-    width: 95px;
-    height: 95px;
-  }
-
-  .logo img {
-    margin: 0;
-    width: 99px;
-    height: 99px;
   }
 }
 </style>

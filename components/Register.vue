@@ -211,6 +211,7 @@ function creaCuenta() {
     mensajeError.value = '';
     if (validarNombre() && validarApellidos() && validarGymtag() && validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
         //Aquí va lo del supa y la redirección a home
+        createAcount();
         console.log('supa');
         createAccount();
     } else {

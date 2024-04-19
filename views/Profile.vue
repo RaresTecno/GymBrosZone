@@ -2,10 +2,15 @@
 import { ref } from 'vue';
 const gymTag = ref("GymTag");
 const sobreMi = ref("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
+const editing = ref(false);
+
+function edit() {
+    editing.value = true;
+}
 </script>
 
 <template>
-    <div id="perfil">
+    <div id="perfil" v-if="!editing">
         <div id="info">
             <div id="info-top">
                 <div id="foto-gymTag">
@@ -20,7 +25,8 @@ const sobreMi = ref("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
                 <div id="sobre-mi">
                     <h2>Nombre y Apellidos</h2>
                     <p>{{ sobreMi }}</p>
-                    <button>Editar perfil</button>
+                    <router-view></router-view>
+                    
                 </div>
 
             </div>

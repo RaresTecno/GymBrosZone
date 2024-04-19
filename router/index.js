@@ -2,9 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import ProfileView from '../views/Profile.vue'
 import NotFound from '../views/NotFound.vue'
+import Post from '../views/Post.vue';
 
 import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
-import MiCuenta from '../views/MyAccount.vue'
+import MiCuenta from '../views/Account.vue'
 
 
 const router = createRouter({
@@ -45,6 +46,11 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView
+    },
+    {
+      path: '/post',
+      name: 'post',
+      component: Post
     },
     // Ruta comodín para manejar rutas no encontradas
     {

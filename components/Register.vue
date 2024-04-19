@@ -8,11 +8,11 @@ async function createAccount() {
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
-        options: {
-            data: { 
-                gymtag: gymtag.value
-            }
-        }
+        // options: {
+        //     // data: { 
+        //     //     'gymtag': gymtag.value
+        //     // }
+        // }
     })
     if (error) {
         console.log(error);

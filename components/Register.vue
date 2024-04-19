@@ -8,11 +8,11 @@ async function createAccount() {
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
-        options: {
-            data: { 
-                'gymtag': gymtag.value
-            }
-        }
+        // options: {
+        //     // data: { 
+        //     //     'gymtag': gymtag.value
+        //     // }
+        // }
     })
     if (error) {
         console.log(error);
@@ -211,7 +211,6 @@ function creaCuenta() {
     mensajeError.value = '';
     if (validarNombre() && validarApellidos() && validarGymtag() && validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
         //Aquí va lo del supa y la redirección a home
-        createAcount();
         console.log('supa');
         createAccount();
     } else {

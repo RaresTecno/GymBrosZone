@@ -102,7 +102,7 @@ function validarNombre() {
 
 //Comprobamos los apellidos ingresados.
 function validarApellidos() {
-    if (/^[a-zñáéíóú\s-]{4,24}$/i.test(apellidos.value)) {
+    if (/^[a-zñáéíóú\s-]{3,24}$/i.test(apellidos.value)) {
         return true;
     }
     mensaje('Los apellidos deben contener entre 4 y 24 letras.', apellidos, apellidosInput);

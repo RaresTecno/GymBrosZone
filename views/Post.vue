@@ -67,7 +67,9 @@
   flex-direction: column;
   text-align: center;
   margin-bottom: 3vh;
+  height: fit-content;
   width: 100vw;
+  padding-top: 145;
 }
 
 .form_area {
@@ -76,8 +78,9 @@
   align-items: center;
   flex-direction: column;
   background-color: var(--dark-blue);
-  height: auto;
-  width: auto;
+  height: fit-content;
+  width: 50%;
+  max-width: 1050px;
   border: 3px solid var(--alt-black);
   border-radius: 20px;
   box-shadow: 3px 4px 0px 1px black;
@@ -85,8 +88,8 @@
 
 .title {
   color: aliceblue;
-  font-weight: 900;
-  font-size: 1.5em;
+  font-weight: 1200;
+  font-size: 2.3em;
   margin-top: 20px;
 }
 
@@ -99,17 +102,23 @@
   display: flex;
   flex-direction: column;
   align-items: baseline;
-  margin: 10px;
+  margin: 1.75vw;
 }
 
 .form_style {
   outline: none;
   border: 2px solid #264143;
   box-shadow: 3px 4px 0px 1px black;
-  width: 290px;
+  height: 2.3vw;
+  width: 35.5vw;
   padding: 12px 10px;
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 18px;
+  cursor: text;
+}
+
+.form_group [type="file"]{
+  height: 2vw;
 }
 
 .form_style:focus,
@@ -120,10 +129,10 @@
 
 .card {
   position: relative;
-  width: 250px;
-  height: 200px;
-  margin-top: 10%;
-  margin-left: 10%;
+  width: 400px;
+  height: 300px;
+  margin-top: 3.5vh;
+  margin-left: 11.5vw;
   background-color: #f2f2f2;
   border-radius: 10px;
   display: flex;
@@ -148,7 +157,7 @@
 
 .card__content {
   position: absolute;
-  top: 0;
+  top: 40px;
   left: 0;
   width: 100%;
   height: 100%;
@@ -205,6 +214,8 @@ button {
   text-decoration: none;
   font-family: inherit;
   font-size: 15px;
+  width: 12vw;
+  max-width: 175px;
 }
 
 button.publicar {
@@ -360,11 +371,59 @@ button.noselect:active .icon svg {
   }
 }
 
-@media only screen and (min-width: 1440px) {
-  .todo-publicar{
-    width: 90vw;
-    margin-left: auto;
-    margin-right: auto;
+@media only screen and (max-width: 1440px) {
+  .container {
+    margin-bottom: 3vh;
+    height: 100%;
+    width: 100%;
+  }
+
+  .form_area{
+    height: auto;
+    width: auto;
+  }
+
+  .title {
+    font-weight: 900;
+    font-size: 1.5em;
+  }
+  
+  .form_group {
+    margin: 10px;
+  }
+
+  .form_style {
+    height: auto;
+    width: 290px;
+    padding: 12px 10px;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+
+  .form_group [type="file"]{
+    height: 5vw;
+  }
+
+  .card {
+    height: 200px;
+    width: 250px;
+    margin-top: 10%;
+    margin-left: 10%;
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .card svg {
+    width: 48px;
+  }
+
+  .card__content {
+    margin-top: 0;
+    top: 0;
+  }
+
+  .sub_title {
+    font-weight: 600;
+    margin: 5px 0;
   }
 }
 

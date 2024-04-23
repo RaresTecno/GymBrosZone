@@ -1,4 +1,29 @@
-<script setup></script>
+<script setup>
+import { ref, watch } from 'vue';
+
+const tema = ref('');
+const contenido = ref('');
+const validarTema = ref(false);
+const validarContenido = ref(false);
+
+//Comprobamos validación de input y textarea sólo si hay cambios o se ha escrito
+watch(tema, (newValue) => {
+  validarTema.value = /^[a-zA-Z\s]+$/.test(newValue);
+});
+
+watch(contenido, (newValue) => {
+  validarContenido.value = /^[\s\S]*\S[\s\S]*$/.test(newValue);
+});
+
+  if (tema.value && !validarTema) {
+    console.log('La temática debe contener solo letras y espacios');
+  }
+
+  if (contenido.value && !validarContenido) {
+    console.log('El contenido no puede estar vacío');
+  }
+</script>
+
 
 <template>
   <div class="todo-publicar">
@@ -7,7 +32,7 @@
   <div class="container">
     <div class="form_area">
       <p class="title">Publicar</p>
-      <form action="">
+      <form action="#" id="form-post">
         <div class="card">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path
@@ -25,20 +50,22 @@
 
         <div class="form_group">
           <label class="sub_title" for="foto">Elegir Foto</label>
-          <input placeholder="Elige foto" class="form_style" type="file" />
+          <input placeholder="Elige foto" class="form_style" type="file"/>
         </div>
         <div class="form_group">
           <label class="sub_title" for="tema">Temática</label>
           <input
+            v-model="tema"
             placeholder="Temática (opcional)"
             id="tema"
             class="form_style"
-            type="email"
+            type="text"
           />
         </div>
         <div class="form_group">
           <label class="sub_title" for="contenido">Contenido</label>
           <textarea
+            v-model="contenido"
             name="contenido"
             id="contenido"
             class="form_style"
@@ -47,8 +74,12 @@
             placeholder="Escribe aquí el contenido..."
           ></textarea>
         </div>
+        <div class="form_group error_container">
+          <span v-if="tema && !validarTema" class="error">La temática debe contener solo letras y espacios</span>
+          <span v-if="contenido && !validarContenido" class="error">El contenido no puede estar vacío</span>
+        </div>
         <div>
-          <button class="publicar">Publicar</button>
+          <button class="publicar" :disabled="!validarTema || !validarContenido">Publicar</button>
         </div>
       </form>
     </div>
@@ -70,6 +101,7 @@
   height: fit-content;
   width: 100vw;
   padding-top: 145;
+  overflow: hidden;
 }
 
 .form_area {
@@ -84,6 +116,7 @@
   border: 3px solid var(--alt-black);
   border-radius: 20px;
   box-shadow: 3px 4px 0px 1px black;
+  overflow: hidden;
 }
 
 .title {
@@ -115,10 +148,15 @@
   border-radius: 4px;
   font-size: 18px;
   cursor: text;
+  overflow: hidden;
 }
 
 .form_group [type="file"]{
   height: 2vw;
+}
+
+#contenido{
+  height: 13vw;
 }
 
 .form_style:focus,
@@ -204,6 +242,18 @@ input::placeholder, textarea::placeholder{
   color: rgba(240, 248, 255, 0.726);
 }
 
+.error_container{
+  margin: 6.5%;
+  max-width: 35.5vw;
+  overflow: hidden;
+}
+
+.error{
+  color: aliceblue;
+  overflow: hidden;
+  display: inline-block;
+}
+
 button {
   position: relative;
   display: inline-block;
@@ -237,6 +287,10 @@ button.publicar {
   margin-left: auto;
   margin-right: auto;
   display: block;
+}
+
+button.publicar:disabled{
+  background-color: rgba(61, 57, 57, 0.295);
 }
 
 button.publicar::before {
@@ -424,6 +478,14 @@ button.noselect:active .icon svg {
   .sub_title {
     font-weight: 600;
     margin: 5px 0;
+  }
+
+  #contenido{
+    height: inherit;
+  }
+
+  .error_container{
+    max-width: 290px;
   }
 }
 

@@ -1,6 +1,7 @@
 <script setup>
 import Publicacion from '../components/Publicacion.vue'
 import { userActive } from '../clients/supabase'
+import { usandoMovil } from '../main'
 
 
 </script>
@@ -20,10 +21,10 @@ import { userActive } from '../clients/supabase'
       </div>
     </div>
     <button class="button-login_register">
-      <RouterLink to="/log/login"><a href=""><i>Login</i></a></RouterLink>
+      <RouterLink to="/login"><a href=""><i>Login</i></a></RouterLink>
     </button>
     <button class="button-login_register">
-      <RouterLink to="/log/register"><a href=""><i>Registro</i></a></RouterLink>
+      <RouterLink to="/register"><a href=""><i>Registro</i></a></RouterLink>
     </button>
     <div class="container_services"> <!--  v-if="no-logged" -->
       <div class="services">
@@ -36,7 +37,7 @@ import { userActive } from '../clients/supabase'
       </div>
     </div>
   </template>
-    <div v-if="userActive" id="reja">
+    <div v-if="userActive" id="vista">
      <template v-for="n in 50" :key="n">
         <Publicacion />
       </template>
@@ -45,12 +46,12 @@ import { userActive } from '../clients/supabase'
 </template>
 
 <style scoped>
+
 main {
   width: fit-content;
-  padding-top: 80px ;
-  margin: auto;
+  margin: 80px auto 0;
 }
-#reja {
+.vista {
   width: fit-content;
   display: grid;
   grid-template-columns: repeat(3, 1fr);

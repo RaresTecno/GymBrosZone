@@ -1,27 +1,48 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase } from '../clients/supabase';
+import { supabase, userState } from '../clients/supabase';
+
 //https://www.youtube.com/watch?v=efNX5x7O0cY
 
 async function createAccount() {
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
-        // options: {
-        //     // data: { 
-        //     //     'gymtag': gymtag.value
-        //     // }
-        // }
     })
     if (error) {
         console.log(error);
     } else {
         console.log(data);
     }
+    return data;
 }
 
+async function newUser(dataCreateAccount) {
+    const { data, error } = await supabase
+        .from('Usuarios')
+        .insert([
+            { 
+                Id: dataCreateAccount.id,
+                GymTag: gymtag.value,
+                Email: dataCreateAccount.email, 
+                Password: dataCreateAccount.encrypted_password, 
+                FechaNacimiento: fecha_nacimiento.value, 
+                FechaCreacion: dataCreateAccount.created_at,
+                FotoPerfil: '',
+                Logued: false,
+                Nombre: nombre.value,
+                Apellidos: apellidos.value
+            }
+        ]);
 
+        if (error) {
+            console.error('Error inserting data:', error);
+        } else {
+            console.log('Inserted data:', data);
+        }
+        userState();
+}
 
 
 
@@ -212,7 +233,7 @@ function creaCuenta() {
     if (validarNombre() && validarApellidos() && validarGymtag() && validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
         //Aquí va lo del supa y la redirección a home
         console.log('supa');
-        createAccount();
+        newUser(createAccount());
     } else {
         return;
     }

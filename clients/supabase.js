@@ -16,7 +16,7 @@ export async function userData(){
 
 export async function userState(){
     currentUser = await supabase.auth.getSession();
-    console.log(currentUser)
+    // console.log(currentUser)
     if (currentUser.data.session == null) {
         console.log("null")
         userActive.value = false;

@@ -9,30 +9,32 @@ async function createAccount() {
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
-    })
+    });
     if (error) {
         console.log(error);
-    } else {
-        console.log(data);
+        return null;
+    }else{
+        console.log(data.user);
+        newUser(data.user);
+        return data.user;
     }
-    return data;
 }
 
-async function newUser(dataCreateAccount) {
+async function newUser(user) {
+    console.log(user);
     const { data, error } = await supabase
         .from('Usuarios')
         .insert([
             { 
-                Id: dataCreateAccount.id,
+                Id: user.id,
                 GymTag: gymtag.value,
-                Email: dataCreateAccount.email, 
-                Password: dataCreateAccount.encrypted_password, 
+                Email: user.email,
+                Password: user.encrypted_password, 
                 FechaNacimiento: fecha_nacimiento.value, 
-                FechaCreacion: dataCreateAccount.created_at,
                 FotoPerfil: '',
-                Logued: false,
+                Logged: false,
                 Nombre: nombre.value,
-                Apellidos: apellidos.value
+                Apellidos: apellidos.value,
             }
         ]);
 
@@ -233,7 +235,7 @@ function creaCuenta() {
     if (validarNombre() && validarApellidos() && validarGymtag() && validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
         //Aquí va lo del supa y la redirección a home
         console.log('supa');
-        newUser(createAccount());
+        createAccount();
     } else {
         return;
     }

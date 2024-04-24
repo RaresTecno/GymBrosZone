@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { usandoMovil } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 
@@ -15,6 +15,17 @@ const editing = ref(false);
 const seguidores = ref(0);
 const seguidos = ref(0);
 const publicaciones = ref(0);
+
+const vista = ref(sessionStorage.getItem("vista") || "Publicaciones");
+function cambiarVista(tipo) {
+  vista.value = tipo;
+  sessionStorage.setItem("vista", tipo); // Guardar la vista seleccionada en el almacenamiento local
+}
+onMounted(() => {
+  if (!sessionStorage.getItem("vista")) {
+    sessionStorage.setItem("vista", "Publicaciones"); // Establecer la vista predeterminada si no hay una vista almacenada
+  }
+});
 </script>
 
 <template>
@@ -51,26 +62,28 @@ const publicaciones = ref(0);
     </div>
     <div id="contenido">
       <div id="botones">
-        <button>Publicaciones</button>
-        <button>Tablas</button>
-        <button>Estadisticas</button>
+        <button @click="cambiarVista('Publicaciones')">Publicaciones</button>
+        <button @click="cambiarVista('Tablas')">Tablas</button>
+        <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
       </div>
-      <div id="publicaciones" class="vista">
+      <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="n in 50" :key="n">
           <Publicacion />
         </template>
       </div>
-      <div id="tablas" class="vista"></div>
-      <div id="estadisticas" class="vista"></div>
+      <div v-if="vista == 'Tablas'" id="tablas" class="vista"></div>
+      <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
+        aaaa
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-#arriba{
-    position: fixed;
-    top:40px;
-    right: 20px;
+#arriba {
+  position: fixed;
+  top: 40px;
+  right: 20px;
 }
 .perfil {
   margin-top: 80px;
@@ -79,8 +92,8 @@ const publicaciones = ref(0);
   flex-direction: column;
   align-items: center;
   margin-left: 60px;
+  overflow-y: visible;
 }
-
 #info {
   background-color: green;
   min-height: fit-content;

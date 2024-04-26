@@ -5,6 +5,7 @@ import Footer from './components/Footer.vue'
 import './assets/index.css'
 import { userActive } from './clients/supabase'
 import { usandoMovil } from './main'
+
 </script>
 
 <template>

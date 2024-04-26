@@ -9,49 +9,24 @@ async function createAccount() {
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
+        options: {
+            data: { 
+                'gymtag': gymtag.value,
+                'fechaNacimiento': fecha_nacimiento.value,
+                'fotoPerfil': '/predeterminada.png',
+                'nombre': nombre.value,
+                'apellidos': apellidos.value,
+                'privacidad': true
+            }
+        }
     });
     if (error) {
         console.log(error);
         return null;
     }else{
-        console.log(data.user);
-        newUser(data.user);
         return data.user;
     }
 }
-
-async function newUser(user) {
-    console.log(user);
-    const { data, error } = await supabase
-        .from('Usuarios')
-        .insert([
-            { 
-                Id: user.id,
-                GymTag: gymtag.value,
-                Email: user.email,
-                Password: user.encrypted_password, 
-                FechaNacimiento: fecha_nacimiento.value, 
-                FotoPerfil: '',
-                Logged: false,
-                Nombre: nombre.value,
-                Apellidos: apellidos.value,
-            }
-        ]);
-
-        if (error) {
-            console.error('Error inserting data:', error);
-        } else {
-            console.log('Inserted data:', data);
-        }
-        userState();
-}
-
-
-
-
-
-
-
 
 const nombre = ref('');
 const apellidos = ref('');

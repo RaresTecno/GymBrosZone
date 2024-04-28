@@ -109,22 +109,22 @@ console.log(urlFoto)
   <div class="container_formulario" v-if="!userActive">
     <form action="Profile.vue" method="POST" class="formulario" novalidation @submit="validateForm">
       <div class="column">
-        <label for="nombre">Nombre: &nbsp &nbsp</label>
+        <label for="nombre">Nombre:</label>
         <input v-model="nombre" class="inputs" type="text" name="nombre" placeholder="Escriba su nombre" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
-        <label for="edad">Fecha de Nacimiento: &nbsp &nbsp</label>
+        <label for="edad">Fecha de Nacimiento:</label>
         <input type="date" class="inputs" name="edad" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
-        <label for="peso">Peso: &nbsp &nbsp</label>
+        <label for="peso">Peso:</label>
         <input v-model="peso" type="number" class="inputs" name="peso" placeholder="Escriba su peso" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
-        <label for="localidad">Localidad: &nbsp &nbsp</label>
+        <label for="localidad">Localidad:</label>
         <input
           v-model="localidad"
           type="text"
@@ -138,7 +138,7 @@ console.log(urlFoto)
         </div>
       </div>
       <div class="column">
-        <label for="apellidos">Apellidos: &nbsp &nbsp</label>
+        <label for="apellidos">Apellidos:</label>
         <input
           v-model="apellidos"
           class="inputs"
@@ -150,17 +150,17 @@ console.log(urlFoto)
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
-        <label for="sexo">Sexo: &nbsp &nbsp</label>
+        <label for="sexo">Sexo:</label>
         <input v-model="sexo" type="text" class="inputs" name="sexo" placeholder="Escriba su sexo" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
-        <label for="altura">Altura: &nbsp &nbsp</label>
+        <label for="altura">Altura:</label>
         <input v-model="altura" ype="text" class="inputs" name="altura" placeholder="Escriba su altura" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
-        <label for="gym">Gym: &nbsp &nbsp</label>
+        <label for="gym">Gym:</label>
         <input type="text" name="gym" placeholder="¿Dónde entrenas?" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
@@ -242,7 +242,6 @@ console.log(urlFoto)
   font-variation-settings: "width" 100;
   padding: 5px;
   border-radius: 2px;
-  text-shadow: 0 0 1px rgba(255, 255, 255, 0.349), 0 0 20px white;
   margin-left: auto;
   margin-right: auto;
 }

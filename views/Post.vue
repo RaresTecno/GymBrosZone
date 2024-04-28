@@ -28,7 +28,7 @@ watch(contenido, (newValue) => {
 <template>
   <div class="todo-publicar">
     <router-link to="./Acccount.vue">Account</router-link>
-    <button class="noselect"><span class="text">Account</span><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"></path></svg></span></button>
+    <button class="close_account"><span class="text">Account</span><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"></path></svg></span></button>
   <div class="container">
     <div class="form_area">
       <p class="title">Publicar</p>
@@ -348,7 +348,7 @@ button:hover a {
   color: black;
 }
 
-button.noselect {
+button.close_account {
  margin-top: 12vh;
  margin-left: 32.5vw;
  width: 150px;
@@ -363,17 +363,17 @@ button.noselect {
  background: var(--dark-blue);
 }
 
-button.noselect, button.noselect span {
+button.close_account, button.close_account span {
  transition: 200ms;
 }
 
-button.noselect .text {
+button.close_account .text {
  transform: translateX(35px);
  color: aliceblue;
  font-weight: bold;
 }
 
-button.noselect .icon {
+button.close_account .icon {
  position: absolute;
  border-left: 1px solid aliceblue;
  transform: translateX(110px);
@@ -384,30 +384,30 @@ button.noselect .icon {
  justify-content: center;
 }
 
-button.noselect svg {
+button.close_account svg {
  width: 15px;
  fill: #eee;
 }
 
-button.noselect:hover {
+button.close_account:hover {
  background: var(--alt-black);
 }
 
-button.noselect:hover .text {
+button.close_account:hover .text {
  color: transparent;
 }
 
-button.noselect:hover .icon {
+button.close_account:hover .icon {
  width: 150px;
  border-left: none;
  transform: translateX(0);
 }
 
-button.noselect:focus {
+button.close_account:focus {
  outline: none;
 }
 
-button.noselect:active .icon svg {
+button.close_account:active .icon svg {
  transform: scale(0.8);
 }
 
@@ -420,7 +420,7 @@ button.noselect:active .icon svg {
     margin: 5%;
   }
 
-  button.noselect{
+  button.close_account{
     margin-left: 18vw;
   }
 }

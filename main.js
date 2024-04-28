@@ -6,6 +6,9 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { userState } from "./clients/supabase";
 
+export const disponible = ref();
+disponible.value = true;
+
 const navegador = ref(navigator.userAgent);
 export const usandoMovil = ref();
 if (

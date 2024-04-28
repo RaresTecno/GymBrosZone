@@ -85,6 +85,7 @@ onMounted(() => {
   top: 40px;
   right: 20px;
 }
+
 .perfil {
   margin-top: 80px;
   background-color: rgb(179, 255, 0);
@@ -94,16 +95,19 @@ onMounted(() => {
   margin-left: 60px;
   overflow-y: visible;
 }
+
 #info {
   background-color: green;
   min-height: fit-content;
   width: 70%;
 }
+
 #info-top {
   display: flex;
   justify-content: center;
   margin: 10px;
 }
+
 #foto-gymTag {
   display: flex;
   flex-direction: column;
@@ -112,6 +116,7 @@ onMounted(() => {
   margin: 10px;
   width: 40%;
 }
+
 #foto {
   background-color: blue;
   min-width: 150px;
@@ -123,6 +128,7 @@ onMounted(() => {
   border: 2px solid black;
   border-radius: 50%;
 }
+
 #sobre-mi {
   position: relative;
   margin-top: 25px;
@@ -131,62 +137,79 @@ onMounted(() => {
   height: fit-content;
   padding-bottom: 20px;
 }
+
 #sobre-mi p {
   margin-top: 10px;
   margin-bottom: 20px;
-  word-wrap: break-word; /* Para navegadores antiguos */
+  word-wrap: break-word;
+  /* Para navegadores antiguos */
   overflow-wrap: break-word;
-  max-height: calc(1.2em * 6); /* Aproximadamente 7 líneas */
+  max-height: calc(1.2em * 6);
+  /* Aproximadamente 7 líneas */
   overflow: hidden;
 }
+
 #sobre-mi button {
   position: absolute;
   right: 0;
   margin: 0;
 }
+
 #gymTag {
   margin-top: 10px;
 }
+
 #info-bot {
   display: flex;
   justify-content: space-evenly;
   text-align: center;
   margin-bottom: 20px;
 }
+
 #contenido {
   width: 70%;
 }
+
 #botones {
   width: 100%;
   position: sticky;
 }
+
 #botones button {
   width: 33.3333%;
   padding: 10px;
 }
+
 .vista {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  justify-items: center; /* Centra el contenido horizontalmente */
-  justify-content: center; /* Centra el contenido verticalmente */
+  justify-items: center;
+  /* Centra el contenido horizontalmente */
+  justify-content: center;
+  /* Centra el contenido verticalmente */
 }
+
 @media (max-width: 875px) {
   .perfil {
     margin-top: 94px;
   }
+
   #info {
     width: 100%;
   }
+
   #contenido {
     width: 100%;
   }
 }
+
 @media (max-width: 600px) {
   .perfil {
     margin-top: 168px;
   }
 }
+
 .usandoMovil {
   margin: 0;
 }

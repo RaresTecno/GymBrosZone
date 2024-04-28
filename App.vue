@@ -4,7 +4,7 @@ import Nav from './components/BarraLateral.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
 import { userActive } from './clients/supabase'
-import { usandoMovil } from './main'
+import { usandoMovil, disponible } from './main'
 
 </script>
 
@@ -12,7 +12,7 @@ import { usandoMovil } from './main'
   <Header v-if="!usandoMovil" />
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
-  <Nav v-if="userActive && !usandoMovil"/>
+  <Nav v-if="userActive && !usandoMovil && disponible"/>
   <!-- <Footer /> -->
 </template>
 

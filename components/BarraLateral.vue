@@ -99,7 +99,7 @@ onMounted(() => {
     </div>
     <div>
       <RouterLink to="/Profile" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'user']" />
+        <font-awesome-icon class="icon usuario" :icon="['fas', 'user']" />
         <h2>Perfil</h2>
       </RouterLink>
     </div>
@@ -123,7 +123,7 @@ onMounted(() => {
     </div>
     <div>
       <RouterLink to="/Keep" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'bookmark']" />
+        <font-awesome-icon class="icon guardado" :icon="['fas', 'bookmark']" />
         <h2>Guardados</h2>
       </RouterLink>
     </div>
@@ -153,20 +153,38 @@ nav {
   height: 100vh;
   position: fixed;
   top: 80px;
+  transition: width 0.4s;
 }
 
 h2 {
-  display: none;
   margin-left: 10px;
-  color: var(--light-blue-text);
+  width: 120px;
+  display: none;
+}
+
+nav h2{
+  color: transparent;
+  transition: color 0.4s;
+  /* display: none; */
 }
 
 nav:hover {
-  width: fit-content;
+  width: 190px;
 }
 
 nav:hover h2 {
-  display: inline;
+  /* display: inline; */
+  color: var(--light-blue-text);
+}
+
+nav:hover .usuario {
+  transform: translateX(2.25px);
+  margin-right: 5px;
+}
+
+nav:hover .guardado {
+  transform: translateX(4.5px);
+  margin-right: 9px;
 }
 
 div .RouterLink {
@@ -176,8 +194,13 @@ div .RouterLink {
   cursor: pointer;
 }
 
+nav>div{
+  width: 37px;
+  text-align: right;
+}
+
 .icon {
-  color:var(--light-blue-text);
+  color: var(--light-blue-text);
   width: 36px;
   height: 36px;
 }

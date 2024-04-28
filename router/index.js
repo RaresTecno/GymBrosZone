@@ -46,6 +46,11 @@ const router = createRouter({
       component: () => import("@/components/Tabla.vue"),
     },
     {
+      path: "/waiting-verification",
+      name: "waiting-verification",
+      component: () => import("@/views/Verification.vue"),
+    },
+    {
       path: "/profile",
       name: "profile",
       component: ProfileView,

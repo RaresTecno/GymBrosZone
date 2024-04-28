@@ -5,6 +5,7 @@ const tema = ref('');
 const contenido = ref('');
 const validarTema = ref(false);
 const validarContenido = ref(false);
+const maxLength = 500; // Máximo número de caracteres permitidos
 
 //Comprobamos validación de input y textarea sólo si hay cambios o se ha escrito
 watch(tema, (newValue) => {
@@ -22,6 +23,20 @@ watch(contenido, (newValue) => {
   if (contenido.value && !validarContenido) {
     console.log('El contenido no puede estar vacío');
   }
+
+function updateCharacterCount() {
+  const caracteresEscritos = contenido.value.length;
+  caracteresRestantes.value = maxLength - caracteresEscritos;
+}
+
+const intentoPublicar = ref(false);
+
+function handleClickPublicar() {
+  intentoPublicar.value = true;
+}
+
+const caracteresRestantes = ref(maxLength);
+updateCharacterCount();
 </script>
 
 
@@ -72,14 +87,16 @@ watch(contenido, (newValue) => {
             cols="30"
             rows="10"
             placeholder="Escribe aquí el contenido..."
+            @input="updateCharacterCount"
           ></textarea>
         </div>
         <div class="form_group error_container">
-          <span v-if="tema && !validarTema" class="error">La temática debe contener solo letras y espacios</span>
-          <span v-if="contenido && !validarContenido" class="error">El contenido no puede estar vacío</span>
+          <span v-if="tema && !validarTema.value" class="error">La temática debe contener solo letras y espacios</span>
+          <span v-if="contenido!='' && !validarContenido" class="error">El contenido no puede estar vacío</span>
+          <span v-if="contenido" class="character-count">Caracteres restantes: {{ caracteresRestantes }}</span>
         </div>
         <div>
-          <button class="publicar" :disabled="!validarTema || !validarContenido">Publicar</button>
+          <button class="publicar" :disabled="!validarTema || !validarContenido" @click="handleClickPublicar">Publicar</button>
         </div>
       </form>
     </div>
@@ -409,6 +426,10 @@ button.close_account:focus {
 
 button.close_account:active .icon svg {
  transform: scale(0.8);
+}
+
+.character-count{
+  color: aliceblue;
 }
 
 @media only screen and (max-width: 875px) and (max-height: 1098px) {

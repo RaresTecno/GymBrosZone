@@ -1,34 +1,32 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase } from '../clients/supabase';
+import { supabase, userState } from '../clients/supabase';
+
 //https://www.youtube.com/watch?v=efNX5x7O0cY
 
 async function createAccount() {
     const { data, error } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
-        // options: {
-        //     // data: { 
-        //     //     'gymtag': gymtag.value
-        //     // }
-        // }
-    })
+        options: {
+            data: {
+                'gymtag': gymtag.value,
+                'fechanacimiento': fecha_nacimiento.value,
+                'fotoperfil': '/predeterminada.png',
+                'nombre': nombre.value,
+                'apellidos': apellidos.value,
+                'privacidad': 'publica'
+            }
+        }
+    });
     if (error) {
         console.log(error);
+        return null;
     } else {
-        console.log(data);
+        window.location.href = "/waiting-verification";
     }
 }
-
-
-
-
-
-
-
-
-
 
 const nombre = ref('');
 const apellidos = ref('');
@@ -116,41 +114,65 @@ function validarApellidos() {
 }
 
 //Comprobamos el GymTag ingresado.
-function validarGymtag() {
+async function validarGymtag() {
     const gymtagMin = gymtag.value.toLowerCase();
     gymtag.value = gymtagMin;
     //Comprobamos que el tamaño del GymTag sea el deseado.
-    if (gymtagMin.length >= 3 && gymtagMin.length <= 14) {
-        //Comprobamos que los caracteres ingresados sean válidos.
-        if (/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
-            //Comprobamos si el GymTag está disponible.
-            let disponible = true;
+    if (gymtagMin.length < 3 || gymtagMin.length > 14) {
+        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtag, gymtagInput);
+        return false;
+    }
+    //Comprobamos que los caracteres ingresados sean válidos.
+    if (!/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
+        mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtag, gymtagInput);
+        return false;
+    }
+    //Comprobamos si el GymTag está disponible.
+    try {
+        const { data: usuarios, error } = await supabase
+            .from('usuarios')
+            .select('gymtag')
+            .eq('gymtag', gymtagMin);
 
-            if (disponible) {
-                return true;
-
-
-            } else {
-                mensaje('El GymTag ingresado ya está en uso.', gymtag, gymtagInput);
-                return false;
-            }
-        } else {
-            mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtag, gymtagInput);
+        if (error) throw error;
+        //El gymtag estará en uso si usuarios contiene algún elemento.
+        if (usuarios.length > 0) {
+            mensaje('El GymTag ingresado ya está en uso.', gymtag, gymtagInput);
             return false;
         }
-    } else {
-        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtag, gymtagInput);
+        //GymTag disponible.
+        return true;
+    } catch (error) {
+        mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtag, gymtagInput);
         return false;
     }
 }
 
 //Comprobamos si el email ingresado tiene formato de email.
-function validarEmail() {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        return true;
+async function validarEmail() {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+        mensaje('El email ingresado no es válido.', email, emailInput);
+        return false;
     }
-    mensaje('El email ingresado no es válido.', email, emailInput);
-    return false;
+     //Comprobamos si el email está disponible.
+     try {
+        const { data: usuarios, error } = await supabase
+            .from('usuarios')
+            .select('email')
+            .eq('email', email.value);
+
+        if (error) throw error;
+        //El email estará en uso si usuarios contiene algún elemento.
+        if (usuarios.length > 0) {
+            mensaje('El Email ingresado ya está en uso.', email, emailInput);
+            return false;
+        }
+        //Email disponible.
+        return true;
+    } catch (error) {
+        mensaje('Hubo un error al verificar el Email. Por favor, inténtalo de nuevo.', email, emailInput);
+        return false;
+    }
 }
 
 //Comprobamos las contraseñas ingresadas.
@@ -196,28 +218,28 @@ function validarAceptar() {
 }
 
 //Llamamos a las funciones que validan los inputs en la primera parte del formulario (pantallas pequeñas).
-function siguiente() {
+async function siguiente() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
-    if (validarNombre() && validarApellidos() && validarGymtag()) {
+    if (validarNombre() && validarApellidos() && await validarGymtag()) {
         segundaParte();
     }
     return;
 }
 
 //Llamamos a las funciones que validan los inputs de todo el formulario (cualquier pantalla.
-function creaCuenta() {
+async function creaCuenta() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
-    if (validarNombre() && validarApellidos() && validarGymtag() && validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
+    if (validarNombre() && validarApellidos() && await validarGymtag() && await validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
         //Aquí va lo del supa y la redirección a home
         console.log('supa');
         createAccount();
+        console.log('supa fin');
     } else {
         return;
     }
 }
-
 </script>
 <template>
     <div class="todo_register">

@@ -23,17 +23,32 @@ const router = createRouter({
     {
       path: "/login",
       name: "login",
-      component: () => import("../components/Login.vue"),
+      component: () => import("@/components/Login.vue"),
     },
     {
       path: "/register",
       name: "register",
-      component: () => import("../components/Register.vue"),
+      component: () => import("@/components/Register.vue"),
     },
     {
       path: "/account",
       name: "account",
-      component: () => import("../views/Account.vue"),
+      component: () => import("@/views/Account.vue"),
+    },
+    {
+      path: "/search",
+      name: "search",
+      component: () => import("@/views/Search.vue"),
+    },
+    {
+      path: "/tabla",
+      name: "tabla",
+      component: () => import("@/components/Tabla.vue"),
+    },
+    {
+      path: "/waiting-verification",
+      name: "waiting-verification",
+      component: () => import("@/views/Verification.vue"),
     },
     {
       path: "/profile",
@@ -43,7 +58,7 @@ const router = createRouter({
         {
           path: "editProfile",
           name: "editProfile",
-          component: () => import("../components/EditProfile.vue"),
+          component: () => import("@/components/EditProfile.vue"),
         },
       ],
     },

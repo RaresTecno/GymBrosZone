@@ -43,10 +43,10 @@ const cerrar = () => {
 <style scoped>
 #publicacion {
     display: flex;
-    height: 200px;
-    width: 200px;
+    height: 100%;
+    width: 100%;
+    aspect-ratio: 1;
     position: relative;
-    margin: 10px;
 }
 
 #inicial {

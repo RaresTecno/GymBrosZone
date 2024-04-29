@@ -1,34 +1,35 @@
 <script setup>
-import { disponible } from '../main'
-disponible.value = false;
-</script>
+import { onMounted } from 'vue';
 
+onMounted(() => {
+    setTimeout(() => {
+        window.location.href = "/login";
+    }, 20000); 
+});
+</script>
 <template>
-    <div class="todo_no_encontrado">
-        <div class="no_encontrado">
-            <div class="titulo_no_encontrado">
-                <h1>Upss... Página no encontrada</h1>
-                <img src="../assets/img/mancuerna_rota.png" alt="mancuena_rota">
+    <div class="todo_waiting">
+        <div class="waiting">
+            <div class="titulo_waiting">
+                <h1>Revisa tu bandeja de entrada </h1>
+                <img src="../assets/img/email.png" alt="email">
             </div>
-            <div class="volver_no_encontrado">
+            <div class="login">
                 <div class="mensaje">
-                    Contacta con nosotros si crees que se trata de un error.
+                    Tu cuenta está pendiente de verificación
                 </div>
                 <div class="pulsa">
-                    <RouterLink to="/" class="RouterLink">
-                        <u>Pulsa para volver</u>
-                    </RouterLink>
+                    <a href="https://mail.google.com/mail/u/0/#inbox" target="blank">Ir a Gmail</a>
                 </div>
-                <div class="mancuerna_rota_abajo">
-                    <img src="../assets/img/mancuerna_rota.png" alt="mancuena_rota" class="mancuerna_rota">
-                </div>
+            </div>
+            <div class="email_abajo">
+                <img src="../assets/img/email.png" alt="email" class="email">
             </div>
         </div>
     </div>
 </template>
-
 <style scoped>
-.todo_no_encontrado {
+.todo_waiting {
     width: 100%;
     height: 600px;
     margin-top: 80px;
@@ -37,7 +38,7 @@ disponible.value = false;
     justify-content: center;
 }
 
-.no_encontrado {
+.waiting {
     width: 90%;
     height: 250px;
     border: 2px solid rgba(36, 44, 89, 0.374);
@@ -45,7 +46,7 @@ disponible.value = false;
     border-radius: 12px;
 }
 
-.titulo_no_encontrado {
+.titulo_waiting {
     width: 100%;
     height: 100px;
     display: flex;
@@ -56,17 +57,17 @@ disponible.value = false;
     border-top-right-radius: 12px;
 }
 
-.titulo_no_encontrado h1 {
+.titulo_waiting h1 {
     font-size: 40px;
 }
 
-.titulo_no_encontrado>img {
-    height: 150%;
-    transform: rotate(-10deg) translateY(15px);
-
+.titulo_waiting>img {
+    height: 120%;
+    transform: rotate(-10deg) translateY(-10px) translateX(-10px);
+    margin-left: 15px;
 }
 
-.volver_no_encontrado {
+.login {
     height: 120px;
     padding: 20px;
     font-size: 24px;
@@ -87,7 +88,11 @@ disponible.value = false;
     color: black;
 }
 
-.mancuerna_rota {
+.pulsa a:hover {
+    text-decoration: underline;
+}
+
+.email {
     display: none;
 }
 
@@ -126,52 +131,53 @@ disponible.value = false;
 }
 
 @media (max-width: 875px) {
-    .todo_no_encontrado {
+    .todo_waiting {
         margin-top: 94px;
     }
 }
 
 @media (max-width: 627px) {
-    .titulo_no_encontrado>img {
+    .titulo_waiting>img {
         display: none;
     }
 
-    .mancuerna_rota_abajo {
+    .email_abajo {
         width: 100%;
         display: flex;
         justify-content: end;
     }
 
-    .mancuerna_rota {
+    .email {
         display: block;
-        width: 131.679px;
+        width: 111.679px;
         position: relative;
         transform: rotate(-10deg);
-        top: -45px;
-        left: 15px;
+        top: -70px;
+        left: -15px;
     }
 
-    .volver_no_encontrado {
+    .login {
         padding-bottom: 0px;
     }
 }
 
 @media (max-width: 600px) {
-    .todo_no_encontrado {
+    .todo_waiting {
         margin-top: 172px;
     }
 }
 
 @media (max-width: 410px) {
-    .no_encontrado{
+    .waiting {
         height: 210px;
     }
 
-    .volver_no_encontrado {
+    .login {
         padding-top: 0;
+        height: 80px;
     }
 
-    .titulo_no_encontrado h1 {
+    .titulo_waiting h1 {
         font-size: 30px;
     }
 
@@ -180,22 +186,21 @@ disponible.value = false;
         font-size: 18px;
     }
 
-    .mancuerna_rota {
+    .email {
         display: block;
-        width: 115px;
+        width: 75px;
         position: relative;
         transform: rotate(-10deg);
-        top: -35px;
-        left: 15px;
+        /* top: -35px;
+        left: 15px; */
+        top: -40px;
     }
 
 }
 
-@media (max-width: 315px) {
-    .titulo_no_encontrado{
-        padding-left: 0;
-    }
 
+
+@media (max-width: 285px) {
     h1{
         text-align: center;
     }
@@ -208,29 +213,22 @@ disponible.value = false;
         text-align: center;
     }
 
-    .no_encontrado{
-        height: 260px;
+    .waiting {
+        height: 280px;
     }
-    
-    .mancuerna_rota_abajo {
-        width: 100%;
-        display: flex;
+
+    .login{
+        height: 120px;
+        justify-content: space-around;
+    }
+
+    .email_abajo{
         justify-content: center;
     }
-    
-    .mancuerna_rota {
-        display: block;
-        width: 131.679px;
-        position: relative;
-        transform: rotate(-10deg);
-        top: 0;
-        left: 0;
-    }
-}
 
-@media (max-width: 282px) {
-    .no_encontrado{
-        height: 280px;
+    .email{
+        top: -10px;
+        left: 0;
     }
 }
 </style>

@@ -16,13 +16,13 @@ watch(contenido, (newValue) => {
   validarContenido.value = /^[\s\S]*\S[\s\S]*$/.test(newValue);
 });
 
-  if (tema.value && !validarTema) {
-    console.log('La temática debe contener solo letras y espacios');
-  }
+if (tema.value && !validarTema) {
+  console.log('La temática debe contener solo letras y espacios');
+}
 
-  if (contenido.value && !validarContenido) {
-    console.log('El contenido no puede estar vacío');
-  }
+if (contenido.value && !validarContenido) {
+  console.log('El contenido no puede estar vacío');
+}
 
 function updateCharacterCount() {
   const caracteresEscritos = contenido.value.length;
@@ -41,74 +41,199 @@ updateCharacterCount();
 
 
 <template>
-  <div class="todo-publicar">
-    <router-link to="./Acccount.vue">Account</router-link>
-    <button class="close_account"><span class="text">Account</span><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"></path></svg></span></button>
-  <div class="container">
-    <div class="form_area">
-      <p class="title">Publicar</p>
-      <form action="#" id="form-post">
-        <div class="card">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path
-              d="M20 5H4V19L13.2923 9.70649C13.6828 9.31595 14.3159 9.31591 14.7065 9.70641L20 15.0104V5ZM2 3.9934C2 3.44476 2.45531 3 2.9918 3H21.0082C21.556 3 22 3.44495 22 3.9934V20.0066C22 20.5552 21.5447 21 21.0082 21H2.9918C2.44405 21 2 20.5551 2 20.0066V3.9934ZM8 11C6.89543 11 6 10.1046 6 9C6 7.89543 6.89543 7 8 7C9.10457 7 10 7.89543 10 9C10 10.1046 9.10457 11 8 11Z"
-            ></path>
-          </svg>
-          <div class="card__content">
-            <p class="card__title">Así quedará tu foto</p>
-            <p class="card__description">¿Entrenando?</p>
-            <p class="card__description">¿Dieta?</p>
-            <p class="card__description">¿Rutinas?</p>
-            <p class="card__description">Tú decides!</p>
+  <div class="todo_publicar">
+    <div class="publicar_container">
+      <div class="titulo_publicar">
+        <div class="tit_publicar">
+          Publicar
+        </div>
+      </div>
+      <div class="contenido_publicar">
+        <div class="div_imagen">
+          <div class="prev_imagen">
+
           </div>
         </div>
+        <div class="div_contenido">
 
-        <div class="form_group">
-          <label class="sub_title" for="foto">Elegir Foto</label>
-          <input placeholder="Elige foto" class="form_style" type="file"/>
         </div>
-        <div class="form_group">
-          <label class="sub_title" for="tema">Temática</label>
-          <input
-            v-model="tema"
-            placeholder="Temática (opcional)"
-            id="tema"
-            class="form_style"
-            type="text"
-          />
-        </div>
-        <div class="form_group">
-          <label class="sub_title" for="contenido">Contenido</label>
-          <textarea
-            v-model="contenido"
-            name="contenido"
-            id="contenido"
-            class="form_style"
-            cols="30"
-            rows="10"
-            placeholder="Escribe aquí el contenido..."
-            @input="updateCharacterCount"
-          ></textarea>
-        </div>
-        <div class="form_group error_container">
-          <span v-if="tema && !validarTema.value" class="error">La temática debe contener solo letras y espacios</span>
-          <span v-if="contenido!='' && !validarContenido" class="error">El contenido no puede estar vacío</span>
-          <span v-if="contenido" class="character-count">Caracteres restantes: {{ caracteresRestantes }}</span>
-        </div>
-        <div>
-          <button class="publicar" :disabled="!validarTema || !validarContenido" @click="handleClickPublicar">Publicar</button>
-        </div>
-      </form>
+      </div>
     </div>
-    <a class="link" href=""></a>
+    <!-- <router-link to="./Acccount.vue">Account</router-link>
+    <button class="close_account"><span class="text">Account</span><span class="icon"><svg
+          xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <path
+            d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z">
+          </path>
+        </svg></span></button> -->
+    <!-- <div class="container">
+      <div class="form_area">
+        <p class="title">Publicar</p>
+        <form action="#" id="form-post">
+          <div class="card">
+          </div>
+
+          <div class="form_group">
+            <label class="sub_title" for="foto">Elegir Foto</label>
+            <input placeholder="Elige foto" class="form_style" type="file" />
+          </div>
+          <div class="form_group">
+            <label class="sub_title" for="tema">Temática</label>
+            <input v-model="tema" placeholder="Temática (opcional)" id="tema" class="form_style" type="text" />
+          </div>
+          <div class="form_group">
+            <label class="sub_title" for="contenido">Contenido</label>
+            <textarea v-model="contenido" name="contenido" id="contenido" class="form_style" cols="30" rows="10"
+              placeholder="Escribe aquí el contenido..." @input="updateCharacterCount"></textarea>
+          </div>
+          <div class="form_group error_container">
+            <span v-if="tema && !validarTema.value" class="error">La temática debe contener solo letras y
+              espacios</span>
+            <span v-if="contenido != '' && !validarContenido" class="error">El contenido no puede estar vacío</span>
+            <span v-if="contenido" class="character-count">Caracteres restantes: {{ caracteresRestantes }}</span>
+          </div>
+          <div>
+            <button class="publicar" :disabled="!validarTema || !validarContenido"
+              @click="handleClickPublicar">Publicar</button>
+          </div>
+        </form>
+      </div>
+      <a class="link" href=""></a>
+    </div> -->
   </div>
-  </div>
-  
+
 </template>
 
 <style scoped>
+.todo_publicar {
+  background-color: red;
+  width: 100vw;
+  height: fit-content;
+  padding-left: 60px;
+  display: flex;
+  justify-content: center;
+  margin-top: 80px;
+  padding-bottom: 150px;
+}
 
-.container {
+.publicar_container {
+  width: 80%;
+  margin-top: 100px;
+  height: 550px;
+  background-color: var(--dark-blue);
+  max-width: 1126px;
+  border: var(--black) 4px solid;
+  border-radius: 6px;
+  min-width: 761px;
+}
+
+.titulo_publicar {
+  background-color: green;
+}
+
+.tit_publicar {
+  color: var(--light-blue-text);
+  padding: 15px 0 15px 20px;
+  font-size: 45px;
+  font-weight: bold;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.contenido_publicar {
+  display: flex;
+  height: calc(100% - 82px);
+  width: 100%;
+}
+
+.div_imagen {
+  width: 45%;
+  height: 100%;
+  background-color: blue;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 30px;
+}
+
+.prev_imagen {
+  width: 85%;
+  height: 70%;
+  background-color: var(--light-blue-text);
+}
+
+.div_contenido {
+  width: calc(55% + 2px);
+  height: 100%;
+  background-color: blueviolet;
+}
+
+@media(max-width: 1275px) {
+  .prev_imagen {
+    height: 55%;
+  }
+
+  .publicar_container {
+    height: 480px;
+  }
+}
+
+@media(max-width: 875px) {
+  .todo_publicar {
+    margin-top: -6px;
+  }
+
+  .publicar_container {
+    width: 100%;
+    margin-top: 100px;
+    height: 850px;
+    background-color: var(--dark-blue);
+    max-width: 1126px;
+    border: none;
+    border-radius: 6px;
+    min-width: 0;
+  }
+
+  .contenido_publicar {
+    flex-direction: column;
+  }
+
+  .div_imagen {
+    width: 100%;
+    height: 800px;
+    background-color: blue;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 30px;
+  }
+
+  .prev_imagen {
+    width: 55%;
+    min-width: 440px;
+    height: 70%;
+    background-color: var(--light-blue-text);
+  }
+
+  .div_contenido {
+    width: 100%;
+    height: 100%;
+    background-color: blueviolet;
+  }
+}
+
+@media(max-width: 600px) {
+  .todo_publicar {
+    margin-top: 68px;
+  }
+
+  .tit_publicar{
+    font-size: 35px;
+  }
+}
+
+
+
+/* .container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,7 +251,6 @@ updateCharacterCount();
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background-color: var(--dark-blue);
   height: fit-content;
   width: 50%;
   max-width: 1050px;
@@ -168,11 +292,11 @@ updateCharacterCount();
   overflow: hidden;
 }
 
-.form_group [type="file"]{
+.form_group [type="file"] {
   height: 2vw;
 }
 
-#contenido{
+#contenido {
   height: 13vw;
 }
 
@@ -246,26 +370,28 @@ updateCharacterCount();
   line-height: 1.4;
 }
 
-label.sub_title{
+label.sub_title {
   color: aliceblue;
 }
 
-input, textarea{
+input,
+textarea {
   background-color: var(--blue-inputs);
   color: rgba(240, 248, 255, 0.7267);
 }
 
-input::placeholder, textarea::placeholder{
+input::placeholder,
+textarea::placeholder {
   color: rgba(240, 248, 255, 0.726);
 }
 
-.error_container{
+.error_container {
   margin: 6.5%;
   max-width: 35.5vw;
   overflow: hidden;
 }
 
-.error{
+.error {
   color: aliceblue;
   overflow: hidden;
   display: inline-block;
@@ -306,7 +432,7 @@ button.publicar {
   display: block;
 }
 
-button.publicar:disabled{
+button.publicar:disabled {
   background-color: rgba(61, 57, 57, 0.295);
 }
 
@@ -361,74 +487,76 @@ button.publicar::before {
 button a {
   color: white;
 }
+
 button:hover a {
   color: black;
 }
 
 button.close_account {
- margin-top: 12vh;
- margin-left: 32.5vw;
- width: 150px;
- height: 50px;
- cursor: pointer;
- display: flex;
- align-items: center;
- background: var(--blue);
- border: none;
- border-radius: 5px;
- box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
- background: var(--dark-blue);
+  margin-top: 12vh;
+  margin-left: 32.5vw;
+  width: 150px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background: var(--blue);
+  border: none;
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  background: var(--dark-blue);
 }
 
-button.close_account, button.close_account span {
- transition: 200ms;
+button.close_account,
+button.close_account span {
+  transition: 200ms;
 }
 
 button.close_account .text {
- transform: translateX(35px);
- color: aliceblue;
- font-weight: bold;
+  transform: translateX(35px);
+  color: aliceblue;
+  font-weight: bold;
 }
 
 button.close_account .icon {
- position: absolute;
- border-left: 1px solid aliceblue;
- transform: translateX(110px);
- height: 40px;
- width: 40px;
- display: flex;
- align-items: center;
- justify-content: center;
+  position: absolute;
+  border-left: 1px solid aliceblue;
+  transform: translateX(110px);
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button.close_account svg {
- width: 15px;
- fill: #eee;
+  width: 15px;
+  fill: #eee;
 }
 
 button.close_account:hover {
- background: var(--alt-black);
+  background: var(--alt-black);
 }
 
 button.close_account:hover .text {
- color: transparent;
+  color: transparent;
 }
 
 button.close_account:hover .icon {
- width: 150px;
- border-left: none;
- transform: translateX(0);
+  width: 150px;
+  border-left: none;
+  transform: translateX(0);
 }
 
 button.close_account:focus {
- outline: none;
+  outline: none;
 }
 
 button.close_account:active .icon svg {
- transform: scale(0.8);
+  transform: scale(0.8);
 }
 
-.character-count{
+.character-count {
   color: aliceblue;
 }
 
@@ -441,7 +569,7 @@ button.close_account:active .icon svg {
     margin: 5%;
   }
 
-  button.close_account{
+  button.close_account {
     margin-left: 18vw;
   }
 }
@@ -453,7 +581,7 @@ button.close_account:active .icon svg {
     width: 100%;
   }
 
-  .form_area{
+  .form_area {
     height: auto;
     width: auto;
   }
@@ -462,7 +590,7 @@ button.close_account:active .icon svg {
     font-weight: 900;
     font-size: 1.5em;
   }
-  
+
   .form_group {
     margin: 10px;
   }
@@ -475,7 +603,7 @@ button.close_account:active .icon svg {
     font-size: 15px;
   }
 
-  .form_group [type="file"]{
+  .form_group [type="file"] {
     height: 5vw;
   }
 
@@ -501,13 +629,12 @@ button.close_account:active .icon svg {
     margin: 5px 0;
   }
 
-  #contenido{
+  #contenido {
     height: inherit;
   }
 
-  .error_container{
+  .error_container {
     max-width: 290px;
   }
-}
-
+} */
 </style>

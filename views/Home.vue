@@ -1,9 +1,9 @@
 <script setup>
 import Publicacion from '../components/Publicacion.vue'
 import { userActive } from '../clients/supabase'
-import { usandoMovil } from '../main'
+import { usandoMovil, disponible } from '../main'
 
-
+disponible.value = true;
 </script>
 
 <template>

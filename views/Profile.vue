@@ -189,12 +189,12 @@ onMounted(() => {
   justify-content: center;
   /* Centra el contenido verticalmente */
 }
-.vista #publicacion{
+.vista #publicacion {
   padding: 0;
 }
 @media (max-width: 875px) {
   .perfil {
-    margin-top: 94px;
+    margin: 60px 0 0 0;
   }
 
   #info {
@@ -203,12 +203,6 @@ onMounted(() => {
 
   #contenido {
     width: 100%;
-  }
-}
-
-@media (max-width: 600px) {
-  .perfil {
-    margin-top: 168px;
   }
 }
 

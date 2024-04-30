@@ -2,10 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/Home.vue'
 import ProfileView from '../views/Profile.vue'
 import NotFound from '../views/NotFound.vue'
+import Post from '../views/Post.vue';
 
 // import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
-
-import Politicas_y_condiciones from "../views/Politicas_y_condiciones.vue";
+import MiCuenta from '../views/Account.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,12 +23,12 @@ const router = createRouter({
     {
       path: "/login",
       name: "login",
-      component: () => import("@/components/Login.vue"),
+      component: () => import("@/views/Login.vue"),
     },
     {
       path: "/register",
       name: "register",
-      component: () => import("@/components/Register.vue"),
+      component: () => import("@/views/Register.vue"),
     },
     {
       path: "/account",
@@ -62,7 +62,11 @@ const router = createRouter({
         },
       ],
     },
-
+    {
+      path: '/post',
+      name: 'post',
+      component: Post
+    },
     // Ruta comodín para manejar rutas no encontradas
     {
       path: "/:catchAll(.*)",

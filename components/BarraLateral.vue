@@ -165,7 +165,6 @@ h2 {
 nav h2{
   color: transparent;
   transition: color 0.4s;
-  /* display: none; */
 }
 
 nav:hover {
@@ -173,7 +172,7 @@ nav:hover {
 }
 
 nav:hover h2 {
-  /* display: inline; */
+  display: inline;
   color: var(--light-blue-text);
 }
 

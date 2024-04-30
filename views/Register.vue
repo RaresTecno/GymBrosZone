@@ -16,12 +16,13 @@ async function createAccount() {
                 'fotoperfil': '/predeterminada.png',
                 'nombre': nombre.value,
                 'apellidos': apellidos.value,
-                'privacidad': 'publica'
+                'privacidad': 'publica',
+                'emailbueno': email.value
             }
         }
     });
     if (error) {
-        console.log(error);
+
         return null;
     } else {
         window.location.href = "/waiting-verification";
@@ -88,10 +89,9 @@ function primeraParte() {
 }
 
 //Función para mostrar el mensaje de error y limpiar el input que contiene el error.
-function mensaje(mensaje, input, Input) {
+function mensaje(mensaje, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
-    input.value = '';
     Input.value.focus();
 }
 
@@ -100,7 +100,7 @@ function validarNombre() {
     if (/^[a-zñáéíóú\s]{3,14}$/i.test(nombre.value)) {
         return true;
     }
-    mensaje('El nombre debe contener entre 3 y 14 letras.', nombre, nombreInput);
+    mensaje('El nombre debe contener entre 3 y 14 letras.', nombreInput);
     return false;
 }
 
@@ -109,7 +109,7 @@ function validarApellidos() {
     if (/^[a-zñáéíóú\s-]{3,24}$/i.test(apellidos.value)) {
         return true;
     }
-    mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidos, apellidosInput);
+    mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidosInput);
     return false;
 }
 
@@ -119,12 +119,12 @@ async function validarGymtag() {
     gymtag.value = gymtagMin;
     //Comprobamos que el tamaño del GymTag sea el deseado.
     if (gymtagMin.length < 3 || gymtagMin.length > 14) {
-        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtag, gymtagInput);
+        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtagInput);
         return false;
     }
     //Comprobamos que los caracteres ingresados sean válidos.
     if (!/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
-        mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtag, gymtagInput);
+        mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtagInput);
         return false;
     }
     //Comprobamos si el GymTag está disponible.
@@ -137,13 +137,13 @@ async function validarGymtag() {
         if (error) throw error;
         //El gymtag estará en uso si usuarios contiene algún elemento.
         if (usuarios.length > 0) {
-            mensaje('El GymTag ingresado ya está en uso.', gymtag, gymtagInput);
+            mensaje('El GymTag ingresado ya está en uso.', gymtagInput);
             return false;
         }
         //GymTag disponible.
         return true;
     } catch (error) {
-        mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtag, gymtagInput);
+        mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtagInput);
         return false;
     }
 }
@@ -151,11 +151,11 @@ async function validarGymtag() {
 //Comprobamos si el email ingresado tiene formato de email.
 async function validarEmail() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        mensaje('El email ingresado no es válido.', email, emailInput);
+        mensaje('El email ingresado no es válido.', emailInput);
         return false;
     }
-     //Comprobamos si el email está disponible.
-     try {
+    //Comprobamos si el email está disponible.
+    try {
         const { data: usuarios, error } = await supabase
             .from('usuarios')
             .select('email')
@@ -164,13 +164,13 @@ async function validarEmail() {
         if (error) throw error;
         //El email estará en uso si usuarios contiene algún elemento.
         if (usuarios.length > 0) {
-            mensaje('El Email ingresado ya está en uso.', email, emailInput);
+            mensaje('El Email ingresado ya está en uso.', emailInput);
             return false;
         }
         //Email disponible.
         return true;
     } catch (error) {
-        mensaje('Hubo un error al verificar el Email. Por favor, inténtalo de nuevo.', email, emailInput);
+        mensaje('Hubo un error al verificar el Email. Por favor, inténtalo de nuevo.', emailInput);
         return false;
     }
 }
@@ -183,10 +183,9 @@ function validarContras() {
     } else {
         //Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.
         if (password.value !== password2.value) {
-            mensaje('Las contraseñas no coinciden.', password2, password2Input);
+            mensaje('Las contraseñas no coinciden.', password2Input);
         } else {
-            password.value = '';
-            mensaje('La contraseña debe contener al menos 8 caracteres e incluir una mayúscula y un número.', password2, password2Input);
+            mensaje('La contraseña debe contener al menos 8 caracteres e incluir una mayúscula y un número.', password2Input);
             passwordInput.value.focus();
         }
         return false;
@@ -202,7 +201,7 @@ function validarEdad() {
         return true;
     } else {
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
-        mensaje('Debes tener más de 14 años.', fecha_nacimiento, fecha_nacimientoInput);
+        mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
     }
 }
 
@@ -498,7 +497,7 @@ async function creaCuenta() {
 .password,
 .password2,
 .fecha_nacimiento {
-    margin-top: 60px;
+    margin-top: 45px;
 }
 
 .aceptar_politicas {
@@ -555,7 +554,7 @@ async function creaCuenta() {
 .siguiente {
     margin-top: 35px;
     margin-bottom: 40px;
-    height: 55px;
+    height: 45px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -664,7 +663,7 @@ async function creaCuenta() {
     }
 }
 
-@media(max-width: 1140px) {
+@media(max-width: 1139px) {
     .register {
         width: 88%;
     }
@@ -678,7 +677,7 @@ async function creaCuenta() {
         flex-direction: column;
         padding: 0;
         justify-content: space-around;
-        height: 260px;
+        height: 200px;
     }
 
     .nombre_y_apellidos .container {
@@ -697,12 +696,13 @@ async function creaCuenta() {
     .password input,
     .password2 input,
     .fecha_nacimiento input {
-        height: 70px;
+        height: 50px;
+        max-width: 800px;
     }
 
     .container .label {
-        font-size: 30px;
-        top: 17.5px;
+        font-size: 25px;
+        top: 12px;
     }
 
     .container .input:valid~.label,
@@ -710,17 +710,18 @@ async function creaCuenta() {
     .fecha_nacimiento .input~.label {
         transition: 0.3s;
         padding-left: 2px;
-        transform: translateY(-52.5px);
+        transform: translateY(-42.5px);
     }
 
     .subcontainer {
         display: flex;
         justify-content: start;
         width: 85%;
+        max-width: 750px;
     }
 
     .input {
-        font-size: 26px;
+        font-size: 24px;
     }
 
     .siguiente,
@@ -746,6 +747,8 @@ async function creaCuenta() {
     .password2 .container,
     .fecha_nacimiento .container {
         width: 100%;
+        display: flex;
+        justify-content: center;
     }
 
     .email .container .subcontainer,
@@ -755,6 +758,7 @@ async function creaCuenta() {
         width: 85%;
         min-width: 0;
         padding: 0;
+        display: flex;
     }
 
     .info {
@@ -766,22 +770,47 @@ async function creaCuenta() {
 
     .siguiente button,
     .crear button {
-        height: 70px;
+        max-width: 750px;
+        height: 55px;
     }
 
     .contenedor_calendario,
     .contenedor_ojo {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
         font-size: 37px;
         padding: 14px 0;
-        margin-left: -50px;
+        margin-top: 5px;
     }
 
     .contenedor_ojo {
-        font-size: 34px;
-        margin-left: -53px;
-        padding: 17px 0;
+        font-size: 28px;
+        margin-left: -40px;
+        padding: 12px 0;
+    }
+
+    .contenedor_calendario{
+        width: 30px;
+        height: 30px;
+        margin-top: 7px;
+        background-color: var(--blue-inputs);
+        font-size: 30px;
+        padding: 7.5px 0;
+        margin-left: -35px;
+        /* pointer-events: none; */
+    }
+
+    .calendario{
+        color: var(--light-blue-text);
+        position: relative;
+        top: -7.5px;
+        right: 3px;
+        cursor: default;
+        text-align: center;
+    }
+
+    .mensaje{
+        margin-top: 10px;
     }
 }
 
@@ -792,6 +821,14 @@ async function creaCuenta() {
 }
 
 @media(max-width: 600px) {
+    .titulo {
+        margin-top: 0;
+        padding: 20px 0;
+        height: 80px;
+        font-size: 40px;
+
+    }
+
     .todo_register {
         padding-top: 232px;
     }
@@ -804,17 +841,18 @@ async function creaCuenta() {
     .password2 input,
     .fecha_nacimiento input,
     .siguiente button {
-        height: 55px;
+        height: 40px;
+        font-size: 20px;
     }
 
     .container .label {
-        font-size: 25px;
-        top: 15px;
+        font-size: 22px;
+        top: 8px;
     }
 
     .siguiente,
     .crear {
-        margin-bottom: 35px;
+        margin-bottom: 25px;
     }
 
     .gymtag {
@@ -823,15 +861,16 @@ async function creaCuenta() {
 
     .contenedor_calendario,
     .contenedor_ojo {
-        width: 35px;
-        height: 35px;
+        width: 32px;
+        height: 32px;
         font-size: 30px;
-        padding: 12px 0;
-        margin-left: -40px;
+        padding: 10px 0;
+        margin-left: -35px;
+        font-size: 25px;
     }
-
-    .contenedor_ojo {
-        font-size: 27px;
+    
+    .contenedor_calendario {
+        padding: 8px 0;
     }
 
     .volver_parte_uno {
@@ -842,12 +881,9 @@ async function creaCuenta() {
         font-size: 40px;
     }
 
-    .titulo {
-        padding: 50px 0 30px;
-    }
-
     .contenedor_calendario {
         pointer-events: none;
+
     }
 
     .calendario {
@@ -858,71 +894,81 @@ async function creaCuenta() {
         width: 60%;
         margin-left: 15px;
     }
-}
-
-@media(max-width: 455px) {
-    .nombre_y_apellidos .container {
-        min-width: 0;
-    }
-
-    .titulo {
-        margin-top: 20px;
-        font-size: 46px;
-    }
-
-    .container .label {
-        font-size: 24px;
-        top: 14.5px;
-    }
 
     .container .input:valid~.label,
     .container .input:focus~.label,
     .fecha_nacimiento .input~.label {
         transition: 0.3s;
         padding-left: 2px;
-        transform: translateY(-44.5px);
+        transform: translateY(-37.5px);
     }
 
-    .input {
-        font-size: 23px;
+    .nombre_y_apellidos {
+        height: 200px;
     }
 
-    .nombre_y_apellidos .nombre .input,
-    .nombre_y_apellidos .apellidos .input,
-    .gymtag .input {
-        height: 60px;
+    .mensaje_texto {
+        font-size: 18px;
+    }
+
+    .mensaje{
+        margin-top: 10px;
+    }
+
+    .aceptar_politicas{
+        margin-top: 30px;
+    }
+}
+
+@media(max-width: 455px) {
+    .titulo{
+        font-size: 30px;
+        margin-top: 20px;
+        height: 70px;
+    }
+
+    .nombre_y_apellidos .container {
+        min-width: 0;
     }
 
     .nombre_y_apellidos {
         flex-direction: column;
         padding: 0;
         justify-content: space-around;
-        height: 240px;
     }
 
-    .gymtag {
-        margin-bottom: 20px;
-    }
-
-    .info {
+    /* .info {
         font-size: 36px;
         padding: 12px 0;
         margin-left: -47px;
         cursor: pointer;
-    }
+    } */
 
     .mensaje {
-        font-size: 18px;
-        height: 52px;
+        height: fit-content;
         visibility: hidden;
         display: flex;
         justify-content: center;
-        margin: 10px 0 0;
+        margin: 20px 0 0;
         align-items: center;
     }
 
+    .mensaje_texto{
+        font-size: 16px;
+    }
+
     .siguiente {
-        margin-top: 20px;
+        margin-top: 10px;
+    }
+
+    .gymtag{
+        margin-bottom: 10px;
+    }
+
+    .volver_parte_uno{
+        font-size: 33px;
+        top: 10px;
+        left: 8px;;
     }
 }
 
@@ -935,5 +981,7 @@ async function creaCuenta() {
         padding-left: 2px;
         transform: translateY(-42.5px);
     }
+
+
 }
 </style>

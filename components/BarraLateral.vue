@@ -90,56 +90,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <nav :style="{ top: altura + 'px' }">
-    <div>
-      <RouterLink to="/" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'house']" />
-        <h2>Home</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Profile" class="RouterLink">
-        <font-awesome-icon class="icon usuario" :icon="['fas', 'user']" />
-        <h2>Perfil</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Publicar" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" />
-        <h2>Publicar</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Search" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" />
-        <h2>Buscar</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Likes" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
-        <h2>Likes</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Keep" class="RouterLink">
-        <font-awesome-icon class="icon guardado" :icon="['fas', 'bookmark']" />
-        <h2>Guardados</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Tables" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'table']" />
-        <h2>Tablas</h2>
-      </RouterLink>
-    </div>
-    <div>
-      <RouterLink to="/Messages" class="RouterLink">
-        <font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" />
-        <h2>Mensajes</h2>
-      </RouterLink>
-    </div>
-  </nav>
+  <transition name="slide-fade" mode="out-in">
+    <nav :style="{ top: altura + 'px' }">
+      <div>
+        <RouterLink to="/" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'house']" />
+          <h2>Home</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Profile" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'user']" />
+          <h2>Perfil</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Publicar" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" />
+          <h2>Publicar</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Search" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" />
+          <h2>Buscar</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Likes" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
+          <h2>Likes</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Keep" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'bookmark']" />
+          <h2>Guardados</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Tables" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'table']" />
+          <h2>Tablas</h2>
+        </RouterLink>
+      </div>
+      <div>
+        <RouterLink to="/Messages" class="RouterLink">
+          <font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" />
+          <h2>Mensajes</h2>
+        </RouterLink>
+      </div>
+    </nav>
+  </transition>
 </template>
 
 <style scoped>
@@ -153,7 +155,8 @@ nav {
   height: 100vh;
   position: fixed;
   top: 80px;
-  transition: width 0.4s;
+  /* transition: width 0.4s; */
+  z-index: 100;
 }
 
 h2 {
@@ -162,10 +165,10 @@ h2 {
   display: none;
 }
 
-nav h2{
-  color: transparent;
-  transition: color 0.4s;
-  /* display: none; */
+nav h2 {
+  /* color: transparent; */
+  /* transition: color 0.4s; */
+  display: none;
 }
 
 nav:hover {
@@ -173,18 +176,8 @@ nav:hover {
 }
 
 nav:hover h2 {
-  /* display: inline; */
+  display: inline;
   color: var(--light-blue-text);
-}
-
-nav:hover .usuario {
-  transform: translateX(2.25px);
-  margin-right: 5px;
-}
-
-nav:hover .guardado {
-  transform: translateX(4.5px);
-  margin-right: 9px;
 }
 
 div .RouterLink {
@@ -192,11 +185,6 @@ div .RouterLink {
   align-items: center;
   margin-top: 20px;
   cursor: pointer;
-}
-
-nav>div{
-  width: 37px;
-  text-align: right;
 }
 
 .icon {

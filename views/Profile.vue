@@ -189,7 +189,9 @@ onMounted(() => {
   justify-content: center;
   /* Centra el contenido verticalmente */
 }
-
+.vista #publicacion{
+  padding: 0;
+}
 @media (max-width: 875px) {
   .perfil {
     margin-top: 94px;

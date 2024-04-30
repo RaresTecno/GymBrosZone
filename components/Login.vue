@@ -9,6 +9,17 @@ const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
 const mensajeError = ref('');
  
+function loginFacebook() {
+    window.location.href = "https://www.facebook.com/?locale=en_EN"
+}
+function loginGoogle() {
+    window.location.href = "https://accounts.google.com/v3/signin/identifier?authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F%3Futm_source%3Dsign_in_no_continue%26pli%3D1%26nlr%3D1&ec=GAlAwAE&hl=es&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession&dsh=S1091059932%3A1714486646087303&theme=mn&ddm=0"
+    
+}
+function loginTwitter() {
+    window.location.href = "https://twitter.com/?lang=es"
+    
+}
 import { supabase, logOut, userState } from '../clients/supabase';
  
 const email = ref("");
@@ -71,8 +82,8 @@ async function login(){
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
-                    <div class="twitter" @click="logOut"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
                     <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
                 </div>
             </div>

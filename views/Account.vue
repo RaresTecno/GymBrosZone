@@ -175,7 +175,7 @@ console.log(urlFoto)
   </button>
 </template>
 
-<style scope>
+<style scoped>
 .sub-header {
   background-color: var(--alt-black);
   text-align: center;

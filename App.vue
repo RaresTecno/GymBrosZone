@@ -9,7 +9,7 @@ import { usandoMovil, disponible } from './main'
 </script>
 
 <template>
-  <Header v-if="!usandoMovil" />
+  <!-- <Header v-if="!usandoMovil" /> -->
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
   <Nav v-if="userActive && !usandoMovil && disponible"/>

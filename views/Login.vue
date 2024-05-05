@@ -111,11 +111,12 @@ function mensaje(mensaje, Input) {
                 <div class="cuenta_existente_texto">¿No tienes una cuenta?</div>
             </div>
             <div class="crear">
-                <div class="crear_texto"><button>
+                <div class="crear_texto">
+                    <button>
                         <RouterLink to="/log/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
                         </RouterLink>
-                    </button></div>
-
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -619,7 +620,7 @@ button a {
         min-width: 0;
     }
 
-    .crear_texto button{
+    .crear_texto button {
         height: fit-content
     }
 }

@@ -121,7 +121,7 @@ function mensaje(mensaje, Input) {
             </div>
             <div class="crear">
                 <div class="crear_texto"><button>
-                        <RouterLink to="/log/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
+                        <RouterLink to="/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
                         </RouterLink>
                     </button></div>
 

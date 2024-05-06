@@ -41,8 +41,8 @@ onMounted(() => {
 .waiting {
     width: 90%;
     height: 250px;
-    border: 2px solid rgba(36, 44, 89, 0.374);
-    background-color: rgba(36, 44, 89, 0.161);
+    border: var(--border-bg-color2);
+    background-color: var(--bg-color2);
     border-radius: 12px;
 }
 

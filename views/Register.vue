@@ -22,7 +22,6 @@ async function createAccount() {
         }
     });
     if (error) {
-
         return null;
     } else {
         window.location.href = "/waiting-verification";
@@ -97,7 +96,7 @@ function mensaje(mensaje, Input) {
 
 //Comprobamos el nombre ingresado.
 function validarNombre() {
-    if (/^[a-zñáéíóú\s]{3,14}$/i.test(nombre.value)) {
+    if (/^[a-zñáéíóú\s-]{3,14}$/i.test(nombre.value)) {
         return true;
     }
     mensaje('El nombre debe contener entre 3 y 14 letras.', nombreInput);
@@ -231,10 +230,8 @@ async function creaCuenta() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
     if (validarNombre() && validarApellidos() && await validarGymtag() && await validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
-        //Aquí va lo del supa y la redirección a home
         console.log('supa');
         createAccount();
-        console.log('supa fin');
     } else {
         return;
     }
@@ -523,7 +520,6 @@ async function creaCuenta() {
     margin-left: -35px;
     cursor: default;
     position: relative;
-    /* pointer-events: none; */
 }
 
 .calendario,
@@ -789,7 +785,7 @@ async function creaCuenta() {
         padding: 12px 0;
     }
 
-    .contenedor_calendario{
+    .contenedor_calendario {
         width: 30px;
         height: 30px;
         margin-top: 7px;
@@ -800,7 +796,7 @@ async function creaCuenta() {
         /* pointer-events: none; */
     }
 
-    .calendario{
+    .calendario {
         color: var(--light-blue-text);
         position: relative;
         top: -7.5px;
@@ -809,7 +805,7 @@ async function creaCuenta() {
         text-align: center;
     }
 
-    .mensaje{
+    .mensaje {
         margin-top: 10px;
     }
 }
@@ -868,7 +864,7 @@ async function creaCuenta() {
         margin-left: -35px;
         font-size: 25px;
     }
-    
+
     .contenedor_calendario {
         padding: 8px 0;
     }
@@ -911,17 +907,17 @@ async function creaCuenta() {
         font-size: 18px;
     }
 
-    .mensaje{
+    .mensaje {
         margin-top: 10px;
     }
 
-    .aceptar_politicas{
+    .aceptar_politicas {
         margin-top: 30px;
     }
 }
 
 @media(max-width: 455px) {
-    .titulo{
+    .titulo {
         font-size: 30px;
         margin-top: 20px;
         height: 70px;
@@ -953,7 +949,7 @@ async function creaCuenta() {
         align-items: center;
     }
 
-    .mensaje_texto{
+    .mensaje_texto {
         font-size: 16px;
     }
 
@@ -961,14 +957,15 @@ async function creaCuenta() {
         margin-top: 10px;
     }
 
-    .gymtag{
+    .gymtag {
         margin-bottom: 10px;
     }
 
-    .volver_parte_uno{
+    .volver_parte_uno {
         font-size: 33px;
         top: 10px;
-        left: 8px;;
+        left: 8px;
+        ;
     }
 }
 

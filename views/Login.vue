@@ -15,6 +15,16 @@ import { supabase, logOut, userState } from '../clients/supabase';
 const email = ref("");
 const password = ref("");
 
+async function signInWithGoogle() {
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+        });
+    } catch (error) {
+
+    }
+}
+
 async function login() {
     try {
         const { data: usuarios, error } = await supabase
@@ -103,7 +113,7 @@ function mensaje(mensaje, Input) {
                             class="icono_iniciar" /></div>
                     <div class="twitter" @click="logOut"><font-awesome-icon :icon="['fab', 'square-x-twitter']"
                             style="color: #eef2fa;" class="icono_iniciar" /></div>
-                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']"
+                    <div class="google" @click="signInWithGoogle"><font-awesome-icon :icon="['fab', 'google']"
                             class="icono_google icono_iniciar" /></div>
                 </div>
             </div>
@@ -113,7 +123,7 @@ function mensaje(mensaje, Input) {
             <div class="crear">
                 <div class="crear_texto">
                     <button>
-                        <RouterLink to="/log/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
+                        <RouterLink to="/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
                         </RouterLink>
                     </button>
                 </div>

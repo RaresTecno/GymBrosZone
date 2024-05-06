@@ -1,46 +1,62 @@
 <script setup>
-import Publicacion from '../components/Publicacion.vue'
-import { userActive } from '../clients/supabase'
-import { usandoMovil, disponible } from '../main'
+import Publicacion from "../components/Publicacion.vue";
+import { userActive } from "../clients/supabase";
+import { usandoMovil, disponible } from "../main";
 
 disponible.value = true;
 </script>
 
 <template>
   <main>
-    <template v-if="userActive">
-    <div class="portada">
-      <img src="../assets/img/logo.png" alt="logo" class="logo" />
-      <h1 class="title">GymBros Zone</h1>
-    </div>
-    <div class="container_log-or-reg">
-      <div class="login_or_register">
-        <p>
-          <i><b>Inicia Sesión</b></i> o <i><b>Regístrate</b></i> para acceder a GymBros Zone
-        </p>
+    <template v-if="!userActive">
+      <div class="portada">
+        <img src="../assets/img/logo.png" alt="logo" class="logo" />
+        <h1 class="title">GymBros Zone</h1>
       </div>
-    </div>
-    <button class="button-login_register">
-      <RouterLink to="/login"><a href=""><i>Login</i></a></RouterLink>
-    </button>
-    <button class="button-login_register">
-      <RouterLink to="/register"><a href=""><i>Registro</i></a></RouterLink>
-    </button>
-    <div class="container_services"> <!--  v-if="no-logged" -->
-      <div class="services">
-        <p>¿Qué ofrecemos?</p>
-        <br>
-        <div>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea recusandae obcaecati quod alias esse aperiam aut necessitatibus odit eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis fugit.
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione velit minus consectetur impedit corrupti eum explicabo optio non numquam sunt mollitia!
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum temporibus inventore animi in nihil eius voluptates dolore maxime cumque facere doloribus, ex ab voluptatem blanditiis, eos soluta odit. Facere, tempore.
+      <div class="container_log-or-reg">
+        <div class="login_or_register">
+          <p>
+            <i><b>Inicia Sesión</b></i> o <i><b>Regístrate</b></i> para acceder
+            a GymBros Zone
+          </p>
         </div>
       </div>
-    </div>
+      <button class="button-login_register">
+        <RouterLink to="/login"
+          ><a href=""><i>Login</i></a></RouterLink
+        >
+      </button>
+      <button class="button-login_register">
+        <RouterLink to="/register"
+          ><a href=""><i>Registro</i></a></RouterLink
+        >
+      </button>
+      <div class="container_services">
+        <!--  v-if="no-logged" -->
+        <div class="services">
+          <p>¿Qué ofrecemos?</p>
+          <br />
+          <div>
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea
+            recusandae obcaecati quod alias esse aperiam aut necessitatibus odit
+            eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis
+            fugit. Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+            Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione
+            velit minus consectetur impedit corrupti eum explicabo optio non
+            numquam sunt mollitia! Lorem ipsum dolor sit amet consectetur
+            adipisicing elit. Cum temporibus inventore animi in nihil eius
+            voluptates dolore maxime cumque facere doloribus, ex ab voluptatem
+            blanditiis, eos soluta odit. Facere, tempore.
+          </div>
+        </div>
+      </div>
     </template>
-    <div v-if="!userActive" id="reja">
-      <template v-for="n in 50" :key="n">
-        <Publicacion />
-      </template>
+    <div v-if="userActive" class="publicaciones">
+      <div class="vista">
+        <template v-for="n in 50" :key="n">
+          <Publicacion />
+        </template>
+      </div>
     </div>
     <button v-if="!userActive" class="post">
       <RouterLink to="./post"><a href=""><b>+</b></a></RouterLink>
@@ -49,15 +65,24 @@ disponible.value = true;
 </template>
 
 <style scoped>
-
 main {
-  width: fit-content;
   margin: 80px auto 0;
 }
+.publicaciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 60px;
+  margin-bottom: 100px;
+}
 .vista {
-  width: fit-content;
+  width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  /* Centra el contenido horizontalmente */
+  justify-content: center;
+  /* Centra el contenido verticalmente */
 }
 .portada {
   background-color: var(--alt-black);
@@ -73,9 +98,9 @@ main {
 }
 
 .logo {
-    margin-right: 20px;
-    width: 8.5%;
-  }
+  margin-right: 20px;
+  width: 8.5%;
+}
 
 .title {
   color: aliceblue;
@@ -208,23 +233,30 @@ button.button-login_register:active::before, button.post::before {
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
 }
-
-
-button a{
+button a {
   color: white;
 }
-button:hover a{
+button:hover a {
   color: black;
 }
-
-@media (max-width: 805px) and (max-height: 1098px) {
-  button{
-    margin: 5%;
+@media (max-width: 1100px) {
+  .vista {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
   }
+}
+@media (max-width: 875px) {
 
-  .logo {
-    margin-right: 20px;
-    width: 12.5%;
+  .publicaciones {
+    margin-left: 0;
+  }
+  .vista {
+    margin: 0px;
+
+    width: 100%;
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 </style>

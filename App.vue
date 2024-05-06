@@ -1,18 +1,34 @@
 <script setup>
 import Header from './components/Header.vue'
-import Nav from './components/BarraLateral.vue'
+import HeaderMobile from './components/HeaderMobile.vue'
+
+import NavLateral from './components/BarraLateral.vue'
+import NavInferior from './components/BarraInferior.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
 import { userActive } from './clients/supabase'
 import { usandoMovil, disponible } from './main'
 
+import { ref, computed, onMounted} from "vue";
+const windowWidth = ref(window.innerWidth);
+
+function updateWidth() {
+  windowWidth.value = window.innerWidth;
+}
+onMounted(() => {
+  window.addEventListener("resize", updateWidth);
+});
 </script>
 
 <template>
-  <!-- <Header v-if="!usandoMovil" /> -->
+  <Header v-if="(!usandoMovil && (windowWidth > 875)) || !userActive " />
+  <HeaderMobile v-if="userActive && (windowWidth < 875)" />
+
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
-  <Nav v-if="userActive && !usandoMovil && disponible"/>
+  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)"/>
+  <NavInferior v-if="userActive && disponible && (windowWidth <= 875)"/>
+
   <!-- <Footer /> -->
 </template>
 

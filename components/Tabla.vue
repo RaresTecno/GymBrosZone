@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { supabase } from "@/clients/supabase";
 const IdTabla = ref(0);
 
 function crearNuevaTabla() {

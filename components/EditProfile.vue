@@ -1,4 +1,8 @@
+<script setup>
+    import { ref, onMounted } from "vue";
+    import { supabase } from "@/clients/supabase";
+</script>
 
-<template>
-    aaaaaaaaaaaaaaaaaaa
-</template>
+<template>Editando Perfil</template>
+
+<style scoped></style>

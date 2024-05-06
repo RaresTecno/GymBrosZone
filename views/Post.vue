@@ -78,7 +78,7 @@ async function publicar() {
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
   console.log(imagen);
-  const ruta = `${imagen.name}`;
+  const ruta = `usuario/${imagen.name}`;
   console.log(imagen.name+' este es el nombre');
   const { data, error } = await supabase.storage
     .from('archivos-usuarios')
@@ -128,10 +128,12 @@ function cerrar_publicar() {
 function quitar_imagen() {
   hayImagen.value = false;
   imagenPreview.value.src = '';
+  imagenPreview.value.style.display = 'none';
   logo_foto.value.style.display = 'block';
   fondo_imagen.value.style.backgroundColor = 'var(--light-blue-text)';
   div_quitar_imagen.value.style.display = 'none';
   div_girar_imagen.value.style.display = 'none';
+  
 }
 
 function girar_imagen() {
@@ -168,10 +170,10 @@ function handleImageChange(event) {
     event.target.value = '';
     return;
   }
-  //Máximo 3MB
-  const tamMax = 3 * 1024 * 1024;
+  //Máximo 4MB
+  const tamMax = 4 * 1024 * 1024;
   if (file.size > tamMax) {
-    avisoImagen('El archivo supera el tamaño máximo permitido, 3 MB.');
+    avisoImagen('El archivo supera el tamaño máximo permitido, 4 MB.');
     //Limpiamos el input si el archivo es demasiado grande
     event.target.value = '';
     return;

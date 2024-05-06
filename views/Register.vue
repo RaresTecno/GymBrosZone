@@ -16,8 +16,7 @@ async function createAccount() {
                 'fotoperfil': '/predeterminada.png',
                 'nombre': nombre.value,
                 'apellidos': apellidos.value,
-                'privacidad': 'publica',
-                'emailbueno': email.value
+                'privacidad': 'publica'
             }
         }
     });

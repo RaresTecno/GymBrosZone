@@ -15,6 +15,7 @@ async function loginFacebook() {
     const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'facebook',
   })
+  
 }
 function loginGoogle() {
     window.location.href = "https://accounts.google.com/v3/signin/identifier?authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F%3Futm_source%3Dsign_in_no_continue%26pli%3D1%26nlr%3D1&ec=GAlAwAE&hl=es&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession&dsh=S1091059932%3A1714486646087303&theme=mn&ddm=0"

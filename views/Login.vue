@@ -34,6 +34,16 @@ import { supabase, logOut, userState } from '../clients/supabase';
 const email = ref("");
 const password = ref("");
 
+async function signInWithGoogle() {
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+        });
+    } catch (error) {
+
+    }
+}
+
 async function login() {
     try {
         const { data: usuarios, error } = await supabase
@@ -120,17 +130,19 @@ function mensaje(mensaje, Input) {
                 <div class="inicio_sesion_contenido">
                     <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
                     <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
-                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
+                    <div class="google" @click="signInWithGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
                 </div>
             </div>
             <div class="cuenta_existente">
                 <div class="cuenta_existente_texto">¿No tienes una cuenta?</div>
             </div>
             <div class="crear">
-                <div class="crear_texto"><button>
+                <div class="crear_texto">
+                    <button>
                         <RouterLink to="/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
                         </RouterLink>
-                    </button></div>
+                    </button>
+                </div>
 
             </div>
         </div>

@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { usandoMovil } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
+import Tabla from "@/components/Tabla.vue";
 
 function arriba() {
   window.scrollTo(0, 0);
@@ -73,7 +74,11 @@ onMounted(() => {
         </template>
       </div>
       <div v-if="vista == 'Tablas'" id="tablas" class="vista">
-        tttttt
+        <template v-for="n in 50" :key="n">
+          <Tabla />
+          tttttt
+        </template>
+
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
         aaaa

@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { supabase } from "@/clients/supabase";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+/* import { shuffle } from "@/utils/helpers"; */
 
 const mostrarFinal = ref(false);
 const gymTag = ref("Rares");
@@ -28,6 +29,25 @@ const foto = supabase.storage
 
 const ruta = ref("https://s1.elespanol.com/2023/11/30/elandroidelibre/tutoriales/trucos/813679012_238049061_1706x960.jpg");
 // :style="{ backgroundImage: 'url(' + ruta + ')' }"
+
+/* const publicaciones = ref([]); */
+
+// Carga las publicaciones desde el storage de Supabase
+const cargarPublicaciones = async () => {
+  const fotos = await supabase.storage.from("archivos-usuarios").getPublicUrl("imagen.jpg");
+  // Array de objetos de publicaciones (no existe aún)
+  const publicacionesDesdeBD = [
+    { ruta: fotos[0], gymTag: "Rares", descripcion: "Lorem ipsum dolor sit amet" },
+    { ruta: fotos[1], gymTag: "Ejemplo", descripcion: "Consectetur adipiscing elit" },
+  ];
+  // Mezcla las publicaciones
+  /* publicaciones.value = shuffle(publicacionesDesdeBD); */
+};
+
+onMounted(() => {
+  // Llama a la función para cargar las publicaciones al montar el componente
+  cargarPublicaciones(); 
+});
 </script>
 <template>
   <div id="publicacion">

@@ -5,9 +5,9 @@ import { supabase } from "@/clients/supabase";
 /* const IdTabla = ref(0); */
 const tablaUrl = ref("");
 
-/* function crearNuevaTabla() {
+function crearNuevaTabla() {
 
-} */
+}
 
 /* const mostrarFinal = ref(false);
 const gymTag = ref("Rares");
@@ -40,11 +40,11 @@ onMounted(async () => {
 </script>
 
 <template>
-<!--   <div class="vistaTabla"></div>
-  <div v-if="(IdTabla = '0')" class="vistaNuevaTabla">
-    <button @click="crearNuevaTabla">Nueva tabla</button>
-    <div class="nuevaTabla"></div>
-  </div> -->
+<!--   <div class="vistaTabla"></div> -->
+<!--   <div v-if="(IdTabla = '0')" class="vistaNuevaTabla">
+    <button @click="crearNuevaTabla">Nueva tabla</button> -->
+<!--     <div class="nuevaTabla"></div> -->
+<!--   </div> -->
   <div>
     <div v-if="tablaUrl">
       <iframe :src="tablaUrl" class="tabla" frameborder="0"></iframe>

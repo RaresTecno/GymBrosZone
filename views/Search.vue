@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const busqueda = ref("");
-
+const ruta = ref('');
+const nutriScore = ref('');
 // API call function (ajustar según la API para códigos de barras)
 async function verApi() {
   const url =
@@ -12,8 +14,10 @@ async function verApi() {
   try {
     const response = await fetch(url);
     const result = await response.text();
-    const jsonObject = JSON.parse(result);
-    console.log(jsonObject.product.image_url)
+    const producto = JSON.parse(result);
+    console.log(producto.product.image_url)
+    ruta.value = producto.product.image_url
+    nutriScore.value = producto.product.nutriscore_grade;
   } catch (error) {
     console.log(error);
   }
@@ -61,16 +65,45 @@ function error(err) {
 </script>
 
 <template>
-  <div class="prueba">
-    <input type="text" v-model="busqueda" />
-    <button @click="verApi">Search Product</button>
+  <div class="buscador">
+    <div class="filtros">
+      <button class="filtro-usuarios">Gym Bros</button>
+      <button class="filtro-publicaciones">Publicaciones</button>
+      <button class="filtro-productos">Productos</button>
+    </div>
+    <div class="search">
+      <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
+      <!-- <input type="search"> -->
+      <input type="text" v-model="busqueda" />
+      <button @click="verApi">Search Product</button>
+      <!-- <div class="cerrar">x</div> -->
+    </div>
+  </div>
+  <div class="productos">
+    <img :src="ruta" alt="">
+    {{ nutriScore }}
   </div>
   <div id="reader"></div>
   <div id="result"></div>
+  
 </template>
 
 <style scoped>
+.buscador{
+  margin: 80px 0 0 60px;
+  height: 80px;
+}
+.filtros *{
+  width: 33.33%;
+}
+.productos{
+  margin-left: 60px;
+  background-color: red;
+  width: 100%;
+  height: 800px;;
+}
 .prueba {
   margin: 100px;
 }
+
 </style>

@@ -1,25 +1,34 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const mensaje = ref('');
+const url = ref('');
 
 onMounted(() => {
-    // setTimeout(() => {
-    //     window.location.href = "/login";
-    // }, 20000); 
-    // Accede a la ruta usando useRoute
+    
+    setTimeout(() => {
+        url.value = "/login";
+        redirigir();
+    }, 20000); 
+
     const route = useRoute();
     const email = decodeURIComponent(route.query.email);
-    if (email.includes('@gmail')) {
-        mensaje.value="Ir a Gmail";
-    }else if(email.includes('@hotmail')){
-        mensaje.value="Ir a Outlook";
-    }else{
-        mensaje.value="Ir a Login";
-
+    if (email.includes('@gmail.com')) {
+        mensaje.value = "Ir a Gmail";
+        url.value = "https://mail.google.com/mail/u/0/#inbox";
+    } else if (email.includes('@hotmail.com') || email.includes('@outlook.com')) {
+        mensaje.value = "Ir a Outlook";
+        url.value = "https://outlook.office365.com/mail/";
+    } else {
+        mensaje.value = "Ir a Login";
+        url.value = "/login";
     }
 });
+
+function redirigir() {
+    window.location.href = url.value; 
+}
 
 </script>
 <template>
@@ -34,7 +43,7 @@ onMounted(() => {
                     Tu cuenta está pendiente de verificación
                 </div>
                 <div class="pulsa">
-                    <a href="https://mail.google.com/mail/u/0/#inbox" target="blank">{{ mensaje }}</a>
+                    <a href="" target="blank" @click="redirigir">{{ mensaje }}</a>
                 </div>
             </div>
             <div class="email_abajo">

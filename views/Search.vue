@@ -13,7 +13,7 @@ async function verApi() {
     const response = await fetch(url);
     const result = await response.text();
     const jsonObject = JSON.parse(result);
-    console.log(jsonObject.product.image_url)
+    console.log(jsonObject.product.nutriments["energy-kcal"])
   } catch (error) {
     console.log(error);
   }

@@ -113,169 +113,159 @@ console.log(urlFoto);
 </script>
 
 <template>
-  <div class="img_perfil" v-if="!userActive">
-    <div class="image-container"></div>
-    <img src="../assets/img/logo.png" alt="img-perfil" class="imgPerfil" />
-    <img
-      src="../assets/icons/imgUpload.png"
-      alt="upload IMG"
-      class="img-icon"
-    />
-    <br />
-    <input type="file" />
-    <br />
-    <input
-      v-model="gymtag"
-      type="text"
-      class="gym_tag"
-      placeholder="GymTag..."
-    />
-  </div>
-  <div class="container_formulario" v-if="!userActive">
-    <form
-      action="Profile.vue"
-      method="POST"
-      class="formulario"
-      novalidation
-      @submit="validateForm"
-    >
-      <div class="column">
-        <label for="nombre">Nombre:</label>
+  <div class="container">
+    <div class="container_formulario">
+      <div class="img_perfil">
+        <div class="image-container"></div>
+        <img src="../assets/img/logo.png" alt="img-perfil" class="imgPerfil" />
+        <img
+          src="../assets/icons/imgUpload.png"
+          alt="upload IMG"
+          class="img-icon"
+        />
+        <br />
+        <input type="file" />
+        <br />
+        <label for="gymtag"></label>
         <input
-          v-model="nombre"
-          class="inputs"
+          v-model="gymtag"
+          name="gymtag"
           type="text"
-          name="nombre"
-          placeholder="Escriba su nombre"
-          autocomplete="off"
+          class="gym_tag inputs"
+          placeholder="GymTag..."
         />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-        </div>
-        <label for="edad">Fecha de Nacimiento:</label>
-        <input type="date" class="inputs" name="edad" autocomplete="off" />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-        </div>
-        <label for="peso">Peso:</label>
-        <input
-          v-model="peso"
-          type="number"
-          class="inputs"
-          name="peso"
-          placeholder="Escriba su peso"
-          autocomplete="off"
-        />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-        </div>
-        <label for="localidad">Localidad:</label>
-        <input
-          v-model="localidad"
-          type="text"
-          class="inputs"
-          name="localidad"
-          placeholder="Escriba su localidad"
-          autocomplete="off"
-        />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-        </div>
       </div>
-      <div class="column">
-        <label for="apellidos">Apellidos:</label>
-        <input
-          v-model="apellidos"
-          class="inputs"
-          type="text"
-          name="apellidos"
-          placeholder="Escriba sus apellidos"
-          autocomplete="off"
-        />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+      <form
+        action="Profile.vue"
+        method="POST"
+        class="formulario"
+        novalidation
+        @submit="validateForm"
+      >
+        <div class="column">
+          <label for="nombre">Nombre:</label>
+          <input
+            v-model="nombre"
+            class="inputs"
+            type="text"
+            name="nombre"
+            placeholder="Nombre"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
+          <label for="edad">Fecha de Nacimiento:</label>
+          <input type="date" class="inputs" name="edad" autocomplete="off" />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
+          <label for="peso">Peso:</label>
+          <input
+            v-model="peso"
+            type="number"
+            class="inputs"
+            name="peso"
+            placeholder="Escriba su peso"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
+          <label for="localidad">Localidad:</label>
+          <input
+            v-model="localidad"
+            type="text"
+            class="inputs"
+            name="localidad"
+            placeholder="Escriba su localidad"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
         </div>
-        <label for="sexo">Sexo:</label>
-        <input
-          v-model="sexo"
-          type="text"
-          class="inputs"
-          name="sexo"
-          placeholder="Escriba su sexo"
-          autocomplete="off"
-        />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+        <div class="column">
+          <label for="apellidos">Apellidos:</label>
+          <input
+            v-model="apellidos"
+            class="inputs"
+            type="text"
+            name="apellidos"
+            placeholder="Escriba sus apellidos"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
+          <label for="sexo">Sexo:</label>
+          <input
+            v-model="sexo"
+            type="text"
+            class="inputs"
+            name="sexo"
+            placeholder="Escriba su sexo"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
+          <label for="altura">Altura:</label>
+          <input
+            v-model="altura"
+            ype="text"
+            class="inputs"
+            name="altura"
+            placeholder="Escriba su altura"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
+          <label for="gym">Gym:</label>
+          <input
+            type="text"
+            class="inputs"
+            name="gym"
+            placeholder="¿Dónde entrenas?"
+            autocomplete="off"
+          />
+          <div class="container_lapiz">
+            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
+          </div>
         </div>
-        <label for="altura">Altura:</label>
-        <input
-          v-model="altura"
-          ype="text"
-          class="inputs"
-          name="altura"
-          placeholder="Escriba su altura"
-          autocomplete="off"
-        />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-        </div>
-        <label for="gym">Gym:</label>
-        <input
-          type="text"
-          name="gym"
-          placeholder="¿Dónde entrenas?"
-          autocomplete="off"
-        />
-        <div class="container_lapiz">
-          <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-        </div>
+      </form>
+      <div v-if="mostrarMensaje" class="mensaje-error-container">
+        <div class="mensaje-error">{{ mensajeError }}</div>
       </div>
-      <div v-if="mostrarMensaje">{{ mensajeError }}</div>
-    </form>
-    <button type="submit" class="actualizar" @click="validateForm">
-      <RouterLink to="/"><a href="">Actualizar</a></RouterLink>
+      <button type="submit" class="actualizar" @click="validateForm">
+        <RouterLink to="/"><a href="">Actualizar</a></RouterLink>
+      </button>
+    </div>
+    <button class="cerrar-sesion" v-if="!userActive">
+      <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
     </button>
   </div>
-  <button class="cerrar-sesion" v-if="!userActive">
-    <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
-  </button>
 </template>
 
 <style scoped>
-.sub-header {
-  background-color: var(--alt-black);
-  text-align: center;
-  width: 100%;
-  height: 130px;
+.container {
+  width: 100vw;
+  height: fit-content;
+  background: var(--bg-color);
   display: flex;
-  justify-content: center;
   align-items: center;
-  border-bottom: 3px solid #292823bf;
-  box-shadow: 0 2px 5px var(--alt-black);
-  border: 3px solid black;
-}
-.title {
-  color: aliceblue;
-  font-size: 35px;
-  font-family: "BioRhyme", serif;
-  font-weight: bold;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "width" 100;
-}
-.logo {
-  margin-right: 20px;
-  width: 12.5%;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 7.5%;
 }
 
 .img_perfil {
-  margin-top: 6%;
   text-align: center;
 }
 
 .imgPerfil {
-  width: 20%;
-  height: auto;
+  width: 35%;
   cursor: pointer;
 }
 
@@ -291,15 +281,32 @@ console.log(urlFoto);
   cursor: pointer;
 }
 
+.container_formulario {
+  margin-top: 2%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  margin: 15px auto 30px;
+  padding: 20px 30px;
+  background-color: var(--dark-blue);
+  box-shadow: 0 2px 5px var(--alt-black);
+  border: 3px solid black;
+  width: 75vw;
+  height: fit-content;
+  max-width: 1050px;
+  display: flex; /* Agrega esta línea */
+  flex-direction: column; /* Agrega esta línea */
+}
+
 .formulario {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 34px;
+  gap: 55px;
   flex-direction: column;
   color: aliceblue;
   text-align: center;
   align-items: center;
-  font-size: 15px;
+  font-size: 20px;
   font-family: "BioRhyme", serif;
   font-weight: bold;
   font-optical-sizing: auto;
@@ -311,31 +318,22 @@ console.log(urlFoto);
   margin-right: auto;
 }
 
-.container_formulario {
-  margin-top: 2%;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  margin: 15px auto 30px;
-  padding: 20px 30px;
-  background-color: var(--dark-blue);
-  box-shadow: 0 2px 5px var(--alt-black);
-  border: 3px solid black;
-  width: 60%;
-  height: 75%;
-}
-
-input {
+input, .gym_tag {
   background-color: var(--blue);
   color: rgba(240, 248, 255, 0.705);
 }
 
-input::placeholder {
+.inputs{
+  height: 30px;
+  width: 220px;
+}
+
+input::placeholder, .gym_tag::placeholder {
   color: rgba(240, 248, 255, 0.596);
 }
 
 input[type="file"] {
-  margin: 1%;
+  margin: 4%;
 }
 
 .container_lapiz {
@@ -353,7 +351,7 @@ input[type="file"] {
   height: auto;
   cursor: pointer;
   position: relative;
-  top: -18.75px;
+  top: -21px;
   right: 20px;
 }
 
@@ -370,6 +368,16 @@ a {
 
 a:hover {
   color: black;
+}
+
+.mensaje-error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mensaje-error {
+  color: aliceblue;
 }
 
 button {
@@ -403,6 +411,7 @@ button.actualizar {
     -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 2%;
   display: block;
 }
 
@@ -465,74 +474,49 @@ button:hover a {
 }
 
 button.cerrar-sesion {
-  margin-bottom: 24vh;
+  margin-bottom: 2%;
 }
 
 @media (max-width: 1440px) {
-  button.cerrar-sesion {
-    margin-bottom: 16vh;
+  .container_formulario {
+    margin-top: 7%;
   }
 }
 
 @media (max-width: 1024px) {
-  button.cerrar-sesion {
-    margin-bottom: 12vh;
+  .container_formulario {
+    margin-top: 13%;
   }
 }
 
 @media (max-width: 768px) {
-  .img_perfil {
-    margin-top: 15%;
-  }
-
-  .formulario > * {
-    margin-bottom: 10px;
-  }
   .container_formulario {
-    margin-top: 2%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    margin: 15px auto 30px;
-    padding: 20px 30px;
-    background-color: var(--dark-blue);
-    box-shadow: 0 2px 5px var(--alt-black);
-    border: 3px solid black;
-    width: 85%;
-    height: auto;
-  }
-
-  .lapiz {
-    position: relative;
-    top: -18.5px;
-  }
-
-  button.cerrar-sesion {
-    margin-bottom: 22vw;
-  }
-}
-
-@media (max-width: 425px) {
-  .img_perfil {
-    margin-top: 50%;
-  }
-
-  .imgPerfil {
-    width: 50%;
-    height: auto;
-    cursor: pointer;
-    margin: 1vh;
+    margin-bottom: 2%;
   }
 
   .img-icon {
     width: 25px;
   }
 
-  input[type="file"]{
+  input{
+    width: 320px;
+    margin: 2%;
+  }
+
+  .formulario {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 425px) {
+  .img-icon {
+    width: 25px;
+  }
+
+  input[type="file"] {
     margin: 5vw;
+    width: 60vw;
   }
 
   .formulario {
@@ -541,16 +525,18 @@ button.cerrar-sesion {
   }
 
   .inputs {
-    width: calc(100% - 1.5px);
-    margin-bottom: 2vw;
-    margin-right: 0;
+    width: 55vw;
   }
 
   .lapiz {
     height: auto;
     cursor: pointer;
     position: relative;
-    top: -3vh;
+    top: -25px;
   }
+}
+
+@media (max-width: 375px) {
+
 }
 </style>

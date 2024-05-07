@@ -18,6 +18,7 @@ async function verApi() {
     console.log(producto.product.image_url)
     ruta.value = producto.product.image_url
     nutriScore.value = producto.product.nutriscore_grade;
+    console.log(producto.product.nutriments["energy-kcal"])
   } catch (error) {
     console.log(error);
   }

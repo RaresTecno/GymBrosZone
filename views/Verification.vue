@@ -1,11 +1,26 @@
 <script setup>
 import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+
+const mensaje = ref('');
 
 onMounted(() => {
-    setTimeout(() => {
-        window.location.href = "/login";
-    }, 20000); 
+    // setTimeout(() => {
+    //     window.location.href = "/login";
+    // }, 20000); 
+    // Accede a la ruta usando useRoute
+    const route = useRoute();
+    const email = decodeURIComponent(route.query.email);
+    if (email.includes('@gmail')) {
+        mensaje.value="Ir a Gmail";
+    }else if(email.includes('@hotmail')){
+        mensaje.value="Ir a Outlook";
+    }else{
+        mensaje.value="Ir a Login";
+
+    }
 });
+
 </script>
 <template>
     <div class="todo_waiting">
@@ -19,7 +34,7 @@ onMounted(() => {
                     Tu cuenta está pendiente de verificación
                 </div>
                 <div class="pulsa">
-                    <a href="https://mail.google.com/mail/u/0/#inbox" target="blank">Ir a Gmail</a>
+                    <a href="https://mail.google.com/mail/u/0/#inbox" target="blank">{{ mensaje }}</a>
                 </div>
             </div>
             <div class="email_abajo">
@@ -201,15 +216,15 @@ onMounted(() => {
 
 
 @media (max-width: 285px) {
-    h1{
+    h1 {
         text-align: center;
     }
 
-    .mensaje{
+    .mensaje {
         text-align: center;
     }
 
-    .pulsa{
+    .pulsa {
         text-align: center;
     }
 
@@ -217,16 +232,16 @@ onMounted(() => {
         height: 280px;
     }
 
-    .login{
+    .login {
         height: 120px;
         justify-content: space-around;
     }
 
-    .email_abajo{
+    .email_abajo {
         justify-content: center;
     }
 
-    .email{
+    .email {
         top: -10px;
         left: 0;
     }

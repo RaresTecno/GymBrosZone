@@ -23,7 +23,8 @@ async function createAccount() {
     if (error) {
         return null;
     } else {
-        window.location.href = "/waiting-verification";
+        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
+        window.location.href = `/waiting-verification?email=${emailEncoded}`;
     }
 }
 

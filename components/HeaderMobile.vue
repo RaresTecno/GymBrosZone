@@ -1,8 +1,15 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 const posicionAnt = ref(0);
 const mostrar = ref(true);
+
+watch(() => route.path, (newPath) => {
+  mostrar.value = newPath !== '/post';
+}, { immediate: true });
 
 function mostrarHeader() {
   const posicionActual = window.scrollY;
@@ -11,9 +18,16 @@ function mostrarHeader() {
     mostrar.value = false;
     if (posicionActual < posicionAnt.value) {
       mostrar.value = true;
+      watch(() => route.path, (newPath) => {
+        mostrar.value = newPath !== '/post';
+      }, { immediate: true });
+      
     }
   } else {
     mostrar.value = true;
+      watch(() => route.path, (newPath) => {
+        mostrar.value = newPath !== '/post';
+      }, { immediate: true });
   }
   posicionAnt.value = posicionActual;
 }
@@ -66,12 +80,15 @@ nav {
   justify-content: center;
   align-items: center;
   transition: 0.4s;
+  z-index: 400;
 }
+
 nav .botonesNav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+
 }
 
 .logo_header img {

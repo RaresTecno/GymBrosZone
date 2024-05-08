@@ -83,7 +83,7 @@ header {
   justify-content: space-between;
   padding: 0 20px;
   position: fixed;
-  z-index: 100;
+  z-index: 400;
   box-shadow: 2px 0 15px var(--black), 3px 0 20px var(--black);
 }
 

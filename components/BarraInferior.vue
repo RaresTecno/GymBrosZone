@@ -5,6 +5,7 @@ import { ref, onMounted } from "vue";
 
 <template>
   <nav>
+    <div class="borde"></div>
     <div class="botonesNav">
       <div>
         <RouterLink to="/" class="RouterLink">
@@ -48,14 +49,25 @@ nav {
   bottom: -10px;
   z-index: 100;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
+
+.borde{
+  width: 100%;
+  background-color: #eef2fa;
+  height: 1px;
+  transform: scaleY(0.4);
+  transform-origin: top;
+}
+
 nav .botonesNav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 80%;
   margin-top: 10px;
+  z-index: 10;
 }
 
 div .RouterLink {

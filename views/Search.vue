@@ -4,8 +4,15 @@ import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const busqueda = ref("");
-const ruta = ref('');
-const nutriScore = ref('');
+const ProductoFoto= ref('');
+const ProductoNutriScore = ref('');
+const ProductoNovaGroup = ref('');
+const ProductoEcoScore = ref('');
+const ProductoCantidad = ref('');
+const ProductoIngredientes = ref('');
+// const ProductoEcoScore = ref('');
+// const ProductoEcoScore = ref('');
+// const ProductoEcoScore = ref('');
 // API call function (ajustar según la API para códigos de barras)
 async function verApi() {
   const url =
@@ -16,8 +23,12 @@ async function verApi() {
     const result = await response.text();
     const producto = JSON.parse(result);
     console.log(producto.product.image_url)
-    ruta.value = producto.product.image_url
-    nutriScore.value = producto.product.nutriscore_grade;
+    ProductoFoto.value = producto.product.image_url
+    ProductoNutriScore.value = producto.product.nutriscore_grade;
+    ProductoNovaGroup.value = producto.product.nova_group;
+    ProductoEcoScore.value = producto.product.ecoscore_grade;
+    ProductoCantidad.value = producto.product.ecoscore_data.packaging.packagings.quantity_per_unit;
+    ProductoIngredientes.value = producto.product.ingredients_text
   } catch (error) {
     console.log(error);
   }
@@ -80,8 +91,12 @@ function error(err) {
     </div>
   </div>
   <div class="productos">
-    <img :src="ruta" alt="">
-    {{ nutriScore }}
+    <img :src="ProductoFoto" alt="">
+    {{ ProductoNutriScore }}
+    {{ ProductoNovaGroup }}
+    {{ ProductoEcoScore }}
+    {{ ProductoCantidad }}
+    {{ ProductoIngredientes }}
   </div>
   <div id="reader"></div>
   <div id="result"></div>

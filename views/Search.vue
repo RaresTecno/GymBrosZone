@@ -28,7 +28,8 @@ async function verApi() {
     ProductoNovaGroup.value = producto.product.nova_group;
     ProductoEcoScore.value = producto.product.ecoscore_grade;
     ProductoCantidad.value = producto.product.ecoscore_data.packaging.packagings.quantity_per_unit;
-    ProductoIngredientes.value = producto.product.ingredients_text
+    ProductoIngredientes.value = producto.product.ingredients_text;
+    console.log(producto.product.nutriments["energy-kcal"])
   } catch (error) {
     console.log(error);
   }

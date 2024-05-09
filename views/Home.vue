@@ -22,14 +22,10 @@ disponible.value = true;
         </div>
       </div>
       <button class="button-login_register">
-        <RouterLink to="/login"
-          ><a href=""><i>Login</i></a></RouterLink
-        >
+        <RouterLink to="/login"><a href=""><i>Login</i></a></RouterLink>
       </button>
       <button class="button-login_register">
-        <RouterLink to="/register"
-          ><a href=""><i>Registro</i></a></RouterLink
-        >
+        <RouterLink to="/register"><a href=""><i>Registro</i></a></RouterLink>
       </button>
       <div class="container_services">
         <!--  v-if="no-logged" -->
@@ -68,13 +64,16 @@ disponible.value = true;
 main {
   margin: 80px auto 0;
 }
+
 .publicaciones {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-left: 60px;
   margin-bottom: 100px;
+  padding-top: 50px;
 }
+
 .vista {
   width: 60%;
   display: grid;
@@ -84,6 +83,7 @@ main {
   justify-content: center;
   /* Centra el contenido verticalmente */
 }
+
 .portada {
   background-color: var(--alt-black);
   text-align: center;
@@ -128,6 +128,7 @@ main {
   margin-left: auto;
   margin-right: auto;
 }
+
 .container_log-or-reg,
 .container_services {
   display: flex;
@@ -166,7 +167,8 @@ button {
   margin-bottom: 5%;
 }
 
-button.button-login_register, button.post {
+button.button-login_register,
+button.post {
   font-weight: 600;
   color: black;
   text-transform: uppercase;
@@ -186,7 +188,8 @@ button.button-login_register, button.post {
   display: block;
 }
 
-button.button-login_register::before, button.post::before {
+button.button-login_register::before,
+button.post::before {
   position: absolute;
   content: "";
   width: 100%;
@@ -207,38 +210,45 @@ button.button-login_register::before, button.post::before {
     -webkit-box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
 }
 
-.button-login_register:hover, button.post:hover {
+.button-login_register:hover,
+button.post:hover {
   color: black;
   background: aliceblue;
   -webkit-transform: translate(0, 0.25em);
   transform: translate(0, 0.25em);
 }
 
-.button-login_register:hover::before, button.post:hover::before {
+.button-login_register:hover::before,
+button.post:hover::before {
   -webkit-box-shadow: 0 0 0 2px var(--alt-black), 0 0.5em 0 0 black;
   box-shadow: 0 0 0 2px grey, 0 0.5em 0 0 whitesmoke;
   -webkit-transform: translate3d(0, 0.5em, -1em);
   transform: translate3d(0, 0.5em, -1em);
 }
 
-button.button-login_register:active, button.post:active {
+button.button-login_register:active,
+button.post:active {
   background: whitesmoke;
   -webkit-transform: translate(0em, 0.75em);
   transform: translate(0em, 0.75em);
 }
 
-button.button-login_register:active::before, button.post::before {
+button.button-login_register:active::before,
+button.post::before {
   -webkit-box-shadow: 0 0 0 2px grey, 0 0 rgb(95, 88, 88);
   box-shadow: 0 0 0 2px rgb(65, 58, 58), 0 0 rgb(192, 178, 178);
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
 }
+
 button a {
   color: white;
 }
+
 button:hover a {
   color: black;
 }
+
 @media (max-width: 1100px) {
   .vista {
     display: flex;
@@ -247,11 +257,14 @@ button:hover a {
     align-items: center;
   }
 }
+
 @media (max-width: 875px) {
 
   .publicaciones {
     margin-left: 0;
+    padding-top: 30px;
   }
+
   .vista {
     margin: 0px;
 

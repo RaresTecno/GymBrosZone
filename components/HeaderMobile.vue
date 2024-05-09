@@ -81,6 +81,7 @@ nav {
   align-items: center;
   transition: 0.4s;
   z-index: 400;
+  box-shadow: 2px 0 10px var(--black), 3px 0 15px var(--black);
 }
 
 nav .botonesNav {

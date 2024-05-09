@@ -123,6 +123,8 @@ function success(result) {
   document.getElementById(
     "result"
   ).innerHTML = `<h2>Success</h2><p>Scanned Barcode: ${result}</p>`;
+  busqueda.value = result;
+  verApi();
   if (scanner.value) {
     scanner.value.clear();
   }

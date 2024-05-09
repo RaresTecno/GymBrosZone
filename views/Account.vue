@@ -113,7 +113,7 @@ console.log(urlFoto);
 </script>
 
 <template>
-  <div class="img_perfil" v-if="!userActive">
+  <div class="img_perfil">
     <div class="image-container"></div>
     <img src="../assets/img/logo.png" alt="img-perfil" class="imgPerfil" />
     <img
@@ -131,7 +131,7 @@ console.log(urlFoto);
       placeholder="GymTag..."
     />
   </div>
-  <div class="container_formulario" v-if="!userActive">
+  <div class="container_formulario">
     <form
       action="Profile.vue"
       method="POST"
@@ -236,7 +236,7 @@ console.log(urlFoto);
       <RouterLink to="/"><a href="">Actualizar</a></RouterLink>
     </button>
   </div>
-  <button class="cerrar-sesion" v-if="!userActive">
+  <button class="cerrar-sesion">
     <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
   </button>
 </template>

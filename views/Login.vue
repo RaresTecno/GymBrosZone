@@ -1,49 +1,57 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { supabase, logOut, userState, userActive } from '../clients/supabase';
+
+onMounted(() => {
+    if(userActive.value){
+      window.location.href = '/';
+    }
+})
+
+
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
-
 // let [captchaToken, setCaptchaToken] = userState()
-
-const contraVisible = ref(false);
-const mostrarMensaje = ref(false);
-const mensajeError = ref('');
-const passwordInput = ref(null);
-
- 
-async function loginFacebook() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'facebook',
-  })
-  
-}
-function loginGoogle() {
-    window.location.href = "https://accounts.google.com/v3/signin/identifier?authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F%3Futm_source%3Dsign_in_no_continue%26pli%3D1%26nlr%3D1&ec=GAlAwAE&hl=es&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession&dsh=S1091059932%3A1714486646087303&theme=mn&ddm=0"
-    
-}
-async function loginTwitter() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'twitter',
-  })
-  if (data) {
-    
-  }
-    
-}
-import { supabase, logOut, userState } from '../clients/supabase';
 
 const email = ref("");
 const password = ref("");
+const mensajeError = ref('');
+const passwordInput = ref(null);
+const contraVisible = ref(false);
+const mostrarMensaje = ref(false);
 
-async function signInWithGoogle() {
-    try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-        });
-    } catch (error) {
+
+async function loginFacebook() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+    })
+    if (error) {
+        mensaje2('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.');
+    }
+}
+
+async function loginTwitter() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'twitter',
+    })
+    if (error) {
+        mensaje2('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.');
+    }
+    if (data) {
 
     }
 }
+
+async function loginGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+    });
+    if (error) {
+        mensaje2('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.');
+    }
+}
+
+
 
 async function login() {
     try {
@@ -69,7 +77,7 @@ async function login() {
                 mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
                 return false;
             } else {
-                userState();
+                await userState();
                 window.location.href = "/";
             }
         } else {
@@ -86,6 +94,11 @@ function mensaje(mensaje, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
     Input.value.focus();
+}
+
+function mensaje2(mensaje) {
+    mensajeError.value = mensaje;
+    mostrarMensaje.value = true;
 }
 
 </script>
@@ -129,9 +142,12 @@ function mensaje(mensaje, Input) {
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
-                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
-                    <div class="google" @click="signInWithGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
+                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']"
+                            style="color: #eef2fa;" class="icono_iniciar" /></div>
+                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']"
+                            style="color: #eef2fa;" class="icono_iniciar" /></div>
+                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']"
+                            class="icono_google icono_iniciar" /></div>
                 </div>
             </div>
             <div class="cuenta_existente">
@@ -157,7 +173,7 @@ function mensaje(mensaje, Input) {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 145px;
+    padding-top: 165px;
 }
 
 .login {
@@ -648,7 +664,7 @@ button a {
         min-width: 0;
     }
 
-    .crear_texto button{
+    .crear_texto button {
         height: fit-content
     }
 }

@@ -94,49 +94,49 @@ onMounted(() => {
     <nav :style="{ top: altura + 'px' }">
       <div>
         <RouterLink to="/" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'house']" />
+          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'house']" /></div>
           <h2>Home</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Profile" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'user']" />
+        <RouterLink to="/profile" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon usuario" :icon="['fas', 'user']" /></div>
           <h2>Perfil</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Publicar" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" />
+        <RouterLink to="/post" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" /></div>
           <h2>Publicar</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Search" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" />
+        <RouterLink to="/search" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" /></div>
           <h2>Buscar</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Likes" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
+        <RouterLink to="/likes" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'heart']" /></div>
           <h2>Likes</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Keep" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'bookmark']" />
+        <RouterLink to="/keep" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon guardado" :icon="['fas', 'bookmark']" /></div>
           <h2>Guardados</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Tables" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'table']" />
+        <RouterLink to="/tables" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'table']" /></div>
           <h2>Tablas</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Messages" class="RouterLink">
-          <font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" />
+        <RouterLink to="/messages" class="RouterLink">
+          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" /></div>
           <h2>Mensajes</h2>
         </RouterLink>
       </div>
@@ -157,18 +157,17 @@ nav {
   top: 80px;
   /* transition: width 0.4s; */
   z-index: 100;
+  transition: width 0.3s;
+  overflow: hidden;
 }
 
 h2 {
   margin-left: 10px;
   width: 120px;
-  display: none;
-}
-
-nav h2 {
-  /* color: transparent; */
-  /* transition: color 0.4s; */
-  display: none;
+  /* display: none; */
+  transform: translateX(-190px);
+  color: var(--dark-blue);
+  transition: color 0.5s;
 }
 
 nav:hover {
@@ -178,6 +177,7 @@ nav:hover {
 nav:hover h2 {
   display: inline;
   color: var(--light-blue-text);
+  transform: translateX(0px);
 }
 
 div .RouterLink {

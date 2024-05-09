@@ -2,6 +2,10 @@
 import { ref } from 'vue';
 import { supabase, userState } from '../clients/supabase';
 
+// if(!userActive.value){
+//   window.location.href = '/login';
+// }
+
 const tematica = ref('');
 const contenido = ref('');
 
@@ -79,12 +83,12 @@ async function insertarImagen() {
   const imagen = fileInput.value.files[0];
   console.log(imagen);
   const ruta = `usuario/${imagen.name}`;
-  console.log(imagen.name+' este es el nombre');
+  console.log(imagen.name + ' este es el nombre');
   const { data, error } = await supabase.storage
     .from('archivos-usuarios')
     .upload(ruta, imagen)
 
-  if(error){
+  if (error) {
     avisoImagen('Ha ocurrido un error al guardar la imagen.');
   }
   return data;
@@ -133,7 +137,7 @@ function quitar_imagen() {
   fondo_imagen.value.style.backgroundColor = 'var(--light-blue-text)';
   div_quitar_imagen.value.style.display = 'none';
   div_girar_imagen.value.style.display = 'none';
-  
+
 }
 
 function girar_imagen() {
@@ -586,7 +590,7 @@ svg.girar_imagen {
 .textarea {
   resize: none;
   height: 255px;
-  padding: 12px 8px;
+  padding: 8px 8px 12px;
 }
 
 .textarea::-webkit-scrollbar {
@@ -663,9 +667,7 @@ svg.girar_imagen {
   }
 
   .textarea {
-    resize: none;
     height: 225px;
-    padding: 12px 8px;
   }
 
   .container .label {
@@ -759,15 +761,16 @@ svg.girar_imagen {
 
   .publicar {
     margin-top: 70px;
+    margin-bottom: 20px;
   }
 
   .aviso {
     height: 35px;
     width: 100%;
-    margin-top: 80px;
     display: flex;
     justify-content: center;
     align-items: center;
+    transform: translateY(-135px);
   }
 
   .aviso_texto {
@@ -787,6 +790,10 @@ svg.girar_imagen {
 
   .anadir {
     top: -13.5px;
+  }
+
+  .contenido{
+    margin-top: 55px;
   }
 }
 
@@ -821,9 +828,9 @@ svg.girar_imagen {
     width: 200px;
   }
 
-  .aviso {
-    margin-top: 0;
-  }
+  /* .aviso {
+    transform: translateY(-135px);
+  } */
 
   .aviso_texto {
     font-size: 17px;
@@ -846,9 +853,18 @@ svg.girar_imagen {
     min-width: 0;
   }
 
+  .div_imagen {
+    margin-top: 20px;
+    margin-bottom: 10px
+  }
+
   .prev_imagen {
     height: 300px;
     width: 300px;
+  }
+
+  .publicar {
+    margin-bottom: 5px;
   }
 
   .textarea,
@@ -857,11 +873,11 @@ svg.girar_imagen {
   }
 
   .aviso {
-    margin-top: -100px;
+    transform: translateY(-120px);
   }
 
   .textarea {
-    height: 150px;
+    height: 155px;
   }
 }
 
@@ -869,7 +885,7 @@ svg.girar_imagen {
 
   .todo_publicar,
   .publicar_container {
-    height: 860px;
+    height: 920px;
   }
 
   .tit_publicar {
@@ -897,7 +913,7 @@ svg.girar_imagen {
   }
 
   .publicar {
-    margin-bottom: 30px;
+    margin-bottom: 5px;
     margin-top: 60px;
   }
 
@@ -922,7 +938,7 @@ svg.girar_imagen {
   }
 
   .aviso {
-    margin-top: -90px;
+    transform: translateY(-225px);
   }
 
   .aviso_texto {
@@ -936,23 +952,22 @@ svg.girar_imagen {
 }
 
 @media(max-width: 300px) {
+  .todo_publicar,
+  .publicar_container {
+    height: 1000px;
+  }
   .prev_imagen {
     height: 220px;
     width: 220px;
   }
 
   .aviso {
-    margin-top: -90px;
-  }
-
-  .todo_publicar,
-  .publicar_container {
-    height: 830px;
+    transform: translateY(-340px);
   }
 
   .aviso_texto {
     font-size: 15px;
-    width: 85%;
+    width: 90%;
   }
 
   ::placeholder {

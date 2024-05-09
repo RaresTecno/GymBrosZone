@@ -1,7 +1,11 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase, userState } from '../clients/supabase';
+import { supabase, userState, userActive } from '../clients/supabase';
+
+if(userActive.value){
+  window.location.href = '/';
+}
 
 //https://www.youtube.com/watch?v=efNX5x7O0cY
 
@@ -236,6 +240,10 @@ async function creaCuenta() {
         return;
     }
 }
+
+function verPoliticas(){
+    window.location.href = '/politicas-y-condiciones';
+}
 </script>
 <template>
     <div class="todo_register">
@@ -331,7 +339,7 @@ async function creaCuenta() {
                             pathLength="575.0541381835938" class="path"></path>
                     </svg>
                 </label>
-                <label class="aceptar" for="aceptar">Aceptar políticas y condiciones de GymBros Zone.</label>
+                <label class="aceptar" for="aceptar" @click=verPoliticas>Aceptar políticas y condiciones de GymBros Zone.</label>
             </div>
             <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
                 <div class="mensaje_texto">
@@ -357,7 +365,7 @@ async function creaCuenta() {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 145px;
+    padding-top: 165px;
 }
 
 .register {
@@ -601,6 +609,14 @@ async function creaCuenta() {
 .aceptar {
     margin-left: 20px;
     margin-bottom: 3px;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: text-shadow 0.3s;
+
+}
+
+.aceptar:hover, .aceptar:active{
+    text-shadow: 0 0 5px #eef2fa66;
 }
 
 .container_checkbox {
@@ -812,7 +828,7 @@ async function creaCuenta() {
 
 @media(max-width: 875px) {
     .todo_register {
-        padding-top: 159px;
+        padding-top: 174px;
     }
 }
 
@@ -826,7 +842,7 @@ async function creaCuenta() {
     }
 
     .todo_register {
-        padding-top: 232px;
+        padding-top: 247px;
     }
 
     .nombre_y_apellidos .nombre .input,

@@ -13,7 +13,11 @@ onMounted(() => {
     }, 20000); 
 
     const route = useRoute();
-    const email = decodeURIComponent(route.query.email);
+    const email = route.query.email ? decodeURIComponent(route.query.email) : '';
+    if (!email) {
+        window.location.href = '/';
+        return;
+    }
     if (email.includes('@gmail.com')) {
         mensaje.value = "Ir a Gmail";
         url.value = "https://mail.google.com/mail/u/0/#inbox";

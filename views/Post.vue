@@ -2,6 +2,10 @@
 import { ref } from 'vue';
 import { supabase, userState } from '../clients/supabase';
 
+// if(!userActive.value){
+//   window.location.href = '/login';
+// }
+
 const tematica = ref('');
 const contenido = ref('');
 

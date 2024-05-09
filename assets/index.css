@@ -22,7 +22,7 @@ body {
     background-color: var(--bg-color);
 }
 html::-webkit-scrollbar { 
-    /* display: none; */
+    display: none;
 }
 #app{
     overflow-x: hidden;

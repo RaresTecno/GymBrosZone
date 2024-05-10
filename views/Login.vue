@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, onMounted } from 'vue';
 import { supabase, logOut, userState, userActive } from '../clients/supabase';
 
-onMounted(() => {
-    if(userActive.value){
-      window.location.href = '/';
-    }
-})
+// onMounted(() => {
+//     if(userActive.value){
+//       window.location.href = '/';
+//     }
+// })
 
 
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
@@ -77,7 +77,7 @@ async function login() {
                 mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
                 return false;
             } else {
-                await userState();
+                // userState();
                 window.location.href = "/";
             }
         } else {

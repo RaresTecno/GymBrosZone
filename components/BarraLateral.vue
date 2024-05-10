@@ -1,11 +1,13 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
+import { userActive } from "../clients/supabase";
 
 const posicionAnt = ref(0);
 const altura = ref(80);
 const windowWidth = ref(window.innerWidth);
 
+console.log('lateral:'+ userActive.value);
 const posicionActual = window.scrollY;
 
 //hacerlo tambien primero con el width

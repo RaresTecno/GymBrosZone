@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { supabase, userState, userActive } from '../clients/supabase';
 
-if(userActive.value){
-  window.location.href = '/';
-}
+// if(userActive.value){
+//   window.location.href = '/';
+// }
 
 //https://www.youtube.com/watch?v=efNX5x7O0cY
 

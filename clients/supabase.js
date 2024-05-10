@@ -11,7 +11,6 @@ export const userActive = ref(false);
 
 export async function userData(){    
     const { data: { user } } = await supabase.auth.getUser();
-
 }
 
 export async function userState(){

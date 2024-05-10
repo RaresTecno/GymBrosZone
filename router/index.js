@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+// import { userActive, userState } from '../clients/supabase'
 
 // import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
@@ -88,23 +89,23 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const usuarioActivo = localStorage.getItem('sb-subcejpmaueqsiypcyzt-auth-token');
+// router.beforeEach((to, from, next) => {
+//   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+//   const usuarioActivo = userActive.value;//localStorage.getItem('sb-subcejpmaueqsiypcyzt-auth-token')
+//   if (to.name === 'home' && userActive.value) {
+//     return next();
+//   }
+//   console.log(usuarioActivo);
 
-  if (to.name === 'home' && usuarioActivo) {
-    return next();
-  }
-
-  if (!requiresAuth && usuarioActivo) {
-    next({ name: 'home' });
-  } else if (!requiresAuth && !usuarioActivo) {
-    next();
-  } else if (requiresAuth && !usuarioActivo) {
-    next({ name: 'login' });
-  } else {
-    next();
-  }
-});
+//   if (!requiresAuth && usuarioActivo) {
+//     next({ name: 'NotFound' });
+//   } else if (!requiresAuth && !userActive.value) {
+//     next();
+//   } else if (requiresAuth && !userActive.value) {
+//     next({ name: 'login' });
+//   } else {
+//     next();
+//   }
+// });
 
 export default router;

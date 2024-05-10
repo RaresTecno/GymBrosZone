@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
+const buscado = ref(false);
 const busqueda = ref("");
 const ProductoFoto = ref("");
 const ProductoNutriScore = ref("");
@@ -10,16 +11,16 @@ const ProductoNovaGroup = ref("");
 const ProductoEcoScore = ref("");
 const ProductoCantidad = ref("");
 const ProductoIngredientes = ref("");
-const ProductoKcal_100 = ref('');
-const ProductoKjul_100 = ref('');
-const ProductoFat_100 = ref('');
-const ProductoSaturedFat_100 = ref('');
-const ProductoCarbohydrates_100g = ref('');
-const ProductoSugars_100 = ref('');
-const ProductoFiber_100 = ref('');
-const ProductoProteins_100 = ref('');
-const ProductoSalt_100 = ref('');
-const ProductoAlcohol_100 = ref('');
+const ProductoKcal_100 = ref("");
+const ProductoKjul_100 = ref("");
+const ProductoFat_100 = ref("");
+const ProductoSaturedFat_100 = ref("");
+const ProductoCarbohydrates_100g = ref("");
+const ProductoSugars_100 = ref("");
+const ProductoFiber_100 = ref("");
+const ProductoProteins_100 = ref("");
+const ProductoSalt_100 = ref("");
+const ProductoAlcohol_100 = ref("");
 
 async function verApi() {
   const url =
@@ -30,24 +31,46 @@ async function verApi() {
     const result = await response.text();
     const producto = JSON.parse(result);
 
-    ProductoFoto.value = producto.product.image_url;
+    ProductoFoto.value = imagen(producto);
     ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
     ProductoNovaGroup.value = urlNovaScore(producto.product.nova_group);
     ProductoEcoScore.value = urlEcoScore(producto.product.ecoscore_grade);
     ProductoKcal_100.value = producto.product.nutriments["energy-kcal_100g"];
-    ProductoKcal_100.value = producto.product.nutriments["energy-kj_100g"];
+    ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
     ProductoFat_100.value = producto.product.nutriments["fat_100g"];
-    ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
-    ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
+    ProductoSaturedFat_100.value =
+      producto.product.nutriments["saturated-fat_100g"];
+    ProductoCarbohydrates_100g.value =
+      producto.product.nutriments["carbohydrates_100g"];
     ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
     ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
     ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
     ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
     ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
-    // ProductoCantidad.value = producto.product.ecoscore_data.packaging.packagings.quantity_per_unit;
+    ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+    ProductoCantidad.value = producto.product.quantity;
     // ProductoIngredientes.value = producto.product.ingredients_text;
+    buscado.value = true;
   } catch (error) {
     console.log(error);
+  }
+}
+function imagen(producto) {
+  if (producto.product.image_url) {
+    return producto.product.image_url;
+  }else{
+    return "https://world.openfoodfacts.org/images/icons/dist/packaging.svg";
+  }
+}
+function ingredients(producto) {
+  if (producto.product.ingredients_text_es != "") {
+    return producto.product.ingredients_text_es;
+  } else if (producto.product.ingredients_text_en != "") {
+    return producto.product.ingredients_text_en;
+  } else if (producto.product.ingredients_text_uk != "") {
+    return producto.product.ingredients_text_en;
+  } else {
+    return producto.product.ingredients_text;
   }
 }
 function urlNutriScore(valor) {
@@ -151,19 +174,19 @@ function error(err) {
       <!-- <input type="search"> -->
       <input type="text" v-model="busqueda" />
       <button @click="verApi">Search Product</button>
-      <!-- <div class="cerrar">x</div> -->
+      <div class="cerrar">x</div>
     </div>
   </div>
-  <div class="productos">
-    <img :src="ProductoFoto" alt="" />
+  <div id="reader"></div>
+  <div id="result"></div>
+  <div v-if="buscado" class="productos">
+    <img :src="ProductoFoto" alt="" class="img-producto"/>
     <img :src="ProductoNutriScore" alt="" />
     <img :src="ProductoNovaGroup" alt="" />
     <img :src="ProductoEcoScore" alt="" />
     {{ ProductoCantidad }}
     {{ ProductoIngredientes }}
   </div>
-  <div id="reader"></div>
-  <div id="result"></div>
 </template>
 
 <style scoped>
@@ -182,5 +205,9 @@ function error(err) {
 }
 .prueba {
   margin: 100px;
+}
+.img-producto{
+  height: 200px;
+  width: 200px;
 }
 </style>

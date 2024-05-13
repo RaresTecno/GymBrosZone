@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { userActive, userState } from '../clients/supabase'
 
 // import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
@@ -88,23 +89,16 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const usuarioActivo = localStorage.getItem('sb-subcejpmaueqsiypcyzt-auth-token');
-
-  if (to.name === 'home' && usuarioActivo) {
-    return next();
-  }
-
-  if (!requiresAuth && usuarioActivo) {
-    next({ name: 'home' });
-  } else if (!requiresAuth && !usuarioActivo) {
-    next();
-  } else if (requiresAuth && !usuarioActivo) {
-    next({ name: 'login' });
-  } else {
-    next();
-  }
-});
+router.beforeEach(async (to, from, next) => {
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const userToken = userActive.value;
+    if (requiresAuth && !userToken) {
+      next({ name: 'login' });
+    } else if (!requiresAuth && userToken && (to.name === 'login' || to.name === 'register')) {
+      next({ name: 'home' });
+    } else {
+      next();
+    }
+  });
 
 export default router;

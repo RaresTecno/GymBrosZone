@@ -1,10 +1,13 @@
 <script setup>
 import { ref } from 'vue';
 import { supabase, userState } from '../clients/supabase';
+import { disponible } from "../main";
 
 // if(!userActive.value){
 //   window.location.href = '/login';
 // }
+
+disponible.value = true;
 
 const tematica = ref('');
 const contenido = ref('');

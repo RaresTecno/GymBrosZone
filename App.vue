@@ -6,10 +6,12 @@ import NavLateral from './components/BarraLateral.vue'
 import NavInferior from './components/BarraInferior.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
-import { userActive } from './clients/supabase'
+import { userActive, userState } from './clients/supabase'
 import { usandoMovil, disponible } from './main'
 
-import { ref, computed, onMounted} from "vue";
+import { ref, computed, onMounted } from "vue";
+
+disponible.value = true;
 const windowWidth = ref(window.innerWidth);
 
 function updateWidth() {
@@ -21,13 +23,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <Header v-if="(!usandoMovil && (windowWidth > 875)) || !userActive " />
+  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" />
   <HeaderMobile v-if="userActive && (windowWidth < 875)" />
-
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
-  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)"/>
-  <NavInferior v-if="userActive && disponible && (windowWidth <= 875)"/>
+  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" />
+  <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
 
   <!-- <Footer /> -->
 </template>

@@ -31,6 +31,17 @@ const ProductoSaltUnit = ref("");
 const ProductoAlcohol_100 = ref("");
 const ProductoAlcoholUnit = ref("");
 
+const ProductoPositivePoints = ref("");
+const ProductoNegativePoints = ref("");
+const ProductoProteinsPoints = ref("");
+const ProductoFiberPoints = ref("");
+const ProductoFruitsPoints = ref("");
+const ProductoEnergyPoints = ref("");
+const ProductoSugarsPoints = ref("");
+const ProductoSaturatedPoints = ref("");
+const ProductoSodiumPoints = ref("");
+const ProductoNutriScorePoints = ref("");
+
 async function verApi() {
   const url =
     "https://world.openfoodfacts.org/api/v3/product/" + busqueda.value;
@@ -50,31 +61,43 @@ async function verApi() {
     ProductoFat_100.value = producto.product.nutriments["fat_100g"];
     ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
     ProductoSaturedFat_100.value =
-      producto.product.nutriments["saturated-fat_100g"];
+    producto.product.nutriments["saturated-fat_100g"];
     ProductoSaturedFatUnit.value =
-      producto.product.nutriments["saturated-fat_unit"];
+    producto.product.nutriments["saturated-fat_unit"];
     ProductoCarbohydrates_100g.value =
       producto.product.nutriments["carbohydrates_100g"];
-    ProductoCarbohydratesUnit.value =
+      ProductoCarbohydratesUnit.value =
       producto.product.nutriments["carbohydrates_unit"];
-    ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
-    ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
-    ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
-    ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
-    ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
-    ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
-    ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
-    ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
-    ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
-    ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
-    ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
-    ProductoCantidad.value = producto.product.quantity;
-    // ProductoIngredientes.value = producto.product.ingredients_text;
-    buscado.value = true;
-  } catch (error) {
-    console.log(error);
+      ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
+      ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
+      ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
+      ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
+      ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
+      ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
+      ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
+      ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
+      ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
+      ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
+      ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+      ProductoCantidad.value = producto.product.quantity;
+      
+      ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
+      ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
+      ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
+      ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
+      ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
+      ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
+      ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
+      ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
+      ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
+      ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
+      
+      console.log(ProductoNegativePoints.value)
+      buscado.value = true;
+    } catch (error) {
+      console.log(error);
+    }
   }
-}
 function nombre(producto) {
   if (
     producto.product.product_name_es != null &&
@@ -239,9 +262,9 @@ function error(err) {
           <h2 class="producto-nombre">{{ ProductoNombre }}</h2>
 
           <p class="producto-cantidad">
-          <h3>Cantidad: </h3>{{ ProductoCantidad }}.</p>
+          <div>Cantidad: </div>{{ ProductoCantidad }}.</p>
           <p class="producto-ingredientes">
-          <h3>Ingredientes: </h3>{{ ProductoIngredientes }}.</p>
+          <div>Ingredientes: </div>{{ ProductoIngredientes }}.</p>
         </div>
         <div class="general-scores">
           <img class="producto-nutriscore" :src="ProductoNutriScore" alt="" />
@@ -250,50 +273,72 @@ function error(err) {
         </div>
       </div>
     </div>
+
     <div class="producto-nutrientes">
-      <table class="tabla-nutrientes">
-        <tr>
-          <th>Información nutricional</th>
-          <th>Vendido por 100 g / 100 ml</th>
-        </tr>
-        <tr>
-          <td>Energía</td>
-          <td>{{ ProductoKjul_100 }} Kj <br> {{ ProductoKcal_100 }} Kcal</td>
-        </tr>
-        <tr>
-          <td>Grasas</td>
-          <td>{{ ProductoFat_100 }} {{ ProductoFatUnit }}</td>
-        </tr>
-        <tr>
-          <td>Grasas saturadas</td>
-          <td>{{ ProductoSaturedFat_100 }} {{ ProductoSaturedFatUnit }}</td>
-        </tr>
-        <tr>
-          <td>Carbohidratos</td>
-          <td>{{ ProductoCarbohydrates_100g }} {{ ProductoCarbohydratesUnit }}</td>
-        </tr>
-        <tr>
-          <td>Fibra</td>
-          <td>{{ ProductoFiber_100 }} {{ ProductoFiberUnit }}</td>
-        </tr>
-        <tr>
-          <td>Proteinas</td>
-          <td>{{ ProductoProteins_100 }} {{ ProductoProteinsUnit }}</td>
-        </tr>
-        <tr>
-          <td>Sal</td>
-          <td>{{ ProductoSalt_100 }} {{ ProductoSaltUnit }}</td>
-        </tr>
-        <tr>
-          <td>Azucar</td>
-          <td>{{ ProductoSugars_100 }} {{ ProductoSugarsUnit }}</td>
-        </tr>
-        <tr>
-          <td>Alcohol</td>
-          <td>{{ ProductoAlcohol_100 }} {{ ProductoAlcoholUnit }}</td>
-        </tr>
-      </table>
+      <div class="tabla-nutrientes">
+        <div class="tr">
+          <div class="th">Información nutricional</div>
+          <div class="th">Vendido por 100 g / 100 ml</div>
+        </div>
+        <div class="tr">
+          <div>Energía</div>
+          <div>{{ ProductoKjul_100 }} Kj <br> {{ ProductoKcal_100 }} Kcal</div>
+        </div>
+        <div class="tr">
+          <div>Grasas</div>
+          <div>{{ ProductoFat_100 }} {{ ProductoFatUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Grasas saturadas</div>
+          <div>{{ ProductoSaturedFat_100 }} {{ ProductoSaturedFatUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Carbohidratos</div>
+          <div>{{ ProductoCarbohydrates_100g }} {{ ProductoCarbohydratesUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Fibra</div>
+          <div>{{ ProductoFiber_100 }} {{ ProductoFiberUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Proteinas</div>
+          <div>{{ ProductoProteins_100 }} {{ ProductoProteinsUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Sal</div>
+          <div>{{ ProductoSalt_100 }} {{ ProductoSaltUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Azucar</div>
+          <div>{{ ProductoSugars_100 }} {{ ProductoSugarsUnit }}</div>
+        </div>
+        <div class="tr">
+          <div>Alcohol</div>
+          <div>{{ ProductoAlcohol_100 }} {{ ProductoAlcoholUnit }}</div>
+        </div>
+      </div>
+      <div class="tabla-nutriscore">
+        <div class="positive-points points">
+          <h3>Puntos positivos: {{ ProductoPositivePoints }}</h3>
+          <span>Proteinas: {{ ProductoProteinsPoints }}/5</span>
+          <span>Fibra: {{ ProductoFiberPoints }}/5</span>
+          <span>Frutas, vegetales, nueces y aceites de colza/nuez/oliva : {{ ProductoFruitsPoints }}/5</span>
+
+        </div>
+        <div class="negative-points points">
+          <h3>Puntos negativos: {{ ProductoNegativePoints }}</h3>
+          <span>Energía: {{ ProductoEnergyPoints }}/10</span>
+          <span>Azucares: {{ ProductoSugarsPoints }}/10</span>
+          <span>Grasas saturadas: {{ ProductoSaturatedPoints }}/10</span>
+          <span>Sodio: {{ ProductoSodiumPoints }}/10</span>
+        </div>
+      </div>
+      <div class="nutriscore-points">
+        <img class="producto-nutriscore" :src="ProductoNutriScore" alt="" />
+        <h3>Puntuación total: {{ ProductoNutriScorePoints }}</h3>
+      </div>
     </div>
+
   </div>
 </template>
 
@@ -369,22 +414,24 @@ function error(err) {
   margin-top: 10px
 }
 
-.producto-cantidad h3 {
+.producto-cantidad div {
   margin-right: 5px;
 }
 
-.general-scores{
+.general-scores {
   display: flex;
   align-items: center;
-  flex:1;
+  flex: 1;
   justify-content: center;
   margin-top: 15px;
 }
-.producto-nutriscore{
+
+.producto-nutriscore {
   width: 40%;
   max-width: 200px;
 }
-.producto-novagroup{
+
+.producto-novagroup {
   width: 20%;
   max-width: 80px;
   margin: 0 10% 0 10%;
@@ -392,34 +439,84 @@ function error(err) {
   padding: 7px;
   border-radius: 15px;
 }
-.producto-ecoscore{
+
+.producto-ecoscore {
   width: 40%;
   max-width: 200px;
 }
-.producto-nutrientes{
+
+.producto-nutrientes {
   margin-bottom: 200px;
   border-radius: 25px;
   background-color: #5984df;
-}
-.tabla-nutrientes{
-  border-collapse: collapse;
+  padding: 24px;
   border: 2px solid black;
-  border-radius: 25px;
+  width: 80%;
 }
-.tabla-nutrientes tr th{
+
+.tabla-nutrientes {
+  border: 1px solid black;
+  background-color: white;
+}
+
+.tabla-nutrientes .th {
+  display: flex;
+  justify-content: center;
+  font-size: x-large;
+  font-weight: 600;
+  background-color: #0c1f49;
+  color: var(--light-blue-text);
+}
+
+.tabla-nutrientes> :nth-child(even) {
+  background-color: #c0c0c0;
+}
+
+.tabla-nutrientes> :nth-child(odd) {
+  background-color: #e6e6e6;
+}
+
+.tabla-nutrientes .tr {
+  display: flex;
+  border: 1px solid black;
+}
+
+.tabla-nutrientes .tr div {
+  width: 50%;
+  display: flex;
   align-items: center;
-  border: 1px solid black;
+  padding: 5px;
 }
-.tabla-nutrientes tr td{
-  border: 1px solid black;
-  border-collapse: collapse;
-  text-align: center;
+
+.tabla-nutrientes .tr :first-child {
+  border-right: 2px solid black;
+}
+.tabla-nutriscore{
+  display: flex;
+}
+.points{
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+  width: 50%;
+}
+.points span{
+  margin: 2px;
+}
+.nutriscore-points{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nutriscore-points {
+
 }
 @media (max-width: 1150px) {
-  .producto-novagroup{
+  .producto-novagroup {
     margin: 0 2% 0 2%;
   }
 }
+
 @media (max-width: 875px) {
   .productos {
     margin-left: 0;

@@ -334,7 +334,7 @@ function error(err) {
         </div>
       </div>
       <div class="nutriscore-points">
-        <img class="producto-nutriscore" :src="ProductoNutriScore" alt="" />
+        <img class="total-nutriscore" :src="ProductoNutriScore" alt="" />
         <h3>Puntuación total: {{ ProductoNutriScorePoints }}</h3>
       </div>
     </div>
@@ -398,6 +398,7 @@ function error(err) {
 .producto-general {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .producto-nombre {
@@ -423,7 +424,9 @@ function error(err) {
   align-items: center;
   flex: 1;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: ;
+  margin: 15px 20px 20px 0;
+
 }
 
 .producto-nutriscore {
@@ -508,8 +511,8 @@ function error(err) {
   align-items: center;
   justify-content: center;
 }
-.nutriscore-points {
-
+.nutriscore-points *{
+  margin: 0 50px;
 }
 @media (max-width: 1150px) {
   .producto-novagroup {

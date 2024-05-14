@@ -3,13 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, onMounted } from 'vue';
 import { supabase, logOut, userState, userActive } from '../clients/supabase';
 
-onMounted(() => {
-    if(userActive.value){
-      window.location.href = '/';
-    }
-})
-
-
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
 // let [captchaToken, setCaptchaToken] = userState()
 
@@ -17,9 +10,9 @@ const email = ref("");
 const password = ref("");
 const mensajeError = ref('');
 const passwordInput = ref(null);
+const emailInput = ref(null);
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
-
 
 async function loginFacebook() {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -51,10 +44,18 @@ async function loginGoogle() {
     }
 }
 
-
-
 async function login() {
     try {
+        if (email.value == '') {
+            mensaje('El email está vacío.', emailInput);
+            return false;
+        }
+        
+        if(password.value == ''){
+            mensaje('La contraseña está vacía.', passwordInput);
+            return false;
+        }
+
         const { data: usuarios, error } = await supabase
             .from('usuarios')
             .select('email')
@@ -77,7 +78,6 @@ async function login() {
                 mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
                 return false;
             } else {
-                await userState();
                 window.location.href = "/";
             }
         } else {
@@ -103,15 +103,15 @@ function mensaje2(mensaje) {
 
 </script>
 <template>
-    <div class="todo_login">
+    <div class="todo_login" @keyup.enter="login">
         <div class="login">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
                 <div class="container">
                     <div class="subcontainer">
                         <input v-model="email" type="text" name="gymtag_o_email" class="input" required
-                            autocomplete="off">
-                        <label class="label">GymTag o Email</label>
+                            autocomplete="off" ref="emailInput">
+                        <label class="label">Email</label>
                     </div>
                 </div>
             </div>

@@ -1,19 +1,19 @@
 <script setup>
 import { ref } from 'vue';
 import { supabase, userState } from '../clients/supabase';
+import { disponible } from "../main";
 
 // if(!userActive.value){
 //   window.location.href = '/login';
 // }
+
+disponible.value = true;
 
 const tematica = ref('');
 const contenido = ref('');
 
 const tematicaInput = ref(null);
 const contenidoInput = ref(null);
-// const validarTema = ref(false);
-// const validarContenido = ref(false);
-// const maxLength = 500; // Máximo número de caracteres permitidos
 const hayImagen = ref(false);
 const fileInput = ref(null);
 const imagenPreview = ref(null);
@@ -21,37 +21,6 @@ const logo_foto = ref(null);
 const fondo_imagen = ref(null);
 const div_quitar_imagen = ref(null);
 const div_girar_imagen = ref(null);
-
-//Comprobamos validación de input y textarea sólo si hay cambios o se ha escrito
-// watch(tema, (newValue) => {
-//   validarTema.value = /^[a-zA-Z\s]+$/.test(newValue);
-// });
-
-// watch(contenido, (newValue) => {
-//   validarContenido.value = /^[\s\S]*\S[\s\S]*$/.test(newValue);
-// });
-
-// if (tema.value && !validarTema) {
-//   console.log('La temática debe contener solo letras y espacios');
-// }
-
-// if (contenido.value && !validarContenido) {
-//   console.log('El contenido no puede estar vacío');
-// }
-
-// function updateCharacterCount() {
-//   const caracteresEscritos = contenido.value.length;
-//   caracteresRestantes.value = maxLength - caracteresEscritos;
-// }
-
-// const intentoPublicar = ref(false);
-
-// function handleClickPublicar() {
-//   intentoPublicar.value = true;
-// }
-
-// const caracteresRestantes = ref(maxLength);
-// updateCharacterCount();
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
@@ -85,7 +54,7 @@ async function insertarImagen() {
   const ruta = `usuario/${imagen.name}`;
   console.log(imagen.name + ' este es el nombre');
   const { data, error } = await supabase.storage
-    .from('archivos-usuarios')
+    .from('files')
     .upload(ruta, imagen)
 
   if (error) {
@@ -95,28 +64,28 @@ async function insertarImagen() {
 }
 
 function validarTematica() {
-  if (!/['"]/.test(tematica.value)) {
+  // if (!/['"]/.test(tematica.value)) {
     if (tematica.value.length <= 35) {
       return true;
     } else {
       aviso('La temática ingresada es demasiado larga.', tematicaInput);
     }
-  } else {
-    aviso('La temática contiene comillas simples o dobles.', tematicaInput);
-  }
+  // } else {
+  //   aviso('La temática contiene comillas simples o dobles.', tematicaInput);
+  // }
   return false;
 }
 
 function validarContenido() {
-  if (!/['"]/.test(contenido.value)) {
+  // if (!/['"]/.test(contenido.value)) {
     if (contenido.value.length <= 440) {
       return true;
     } else {
       aviso('El contenido es demasiado largo.', contenidoInput);
     }
-  } else {
-    aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
-  }
+  // } else {
+  //   aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
+  // }
   return false;
 }
 

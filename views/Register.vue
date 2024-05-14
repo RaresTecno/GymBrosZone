@@ -3,9 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { supabase, userState, userActive } from '../clients/supabase';
 
-if(userActive.value){
-  window.location.href = '/';
-}
 
 //https://www.youtube.com/watch?v=efNX5x7O0cY
 
@@ -241,15 +238,16 @@ async function creaCuenta() {
     }
 }
 
-function verPoliticas(){
+function verPoliticas() {
     window.location.href = '/politicas-y-condiciones';
 }
 </script>
 <template>
     <div class="todo_register">
         <div class="register">
-            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte"><font-awesome-icon
-                    :icon="['fas', 'circle-left']" @click="primeraParte" /></div>
+            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte">
+                <font-awesome-icon :icon="['fas', 'circle-left']" @click="primeraParte" />
+            </div>
             <div class="titulo">Registro</div>
             <div class="nombre_y_apellidos" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="nombre">
@@ -277,7 +275,13 @@ function verPoliticas(){
                         <input type="text" id="gymtag" class="input" required autocomplete="off" v-model="gymtag"
                             ref="gymtagInput">
                         <label class="label" for="gymtag">GymTag</label>
-                        <!-- <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" /> -->
+
+                        <div class="tooltip">
+                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"
+                                @click="mostrar()" />
+                            <div class="tooltiptext">Este será tu nombre de usuario</div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -339,7 +343,8 @@ function verPoliticas(){
                             pathLength="575.0541381835938" class="path"></path>
                     </svg>
                 </label>
-                <label class="aceptar" for="aceptar" @click=verPoliticas>Aceptar políticas y condiciones de GymBros Zone.</label>
+                <label class="aceptar" for="aceptar" @click=verPoliticas>Aceptar políticas y condiciones de GymBros
+                    Zone.</label>
             </div>
             <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
                 <div class="mensaje_texto">
@@ -422,7 +427,7 @@ function verPoliticas(){
 
 .gymtag {
     width: 100%;
-    padding: 60px 0 35px;
+    padding: 50px 0 25px;
     display: flex;
     justify-content: center;
 }
@@ -431,11 +436,50 @@ function verPoliticas(){
     width: 55%;
 }
 
+.tooltip {
+    position: relative;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--very-dark-blue);
+    color: #dfe8f8;
+    text-align: center;
+    border-radius: 5px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    right: -140px;
+    bottom: 48px;
+    transform: translateX(0);
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.418);
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 28px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: var(--very-dark-blue) transparent transparent transparent;
+}
+
 .info {
     font-size: 28px;
-    padding: 7.5px 0;
-    margin-left: -35px;
+    padding: 0 !important;
     cursor: pointer;
+    margin-left: -48px !important;
+    margin-top: 7px !important;
+    cursor: pointer !important;
 }
 
 .subcontainer {
@@ -615,7 +659,8 @@ function verPoliticas(){
 
 }
 
-.aceptar:hover, .aceptar:active{
+.aceptar:hover,
+.aceptar:active {
     text-shadow: 0 0 5px #eef2fa66;
 }
 
@@ -753,6 +798,17 @@ function verPoliticas(){
         margin-bottom: 30px;
     }
 
+    .tooltip .tooltiptext {
+        right: -10px;
+        bottom: -60px;
+    }
+
+    .tooltip .tooltiptext::after {
+        top: -29%;
+        left: 158px;
+        border-color: transparent transparent var(--very-dark-blue) transparent;
+    }
+
     .gymtag .container,
     .email .container,
     .password .container,
@@ -775,8 +831,9 @@ function verPoliticas(){
 
     .info {
         font-size: 42px;
-        padding: 14px 0;
-        margin-left: -50px;
+        padding: 0 !important;
+        padding-top: 4px !important;
+        margin-left: -48px !important;
         cursor: pointer;
     }
 
@@ -869,6 +926,19 @@ function verPoliticas(){
 
     .gymtag {
         margin-bottom: 20px;
+    }
+
+    .tooltip .tooltiptext::after {
+        left: 162px;
+    }
+
+    .info {
+        padding: 0 !important;
+        margin-left: -40px !important;
+        margin-top: 6px !important;
+        cursor: pointer !important;
+        width: 28px !important;
+        height: 28px !important;
     }
 
     .contenedor_calendario,

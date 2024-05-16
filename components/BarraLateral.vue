@@ -1,11 +1,13 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
+import { userActive } from "../clients/supabase";
 
 const posicionAnt = ref(0);
 const altura = ref(80);
 const windowWidth = ref(window.innerWidth);
 
+console.log('lateral:'+ userActive.value);
 const posicionActual = window.scrollY;
 
 //hacerlo tambien primero con el width
@@ -128,18 +130,18 @@ onMounted(() => {
           <h2>Guardados</h2>
         </RouterLink>
       </div>
-      <div>
+      <!-- <div>
         <RouterLink to="/tables" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'table']" /></div>
           <h2>Tablas</h2>
         </RouterLink>
-      </div>
-      <div>
+      </div> -->
+      <!-- <div>
         <RouterLink to="/messages" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" /></div>
           <h2>Mensajes</h2>
         </RouterLink>
-      </div>
+      </div> -->
     </nav>
   </transition>
 </template>
@@ -183,7 +185,7 @@ nav:hover h2 {
 div .RouterLink {
   display: flex;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 25px;
   cursor: pointer;
 }
 

@@ -3,13 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, onMounted } from 'vue';
 import { supabase, logOut, userState, userActive } from '../clients/supabase';
 
-onMounted(() => {
-    if(userActive.value){
-      window.location.href = '/';
-    }
-})
-
-
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
 // let [captchaToken, setCaptchaToken] = userState()
 
@@ -17,28 +10,25 @@ const email = ref("");
 const password = ref("");
 const mensajeError = ref('');
 const passwordInput = ref(null);
+const emailInput = ref(null);
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
-
 
 async function loginFacebook() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
     })
     if (error) {
-        mensaje2('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.');
+        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
     }
 }
 
 async function loginTwitter() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
-    })
+    });
     if (error) {
-        mensaje2('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.');
-    }
-    if (data) {
-
+        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
     }
 }
 
@@ -47,23 +37,62 @@ async function loginGoogle() {
         provider: 'google',
     });
     if (error) {
-        mensaje2('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.');
+        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
     }
 }
 
+async function crearCarpeta(data) {
+    /*Ruta carpeta del usuario.*/
+    const ruta = `users/user-${data.user.id}/`;
+    /*Comprobamos si existe la carpeta con el Id del usuario.*/
+    const { data: carpeta, error: errorCarpeta } = await supabase
+        .storage
+        .from('files')
+        .list(ruta);
 
+    /*Si no hay ninguna carpeta, la creamos con un archivo vacío.*/
+    if (carpeta.length === 0) {
+        const { error: errorSubida } = await supabase.storage
+            .from('files')
+            .upload(ruta + 'dummy.txt', new Blob(['dummy content']), {
+                cacheControl: '3600',
+                upsert: false
+            });
+        /*Aviso de que ha ocurrido un error a la hora de crear la carpeta.*/
+        if (errorSubida) {
+            mensaje('Hubo un error al iniciar sesión. Por favor, inténtalo de nuevo.', null);
+            return false;
+        }
+        /*Aviso de que ha ocurrido un error a la hora de crear la carpeta.*/
+    } else if (errorCarpeta) {
+        mensaje('Hubo un error al iniciar sesión. Por favor, inténtalo de nuevo.', null);
+        return false;
+    }
+    /*Redirección al usuario a home.*/
+    window.location.href = "/";
+}
 
 async function login() {
     try {
-        const { data: usuarios, error } = await supabase
+        /*Comprobación de que el email no esté vacío.*/
+        if (email.value === '') {
+            mensaje('El email está vacío.', emailInput);
+            return false;
+        }
+        /*Comprobación de que la contraseña no esté vacía.*/
+        if (password.value === '') {
+            mensaje('La contraseña está vacía.', passwordInput);
+            return false;
+        }
+        /*Comprobamos si el email ingresado ya está en uso*/
+        const { data: usuarios, error: errorUsuarios } = await supabase
             .from('usuarios')
             .select('email')
             .eq('email', email.value);
-
-        if (error) throw error;
-        //El email estará en uso si usuarios contiene algún elemento.
+        if (errorUsuarios) throw errorUsuarios;
+        /*El email estará en uso si usuarios contiene algún elemento.*/
         if (usuarios.length > 0) {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error: errorAuth } = await supabase.auth.signInWithPassword({
                 email: email.value,
                 password: password.value,
                 options: {
@@ -73,17 +102,19 @@ async function login() {
                 // emailRedirectTo: '/',
                 // }
             });
-            if (error) {
+            /*Avisamos al usuario en caso de haber algún error.*/
+            if (errorAuth) {
                 mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
                 return false;
             } else {
-                await userState();
-                window.location.href = "/";
+                crearCarpeta(data);
             }
+            /*Aviso al usuario de que sus credenciales son inválidas.*/
         } else {
             mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
             return false;
         }
+        /*Aviso al usuario de que hubo un error al verificar sus credenciales.*/
     } catch (error) {
         mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', passwordInput);
         return false;
@@ -96,22 +127,17 @@ function mensaje(mensaje, Input) {
     Input.value.focus();
 }
 
-function mensaje2(mensaje) {
-    mensajeError.value = mensaje;
-    mostrarMensaje.value = true;
-}
-
 </script>
 <template>
-    <div class="todo_login">
+    <div class="todo_login" @keyup.enter="login">
         <div class="login">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
                 <div class="container">
                     <div class="subcontainer">
                         <input v-model="email" type="text" name="gymtag_o_email" class="input" required
-                            autocomplete="off">
-                        <label class="label">GymTag o Email</label>
+                            autocomplete="off" ref="emailInput">
+                        <label class="label">Email</label>
                     </div>
                 </div>
             </div>

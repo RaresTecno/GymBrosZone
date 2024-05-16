@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { usandoMovil } from "../main";
+import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
+
+disponible.value = true;
 
 function arriba() {
   window.scrollTo(0, 0);

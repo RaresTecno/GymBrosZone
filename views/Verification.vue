@@ -1,16 +1,16 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const mensaje = ref('');
 const url = ref('');
+let timeoutId;
 
 onMounted(() => {
-    
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
         url.value = "/login";
         redirigir();
-    }, 20000); 
+    }, 20000);
 
     const route = useRoute();
     const email = route.query.email ? decodeURIComponent(route.query.email) : '';
@@ -28,6 +28,10 @@ onMounted(() => {
         mensaje.value = "Ir a Login";
         url.value = "/login";
     }
+});
+
+onUnmounted(() => {
+    clearTimeout(timeoutId); 
 });
 
 function redirigir() {

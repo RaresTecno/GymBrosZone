@@ -320,11 +320,9 @@ function verPoliticas() {
                         <label class="label" for="gymtag">GymTag</label>
 
                         <div class="tooltip">
-                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"
-                                @click="mostrar()" />
+                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" />
                             <div class="tooltiptext">Este será tu nombre de usuario</div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -406,6 +404,58 @@ function verPoliticas() {
     </div>
 </template>
 <style scoped>
+.tooltip {
+  /* position: relative;
+  display: inline-block;
+  cursor: pointer;
+  background-color: #282828;
+  color: #f1f1f1;
+  padding: 1em 3em;
+  border-radius: 1em; */
+  /* width: 60px; */
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: var(--very-dark-blue);
+  color: var(--light-blue-text);
+  text-align: center;
+  border-radius: 5px;
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(65%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border-width: 8px;
+  border-style: solid;
+  border-color: var(--very-dark-blue) transparent transparent transparent;
+  transform: translateX(-500%);
+}
+
+
+
+
+
+
+
+
+
+
 .todo_register {
     width: 100vw;
     height: fit-content;

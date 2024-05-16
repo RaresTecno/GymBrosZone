@@ -2,6 +2,9 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { disponible } from "../main";
+
+disponible.value = true;
 
 const busqueda = ref("");
 const ProductoFoto = ref("");

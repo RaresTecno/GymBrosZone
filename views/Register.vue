@@ -29,49 +29,6 @@ async function createAccount() {
     }
 }
 
-// async function createAccount() {
-//     const { data, error } = await supabase.auth.signUp({
-//         email: email.value,
-//         password: password.value,
-//         options: {
-//             data: {
-//                 'gymtag': gymtag.value,
-//                 'fechanacimiento': fecha_nacimiento.value,
-//                 'fotoperfil': '/predeterminada.png',
-//                 'nombre': nombre.value,
-//                 'apellidos': apellidos.value,
-//                 'privacidad': 'publica'
-//             }
-//         }
-//     });
-
-//     if (error) {
-//         console.error('Error en registro:', error);
-//         return null;
-//     } else {
-//         console.log(data);
-
-//         // Crear la carpeta en el bucket 'files'
-//         const folderPath = `${data.user.id}/`; // El nombre de la carpeta es el UID del usuario
-//         // Crear un archivo dummy para asegurar la creación de la carpeta
-//         const { error: storageError } = await supabase.storage
-//             .from('files')
-//             .upload(folderPath + 'dummy.txt', new Blob(['dummy content']), {
-//                 cacheControl: '3600',
-//                 upsert: false
-//             });
-
-//         if (storageError) {
-//             console.error('Error creando carpeta en storage:', storageError);
-//             return null;
-//         }
-
-//         // Redirige al usuario
-//         const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
-//         window.location.href = `/waiting-verification?email=${emailEncoded}`;
-//     }
-// }
-
 const nombre = ref('');
 const apellidos = ref('');
 const gymtag = ref('');
@@ -320,9 +277,11 @@ function verPoliticas() {
                         <label class="label" for="gymtag">GymTag</label>
 
                         <div class="tooltip">
-                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" />
+                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"
+                                @click="mostrar()" />
                             <div class="tooltiptext">Este será tu nombre de usuario</div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -404,58 +363,6 @@ function verPoliticas() {
     </div>
 </template>
 <style scoped>
-.tooltip {
-  /* position: relative;
-  display: inline-block;
-  cursor: pointer;
-  background-color: #282828;
-  color: #f1f1f1;
-  padding: 1em 3em;
-  border-radius: 1em; */
-  /* width: 60px; */
-}
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 200px;
-  background-color: var(--very-dark-blue);
-  color: var(--light-blue-text);
-  text-align: center;
-  border-radius: 5px;
-  padding: 10px;
-  position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(65%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-  opacity: 1;
-}
-
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  border-width: 8px;
-  border-style: solid;
-  border-color: var(--very-dark-blue) transparent transparent transparent;
-  transform: translateX(-500%);
-}
-
-
-
-
-
-
-
-
-
-
 .todo_register {
     width: 100vw;
     height: fit-content;
@@ -1157,7 +1064,5 @@ function verPoliticas() {
         padding-left: 2px;
         transform: translateY(-42.5px);
     }
-
-
 }
 </style>

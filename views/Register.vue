@@ -280,7 +280,6 @@ function verPoliticas() {
                             <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" />
                             <div class="tooltiptext">Este será tu nombre de usuario</div>
                         </div>
-
                     </div>
                 </div>
             </div>

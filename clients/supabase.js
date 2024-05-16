@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export const userActive = ref(false);
 
+// console.log(supabase.auth.user())
 
 export async function userData(){    
     const { data: { user } } = await supabase.auth.getUser();

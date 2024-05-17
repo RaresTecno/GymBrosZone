@@ -2,6 +2,7 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { supabase, userState, userActive } from '../clients/supabase';
+import { usandoMovil } from '@/main';
 
 
 //https://www.youtube.com/watch?v=efNX5x7O0cY
@@ -329,7 +330,7 @@ function verPoliticas() {
                             v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
                         <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label>
                         <div class="contenedor_calendario">
-                            <font-awesome-icon :icon="['fas', 'calendar']" class="calendario" />
+                            <font-awesome-icon v-if="usandoMovil" :icon="['fas', 'calendar']" class="calendario" />
                         </div>
                     </div>
                 </div>
@@ -384,7 +385,7 @@ function verPoliticas() {
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 85px;
+    margin-bottom: 70px;
     position: relative;
 }
 
@@ -899,7 +900,7 @@ function verPoliticas() {
     }
 
     .todo_register {
-        padding-top: 247px;
+        padding-top: 227px;
     }
 
     .nombre_y_apellidos .nombre .input,

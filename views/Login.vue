@@ -43,7 +43,7 @@ async function loginGoogle() {
 
 async function crearCarpeta(data) {
     /*Ruta carpeta del usuario.*/
-    const ruta = `users/user-${data.user.id}/`;
+    const ruta = `users/user-${data.user.id.split('').reverse().join('')}/`;
     /*Comprobamos si existe la carpeta con el Id del usuario.*/
     const { data: carpeta, error: errorCarpeta } = await supabase
         .storage

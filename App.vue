@@ -6,7 +6,7 @@ import NavLateral from './components/BarraLateral.vue'
 import NavInferior from './components/BarraInferior.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
-import { supabase, userActive, userData } from './clients/supabase'
+import { supabase, userActive, userData, logOut } from './clients/supabase'
 import { usandoMovil, disponible } from './main'
 
 import { ref, computed, onMounted } from "vue";
@@ -26,12 +26,15 @@ onMounted(() => {
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    await crearCarpeta(user);
+    await revisarCarpeta(user);
+    await revisarGymtag(user);
+    //Borrar
+    await guardarIP(user);
   }
 });
 
-async function crearCarpeta(user) {
-  const ruta = `users/user-${user.id}/`;
+async function revisarCarpeta(user) {
+  const ruta = `users/user-${user.id.split('').reverse().join('')}/`;
   const { data: carpeta, error: errorCarpeta } = await supabase
     .storage
     .from('files')
@@ -46,11 +49,80 @@ async function crearCarpeta(user) {
       });
 
     if (errorSubida) {
-      console.error('Hubo un error al crear la carpeta de usuario.', errorSubida);
+      logOut();
       return false;
     }
   } else if (errorCarpeta) {
-    console.error('Hubo un error al verificar la carpeta de usuario.', errorCarpeta);
+    logOut();
+    return false;
+  }
+}
+
+async function revisarGymtag(user) {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select('gymtag')
+    .eq('id', user.id)
+    .single();
+
+  if (error) {
+    logOut();
+    return false;
+  }
+
+  if (usuario && usuario.gymtag === null) {
+    let nuevoGymtag;
+    let existeGymtag;
+
+    do {
+      nuevoGymtag = `usuario${Math.floor(Math.random() * 10000000)}`;
+
+      const { data: revisionGymtag, error: gymtagError } = await supabase
+        .from('usuarios')
+        .select('gymtag')
+        .eq('gymtag', nuevoGymtag)
+        .single();
+
+      if (gymtagError) {
+        logOut();
+        return false;
+      }
+
+      existeGymtag = revisionGymtag !== null;
+    } while (existeGymtag);
+
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({ gymtag: nuevoGymtag })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error actualizando gymtag del usuario:', updateError);
+      logOut();
+      return false;
+    }
+  }
+}
+
+//Borrar
+async function guardarIP(user) {
+  try {
+    const response = await fetch('http://localhost:3000/get-ip');
+    const data = await response.json();
+    const userIP = data.ip;
+
+    const { error: insertError } = await supabase
+      .from('ips')
+      .insert([{ user_id: user.id, ip: userIP }]);
+
+    if (insertError) {
+      console.error('Error guardando la IP del usuario:', insertError);
+      logOut();
+      return false;
+    }
+  } catch (error) {
+    console.error('Error obteniendo la IP del usuario:', error);
+    logOut();
     return false;
   }
 }

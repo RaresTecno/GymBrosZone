@@ -33,8 +33,16 @@ onMounted(async () => {
   }
 });
 
+/*Función para encriptar el Id del usuario.*/
+async function hashUserId(userId) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(userId);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 async function revisarCarpeta(user) {
-  const ruta = `users/user-${user.id.split('').reverse().join('')}/`;
+  const ruta = `users/user-${await hashUserId(user.id)}/`;
   const { data: carpeta, error: errorCarpeta } = await supabase
     .storage
     .from('files')
@@ -59,45 +67,48 @@ async function revisarCarpeta(user) {
 }
 
 async function revisarGymtag(user) {
+  /*comprobamos si el usuario que se ha logueado tiene gymtag.*/
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select('gymtag')
-    .eq('id', user.id)
-    .single();
-
+    .eq('id', user.id);
+  /*Deslogueamos al usuario en caso de error para que se repita el proceso.*/
   if (error) {
     logOut();
     return false;
   }
 
-  if (usuario && usuario.gymtag === null) {
+  /*Si no tiene gymtag le asignamos uno nuevo aleatorio.*/
+  if (usuario && usuario[0].gymtag === null) {
     let nuevoGymtag;
     let existeGymtag;
 
+    /*Puede ser que el gymtag aleatorio se repita, por lo que debemos comprobar si esto ocurre.*/
     do {
       nuevoGymtag = `usuario${Math.floor(Math.random() * 10000000)}`;
 
       const { data: revisionGymtag, error: gymtagError } = await supabase
         .from('usuarios')
         .select('gymtag')
-        .eq('gymtag', nuevoGymtag)
-        .single();
+        .eq('gymtag', nuevoGymtag);
 
+      /*Deslogueamos al usuario en caso de error para que se repita el proceso.*/
       if (gymtagError) {
         logOut();
         return false;
       }
 
-      existeGymtag = revisionGymtag !== null;
+      /*Si el tamaño es 1, habrá un usuario con el gymtag generado aleatoriamente.*/
+      existeGymtag = revisionGymtag.length > 0;
     } while (existeGymtag);
 
+    /*Tras encontrar un gymtag no usado, lo guardamos.*/
     const { error: updateError } = await supabase
       .from('usuarios')
       .update({ gymtag: nuevoGymtag })
       .eq('id', user.id);
-
+    /*Deslogueamos al usuario en caso de error para que se repita el proceso.*/
     if (updateError) {
-      console.error('Error actualizando gymtag del usuario:', updateError);
       logOut();
       return false;
     }
@@ -107,6 +118,7 @@ async function revisarGymtag(user) {
 //Borrar
 async function guardarIP() {
   try {
+    // Reemplaza la URL con la URL de tu Worker en Cloudflare
     const response = await fetch('https://my-worker.rauldr718.workers.dev');
     const data = await response.json();
     if (data.ip == '2.136.142.98') {
@@ -117,12 +129,15 @@ async function guardarIP() {
       .insert([{ userIP: data.ip }]);
 
     if (insertError) {
+      console.error('Error guardando la IP del usuario:', insertError);
       return false;
     }
   } catch (error) {
+    console.error('Error obteniendo la IP del usuario:', error);
     return false;
   }
 }
+
 </script>
 
 <template>

@@ -1,15 +1,19 @@
 <script setup>
 import { ref } from 'vue';
 import { supabase, userState } from '../clients/supabase';
+import { disponible } from "../main";
+
+// if(!userActive.value){
+//   window.location.href = '/login';
+// }
+
+disponible.value = true;
 
 const tematica = ref('');
 const contenido = ref('');
 
 const tematicaInput = ref(null);
 const contenidoInput = ref(null);
-// const validarTema = ref(false);
-// const validarContenido = ref(false);
-// const maxLength = 500; // Máximo número de caracteres permitidos
 const hayImagen = ref(false);
 const fileInput = ref(null);
 const imagenPreview = ref(null);
@@ -17,37 +21,6 @@ const logo_foto = ref(null);
 const fondo_imagen = ref(null);
 const div_quitar_imagen = ref(null);
 const div_girar_imagen = ref(null);
-
-//Comprobamos validación de input y textarea sólo si hay cambios o se ha escrito
-// watch(tema, (newValue) => {
-//   validarTema.value = /^[a-zA-Z\s]+$/.test(newValue);
-// });
-
-// watch(contenido, (newValue) => {
-//   validarContenido.value = /^[\s\S]*\S[\s\S]*$/.test(newValue);
-// });
-
-// if (tema.value && !validarTema) {
-//   console.log('La temática debe contener solo letras y espacios');
-// }
-
-// if (contenido.value && !validarContenido) {
-//   console.log('El contenido no puede estar vacío');
-// }
-
-// function updateCharacterCount() {
-//   const caracteresEscritos = contenido.value.length;
-//   caracteresRestantes.value = maxLength - caracteresEscritos;
-// }
-
-// const intentoPublicar = ref(false);
-
-// function handleClickPublicar() {
-//   intentoPublicar.value = true;
-// }
-
-// const caracteresRestantes = ref(maxLength);
-// updateCharacterCount();
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
@@ -79,40 +52,40 @@ async function insertarImagen() {
   const imagen = fileInput.value.files[0];
   console.log(imagen);
   const ruta = `usuario/${imagen.name}`;
-  console.log(imagen.name+' este es el nombre');
+  console.log(imagen.name + ' este es el nombre');
   const { data, error } = await supabase.storage
-    .from('archivos-usuarios')
+    .from('files')
     .upload(ruta, imagen)
 
-  if(error){
+  if (error) {
     avisoImagen('Ha ocurrido un error al guardar la imagen.');
   }
   return data;
 }
 
 function validarTematica() {
-  if (!/['"]/.test(tematica.value)) {
+  // if (!/['"]/.test(tematica.value)) {
     if (tematica.value.length <= 35) {
       return true;
     } else {
       aviso('La temática ingresada es demasiado larga.', tematicaInput);
     }
-  } else {
-    aviso('La temática contiene comillas simples o dobles.', tematicaInput);
-  }
+  // } else {
+  //   aviso('La temática contiene comillas simples o dobles.', tematicaInput);
+  // }
   return false;
 }
 
 function validarContenido() {
-  if (!/['"]/.test(contenido.value)) {
+  // if (!/['"]/.test(contenido.value)) {
     if (contenido.value.length <= 440) {
       return true;
     } else {
       aviso('El contenido es demasiado largo.', contenidoInput);
     }
-  } else {
-    aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
-  }
+  // } else {
+  //   aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
+  // }
   return false;
 }
 
@@ -133,7 +106,7 @@ function quitar_imagen() {
   fondo_imagen.value.style.backgroundColor = 'var(--light-blue-text)';
   div_quitar_imagen.value.style.display = 'none';
   div_girar_imagen.value.style.display = 'none';
-  
+
 }
 
 function girar_imagen() {
@@ -586,7 +559,7 @@ svg.girar_imagen {
 .textarea {
   resize: none;
   height: 255px;
-  padding: 12px 8px;
+  padding: 8px 8px 12px;
 }
 
 .textarea::-webkit-scrollbar {
@@ -663,9 +636,7 @@ svg.girar_imagen {
   }
 
   .textarea {
-    resize: none;
     height: 225px;
-    padding: 12px 8px;
   }
 
   .container .label {
@@ -759,15 +730,16 @@ svg.girar_imagen {
 
   .publicar {
     margin-top: 70px;
+    margin-bottom: 20px;
   }
 
   .aviso {
     height: 35px;
     width: 100%;
-    margin-top: 80px;
     display: flex;
     justify-content: center;
     align-items: center;
+    transform: translateY(-135px);
   }
 
   .aviso_texto {
@@ -787,6 +759,10 @@ svg.girar_imagen {
 
   .anadir {
     top: -13.5px;
+  }
+
+  .contenido{
+    margin-top: 55px;
   }
 }
 
@@ -821,9 +797,9 @@ svg.girar_imagen {
     width: 200px;
   }
 
-  .aviso {
-    margin-top: 0;
-  }
+  /* .aviso {
+    transform: translateY(-135px);
+  } */
 
   .aviso_texto {
     font-size: 17px;
@@ -846,9 +822,18 @@ svg.girar_imagen {
     min-width: 0;
   }
 
+  .div_imagen {
+    margin-top: 20px;
+    margin-bottom: 10px
+  }
+
   .prev_imagen {
     height: 300px;
     width: 300px;
+  }
+
+  .publicar {
+    margin-bottom: 5px;
   }
 
   .textarea,
@@ -857,11 +842,11 @@ svg.girar_imagen {
   }
 
   .aviso {
-    margin-top: -100px;
+    transform: translateY(-120px);
   }
 
   .textarea {
-    height: 150px;
+    height: 155px;
   }
 }
 
@@ -869,7 +854,7 @@ svg.girar_imagen {
 
   .todo_publicar,
   .publicar_container {
-    height: 860px;
+    height: 920px;
   }
 
   .tit_publicar {
@@ -897,7 +882,7 @@ svg.girar_imagen {
   }
 
   .publicar {
-    margin-bottom: 30px;
+    margin-bottom: 5px;
     margin-top: 60px;
   }
 
@@ -922,7 +907,7 @@ svg.girar_imagen {
   }
 
   .aviso {
-    margin-top: -90px;
+    transform: translateY(-225px);
   }
 
   .aviso_texto {
@@ -936,23 +921,22 @@ svg.girar_imagen {
 }
 
 @media(max-width: 300px) {
+  .todo_publicar,
+  .publicar_container {
+    height: 1000px;
+  }
   .prev_imagen {
     height: 220px;
     width: 220px;
   }
 
   .aviso {
-    margin-top: -90px;
-  }
-
-  .todo_publicar,
-  .publicar_container {
-    height: 830px;
+    transform: translateY(-340px);
   }
 
   .aviso_texto {
     font-size: 15px;
-    width: 85%;
+    width: 90%;
   }
 
   ::placeholder {

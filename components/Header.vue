@@ -94,7 +94,7 @@ header {
 
 .fondo_logo {
   border-radius: 50%;
-  background-color: black;
+  background-color: rgba(0, 0, 0, 0.815);
   width: 65px;
   height: 65px;
   position: relative;

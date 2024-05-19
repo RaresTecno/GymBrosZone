@@ -3,6 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref } from "vue";
 import { supabase, logOut, userState } from "../clients/supabase";
 
+import { disponible } from "../main";
+
+disponible.value = true;
+
 const nombre = ref("");
 const edad = ref("");
 const peso = ref("");
@@ -113,42 +117,21 @@ console.log(urlFoto);
 </script>
 
 <template>
-  <div class="img_perfil" v-if="!userActive">
+  <div class="img_perfil">
     <div class="image-container"></div>
     <img src="../assets/img/logo.png" alt="img-perfil" class="imgPerfil" />
-    <img
-      src="../assets/icons/imgUpload.png"
-      alt="upload IMG"
-      class="img-icon"
-    />
+    <img src="../assets/icons/imgUpload.png" alt="upload IMG" class="img-icon" />
     <br />
     <input type="file" />
     <br />
-    <input
-      v-model="gymtag"
-      type="text"
-      class="gym_tag"
-      placeholder="GymTag..."
-    />
+    <input v-model="gymtag" type="text" class="gym_tag" placeholder="GymTag..." />
   </div>
-  <div class="container_formulario" v-if="!userActive">
-    <form
-      action="Profile.vue"
-      method="POST"
-      class="formulario"
-      novalidation
-      @submit="validateForm"
-    >
+  <div class="container_formulario">
+    <form action="Profile.vue" method="POST" class="formulario" novalidation @submit="validateForm">
       <div class="column">
         <label for="nombre">Nombre:</label>
-        <input
-          v-model="nombre"
-          class="inputs"
-          type="text"
-          name="nombre"
-          placeholder="Escriba su nombre"
-          autocomplete="off"
-        />
+        <input v-model="nombre" class="inputs" type="text" name="nombre" placeholder="Escriba su nombre"
+          autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
@@ -158,74 +141,38 @@ console.log(urlFoto);
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="peso">Peso:</label>
-        <input
-          v-model="peso"
-          type="number"
-          class="inputs"
-          name="peso"
-          placeholder="Escriba su peso"
-          autocomplete="off"
-        />
+        <input v-model="peso" type="number" class="inputs" name="peso" placeholder="Escriba su peso"
+          autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="localidad">Localidad:</label>
-        <input
-          v-model="localidad"
-          type="text"
-          class="inputs"
-          name="localidad"
-          placeholder="Escriba su localidad"
-          autocomplete="off"
-        />
+        <input v-model="localidad" type="text" class="inputs" name="localidad" placeholder="Escriba su localidad"
+          autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
       </div>
       <div class="column">
         <label for="apellidos">Apellidos:</label>
-        <input
-          v-model="apellidos"
-          class="inputs"
-          type="text"
-          name="apellidos"
-          placeholder="Escriba sus apellidos"
-          autocomplete="off"
-        />
+        <input v-model="apellidos" class="inputs" type="text" name="apellidos" placeholder="Escriba sus apellidos"
+          autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="sexo">Sexo:</label>
-        <input
-          v-model="sexo"
-          type="text"
-          class="inputs"
-          name="sexo"
-          placeholder="Escriba su sexo"
-          autocomplete="off"
-        />
+        <input v-model="sexo" type="text" class="inputs" name="sexo" placeholder="Escriba su sexo" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="altura">Altura:</label>
-        <input
-          v-model="altura"
-          ype="text"
-          class="inputs"
-          name="altura"
-          placeholder="Escriba su altura"
-          autocomplete="off"
-        />
+        <input v-model="altura" ype="text" class="inputs" name="altura" placeholder="Escriba su altura"
+          autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
         <label for="gym">Gym:</label>
-        <input
-          type="text"
-          name="gym"
-          placeholder="¿Dónde entrenas?"
-          autocomplete="off"
-        />
+        <input type="text" name="gym" placeholder="¿Dónde entrenas?" autocomplete="off" />
         <div class="container_lapiz">
           <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
         </div>
@@ -236,9 +183,11 @@ console.log(urlFoto);
       <RouterLink to="/"><a href="">Actualizar</a></RouterLink>
     </button>
   </div>
-  <button class="cerrar-sesion" v-if="!userActive">
-    <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
-  </button>
+  <RouterLink to="/" @click="logOut">
+    <button class="cerrar-sesion">
+      <i>Cerrar Sesión</i>
+    </button>
+  </RouterLink>
 </template>
 
 <style scoped>
@@ -254,6 +203,7 @@ console.log(urlFoto);
   box-shadow: 0 2px 5px var(--alt-black);
   border: 3px solid black;
 }
+
 .title {
   color: aliceblue;
   font-size: 35px;
@@ -263,6 +213,7 @@ console.log(urlFoto);
   font-style: normal;
   font-variation-settings: "width" 100;
 }
+
 .logo {
   margin-right: 20px;
   width: 12.5%;
@@ -457,9 +408,11 @@ button.actualizar:active::before {
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
 }
+
 button a {
   color: white;
 }
+
 button:hover a {
   color: black;
 }
@@ -485,9 +438,10 @@ button.cerrar-sesion {
     margin-top: 15%;
   }
 
-  .formulario > * {
+  .formulario>* {
     margin-bottom: 10px;
   }
+
   .container_formulario {
     margin-top: 2%;
     display: grid;
@@ -531,7 +485,7 @@ button.cerrar-sesion {
     width: 25px;
   }
 
-  input[type="file"]{
+  input[type="file"] {
     margin: 5vw;
   }
 

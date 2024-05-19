@@ -7,15 +7,15 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export const userActive = ref(false);
-let currentUser;
+
+// console.log(supabase.auth.user())
 
 export async function userData(){    
     const { data: { user } } = await supabase.auth.getUser();
-
 }
 
 export async function userState(){
-    currentUser = await supabase.auth.getSession();
+    const currentUser = await supabase.auth.getSession();
     // console.log(currentUser)
     if (currentUser.data.session == null) {
         console.log("null")

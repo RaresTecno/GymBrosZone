@@ -1,156 +1,70 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { ref, onMounted } from 'vue';
-import { supabase, logOut, userState, userActive } from '../clients/supabase';
-
+import { ref } from 'vue';
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
+ 
 // let [captchaToken, setCaptchaToken] = userState()
-
-const email = ref("");
-const password = ref("");
-const mensajeError = ref('');
-const passwordInput = ref(null);
-const emailInput = ref(null);
+ 
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
-
-async function loginFacebook() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
+const mensajeError = ref('');
+ 
+function loginFacebook() {
+    window.location.href = "https://www.facebook.com/?locale=en_EN"
+}
+function loginGoogle() {
+    window.location.href = "https://accounts.google.com/v3/signin/identifier?authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F%3Futm_source%3Dsign_in_no_continue%26pli%3D1%26nlr%3D1&ec=GAlAwAE&hl=es&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession&dsh=S1091059932%3A1714486646087303&theme=mn&ddm=0"
+    
+}
+function loginTwitter() {
+    window.location.href = "https://twitter.com/?lang=es"
+    
+}
+import { supabase, logOut, userState } from '../clients/supabase';
+ 
+const email = ref("");
+const password = ref("");
+ 
+async function login(){
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.value,
+        password: password.value,
+        options: {
+        // captchaToken,
+        }
+        // options: {
+        // emailRedirectTo: '/',
+        // }
     })
     if (error) {
-        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
+          console.log(error);
+    }else{
+        userState();
+        window.location.href="/";
+       
     }
 }
-
-async function loginTwitter() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'twitter',
-    });
-    if (error) {
-        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
-    }
-}
-
-async function loginGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-    });
-    if (error) {
-        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
-    }
-}
-
-async function crearCarpeta(data) {
-    /*Ruta carpeta del usuario.*/
-    const ruta = `users/user-${data.user.id.split('').reverse().join('')}/`;
-    /*Comprobamos si existe la carpeta con el Id del usuario.*/
-    const { data: carpeta, error: errorCarpeta } = await supabase
-        .storage
-        .from('files')
-        .list(ruta);
-
-    /*Si no hay ninguna carpeta, la creamos con un archivo vacío.*/
-    if (carpeta.length === 0) {
-        const { error: errorSubida } = await supabase.storage
-            .from('files')
-            .upload(ruta + 'dummy.txt', new Blob(['dummy content']), {
-                cacheControl: '3600',
-                upsert: false
-            });
-        /*Aviso de que ha ocurrido un error a la hora de crear la carpeta.*/
-        if (errorSubida) {
-            mensaje('Hubo un error al iniciar sesión. Por favor, inténtalo de nuevo.', null);
-            return false;
-        }
-        /*Aviso de que ha ocurrido un error a la hora de crear la carpeta.*/
-    } else if (errorCarpeta) {
-        mensaje('Hubo un error al iniciar sesión. Por favor, inténtalo de nuevo.', null);
-        return false;
-    }
-    /*Redirección al usuario a home.*/
-    window.location.href = "/";
-}
-
-async function login() {
-    try {
-        /*Comprobación de que el email no esté vacío.*/
-        if (email.value === '') {
-            mensaje('El email está vacío.', emailInput);
-            return false;
-        }
-        /*Comprobación de que la contraseña no esté vacía.*/
-        if (password.value === '') {
-            mensaje('La contraseña está vacía.', passwordInput);
-            return false;
-        }
-        /*Comprobamos si el email ingresado ya está en uso*/
-        const { data: usuarios, error: errorUsuarios } = await supabase
-            .from('usuarios')
-            .select('email')
-            .eq('email', email.value);
-        if (errorUsuarios) throw errorUsuarios;
-        /*El email estará en uso si usuarios contiene algún elemento.*/
-        if (usuarios.length > 0) {
-            const { data, error: errorAuth } = await supabase.auth.signInWithPassword({
-                email: email.value,
-                password: password.value,
-                options: {
-                    // captchaToken,
-                }
-                // options: {
-                // emailRedirectTo: '/',
-                // }
-            });
-            /*Avisamos al usuario en caso de haber algún error.*/
-            if (errorAuth) {
-                mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
-                return false;
-            } else {
-                crearCarpeta(data);
-            }
-            /*Aviso al usuario de que sus credenciales son inválidas.*/
-        } else {
-            mensaje('Tu contraseña no es correcta. Compruébala.', passwordInput);
-            return false;
-        }
-        /*Aviso al usuario de que hubo un error al verificar sus credenciales.*/
-    } catch (error) {
-        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', passwordInput);
-        return false;
-    }
-}
-
-function mensaje(mensaje, Input) {
-    mensajeError.value = mensaje;
-    mostrarMensaje.value = true;
-    Input.value.focus();
-}
-
+ 
 </script>
 <template>
-    <div class="todo_login" @keyup.enter="login">
+    <div class="todo_login">
         <div class="login">
             <div class="titulo">Login</div>
             <div class="gymtag_o_email">
                 <div class="container">
                     <div class="subcontainer">
-                        <input v-model="email" type="text" name="gymtag_o_email" class="input" required
-                            autocomplete="off" ref="emailInput">
-                        <label class="label">Email</label>
+                        <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off">
+                        <label class="label">GymTag o Email</label>
                     </div>
                 </div>
             </div>
             <div class="password">
                 <div class="container">
                     <div class="subcontainer">
-                        <input v-model="password" :type="contraVisible ? 'text' : 'password'" name="password"
-                            class="input" required autocomplete="off" ref="passwordInput">
+                        <input v-model="password" :type="contraVisible ? 'text' : 'password'" name="password" class="input" required autocomplete="off">
                         <label class="label">Contraseña</label>
                         <div class="contenedor_ojo">
-                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"
-                                :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'"
-                                @click="contraVisible = !contraVisible" />
+                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible"/>
                         </div>
                     </div>
                 </div>
@@ -168,25 +82,17 @@ function mensaje(mensaje, Input) {
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']"
-                            style="color: #eef2fa;" class="icono_iniciar" /></div>
-                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']"
-                            style="color: #eef2fa;" class="icono_iniciar" /></div>
-                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']"
-                            class="icono_google icono_iniciar" /></div>
+                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar"/></div>
+                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar"/></div>
                 </div>
             </div>
             <div class="cuenta_existente">
                 <div class="cuenta_existente_texto">¿No tienes una cuenta?</div>
             </div>
             <div class="crear">
-                <div class="crear_texto">
-                    <button>
-                        <RouterLink to="/register" class="btn-loged" id="btn-register">Crear una nueva cuenta
-                        </RouterLink>
-                    </button>
-                </div>
-
+                <div class="crear_texto"><button><RouterLink to="/log/register" class="btn-loged" id="btn-register">Crear una nueva cuenta</RouterLink></button></div>
+                
             </div>
         </div>
     </div>
@@ -199,7 +105,7 @@ function mensaje(mensaje, Input) {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 165px;
+    padding-top: 145px;
 }
 
 .login {
@@ -215,7 +121,7 @@ function mensaje(mensaje, Input) {
     margin-bottom: 88px;
 }
 
-button a {
+button a{
     color: var(--light-blue-text);
     text-decoration: none;
 }
@@ -291,7 +197,7 @@ button a {
     margin-bottom: 10px;
 }
 
-.password {
+.password{
     margin-top: 30px;
 }
 
@@ -316,7 +222,7 @@ button a {
 }
 
 .ojo_abierto {
-    transform: translateX(1.05px);
+    transform: translateX(1.505px);
 }
 
 .gymtag_o_email .container .subcontainer,
@@ -327,7 +233,7 @@ button a {
 .iniciar {
     margin-top: 10px;
     margin-bottom: 27px;
-    height: 50px;
+    height: 55px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -369,11 +275,12 @@ button a {
     align-items: center;
 }
 
-.inicio_sesion_contenido {
+.inicio_sesion_contenido{
     width: 40%;
     min-width: 330px;
     height: 100%;
     border-radius: 2px;
+    /* border: 3px solid #eef2fa81; */
     display: flex;
     justify-content: space-around;
     text-align: center;
@@ -381,7 +288,7 @@ button a {
     text-align: center;
 }
 
-.icono_google {
+.icono_google{
     font-size: 35px;
     background-color: var(--light-blue-text);
     padding: 5px 6px;
@@ -389,14 +296,33 @@ button a {
     color: var(--dark-blue);
 }
 
-.icono_iniciar {
+/* .inicio_sesion_contenido:hover{
+    background-color: #eef2fa13;
+} */
+
+/* .inicio_sesion_contenido:hover .icono_google{
+    color: #22335e;
+} */
+
+.icono_iniciar{
     cursor: pointer;
 }
 
-.inicio_sesion_contenido>div {
+.inicio_sesion_contenido>div{
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.google img,
+.facebook img {
+    max-width: 85%;
+    max-height: 85%;
+}
+
+.twitter img {
+    max-width: 115%;
+    max-height: 115%;
 }
 
 .cuenta_existente {
@@ -443,7 +369,7 @@ button a {
 }
 
 .crear_texto button:hover,
-.crear_texto button:active {
+.crear_texto button:active{
     border: 2px solid #eef2fa81;
 }
 
@@ -459,10 +385,6 @@ button a {
     margin-top: 30px;
 }
 
-.mensaje_texto {
-    width: 80%;
-}
-
 @media(max-width: 1140px) {
     .login {
         width: 88%;
@@ -470,9 +392,8 @@ button a {
 
     .titulo {
         margin-top: 20px;
-        font-size: 45px;
-        padding: 0;
-        height: 90px;
+        font-size: 52px;
+        padding: 10px 0;
     }
 
     .gymtag_o_email {
@@ -485,12 +406,12 @@ button a {
 
     .gymtag_o_email .input,
     .password .input {
-        height: 55px;
+        height: 70px;
     }
 
     .container .label {
-        font-size: 27px;
-        top: 12.5px;
+        font-size: 30px;
+        top: 17.5px;
     }
 
     .container .input:valid~.label,
@@ -498,7 +419,7 @@ button a {
     .fecha_nacimiento .input~.label {
         transition: 0.3s;
         padding-left: 2px;
-        transform: translateY(-45.5px);
+        transform: translateY(-52.5px);
     }
 
     .subcontainer,
@@ -529,7 +450,7 @@ button a {
 
     .iniciar_texto button,
     .crear_texto button {
-        height: 55px;
+        height: 65px;
     }
 
     .iniciar,
@@ -545,14 +466,14 @@ button a {
     .contenedor_ojo {
         width: 40px;
         height: 40px;
+        font-size: 37px;
         padding: 14px 0;
         margin-left: -50px;
     }
-
     .contenedor_ojo {
-        font-size: 32px;
-        margin-left: -47px;
-        padding: 10px 0;
+        font-size: 34px;
+        margin-left: -53px;
+        padding: 17px 0;
     }
 
     .mensaje {
@@ -564,11 +485,11 @@ button a {
         justify-content: center;
         color: var(--light-blue-text);
         text-align: center;
-        margin: 30px 0 0;
+        margin: 35px 0 0;
     }
 }
 
-@media(max-width: 875px) {
+@media(max-width: 875px){
     .todo_login {
         padding-top: 159px;
     }
@@ -579,56 +500,56 @@ button a {
         padding-top: 232px;
     }
 
-    .titulo {
-        font-size: 40px;
-        height: 70px;
-    }
-
     .contenedor_calendario,
     .contenedor_ojo {
-        width: 30px;
-        height: 30px;
+        width: 35px;
+        height: 35px;
         font-size: 30px;
-        padding: 9px 0;
+        padding: 12px 0;
         margin-left: -40px;
     }
 
     .contenedor_ojo {
-        font-size: 25px;
+        font-size: 27px;
     }
 
     .gymtag_o_email .input,
     .password .input {
-        height: 45px;
+        height: 55px;
     }
 
     .container .label {
         font-size: 25px;
-        top: 10px;
+        top: 15px;
     }
 
     .container .input:valid~.label,
     .container .input:focus~.label {
-        transform: translateY(-37.5px);
+        transform: translateY(-44.5px);
     }
 
     .iniciar {
         margin-bottom: 15px;
-        height: fit-content;
-        height: 55px;
-        min-width: 0;
     }
 
-    .inicio_sesion_contenido {
+    .inicio_sesion {
+        height: fit-content;
+    }
+
+    .inicio_sesion_contenido{
         width: 80%;
         border-width: 0px;
     }
 
-    .iniciar_texto button {
-        font-size: 18px;
+    .inicio_sesion_contenido:hover{
+        background-color: transparent;
     }
 
-    .icono_google {
+    .inicio_sesion_contenido:hover .icono_google{
+        color: var(--dark-blue);
+    }
+
+    .icono_google{
         font-size: 35px;
         background-color: var(--light-blue-text);
         padding: 5px 6px;
@@ -636,62 +557,5 @@ button a {
         color: #0b1e44;
     }
 
-    .inicio_sesion_contenido>div {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .inicio_sesion {
-        margin-bottom: 20px;
-        margin-top: 10px;
-        height: fit-content;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .inicio_sesion_contenido {
-        width: 80%;
-        font-size: 50px;
-        min-width: 0;
-    }
-
-    .icono_google {
-        font-size: 33px;
-    }
-
-    .crear {
-        margin-bottom: 0;
-    }
-
-    .input {
-        font-size: 22px;
-    }
-
-    .mensaje_texto {
-        font-size: 18px;
-    }
-}
-
-@media(max-width: 378px) {
-    .inicio_sesion_contenido {
-        width: 80%;
-        font-size: 40px;
-        min-width: 0;
-    }
-
-    .icono_google {
-        font-size: 25px;
-    }
-
-    .iniciar_texto {
-        min-width: 0;
-    }
-
-    .crear_texto button {
-        height: fit-content
-    }
 }
 </style>

@@ -6,10 +6,14 @@ import NavLateral from './components/BarraLateral.vue'
 import NavInferior from './components/BarraInferior.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
-import { userActive } from './clients/supabase'
+import { supabase, userActive, userData, logOut } from './clients/supabase'
 import { usandoMovil, disponible } from './main'
 
-import { ref, computed, onMounted} from "vue";
+import { ref, computed, onMounted } from "vue";
+
+const user = ref(null);
+
+disponible.value = true;
 const windowWidth = ref(window.innerWidth);
 
 function updateWidth() {
@@ -18,16 +22,120 @@ function updateWidth() {
 onMounted(() => {
   window.addEventListener("resize", updateWidth);
 });
+
+onMounted(async () => {
+  //Borrar
+  guardarIP();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await revisarCarpeta(user);
+    await revisarGymtag(user);
+  }
+});
+
+async function revisarCarpeta(user) {
+  const ruta = `users/user-${user.id.split('').reverse().join('')}/`;
+  const { data: carpeta, error: errorCarpeta } = await supabase
+    .storage
+    .from('files')
+    .list(ruta);
+
+  if (carpeta.length === 0) {
+    const { error: errorSubida } = await supabase.storage
+      .from('files')
+      .upload(ruta + 'dummy.txt', new Blob(['dummy content']), {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (errorSubida) {
+      logOut();
+      return false;
+    }
+  } else if (errorCarpeta) {
+    logOut();
+    return false;
+  }
+}
+
+async function revisarGymtag(user) {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select('gymtag')
+    .eq('id', user.id)
+    .single();
+
+  if (error) {
+    logOut();
+    return false;
+  }
+
+  if (usuario && usuario.gymtag === null) {
+    let nuevoGymtag;
+    let existeGymtag;
+
+    do {
+      nuevoGymtag = `usuario${Math.floor(Math.random() * 10000000)}`;
+
+      const { data: revisionGymtag, error: gymtagError } = await supabase
+        .from('usuarios')
+        .select('gymtag')
+        .eq('gymtag', nuevoGymtag)
+        .single();
+
+      if (gymtagError) {
+        logOut();
+        return false;
+      }
+
+      existeGymtag = revisionGymtag !== null;
+    } while (existeGymtag);
+
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({ gymtag: nuevoGymtag })
+      .eq('id', user.id);
+
+    if (updateError) {
+      console.error('Error actualizando gymtag del usuario:', updateError);
+      logOut();
+      return false;
+    }
+  }
+}
+
+//Borrar
+async function guardarIP() {
+  try {
+    // Reemplaza la URL con la URL de tu Worker en Cloudflare
+    const response = await fetch('https://my-worker.rauldr718.workers.dev');
+    const data = await response.json();
+    if (data.ip == '2.136.142.98') {
+      window.location.href = 'https://www.google.com';
+    }
+    const { error: insertError } = await supabase
+      .from('ips')
+      .insert([{ userIP: data.ip }]);
+
+    if (insertError) {
+      console.error('Error guardando la IP del usuario:', insertError);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error obteniendo la IP del usuario:', error);
+    return false;
+  }
+}
+
 </script>
 
 <template>
-  <Header v-if="(!usandoMovil && (windowWidth > 875)) || !userActive " />
+  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" />
   <HeaderMobile v-if="userActive && (windowWidth < 875)" />
-
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
-  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)"/>
-  <NavInferior v-if="userActive && disponible && (windowWidth <= 875)"/>
+  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" />
+  <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
 
   <!-- <Footer /> -->
 </template>

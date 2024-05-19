@@ -1,19 +1,23 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const mensaje = ref('');
 const url = ref('');
+let timeoutId;
 
 onMounted(() => {
-    
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
         url.value = "/login";
         redirigir();
-    }, 20000); 
+    }, 20000);
 
     const route = useRoute();
-    const email = decodeURIComponent(route.query.email);
+    const email = route.query.email ? decodeURIComponent(route.query.email) : '';
+    if (!email) {
+        window.location.href = '/';
+        return;
+    }
     if (email.includes('@gmail.com')) {
         mensaje.value = "Ir a Gmail";
         url.value = "https://mail.google.com/mail/u/0/#inbox";
@@ -24,6 +28,10 @@ onMounted(() => {
         mensaje.value = "Ir a Login";
         url.value = "/login";
     }
+});
+
+onUnmounted(() => {
+    clearTimeout(timeoutId); 
 });
 
 function redirigir() {

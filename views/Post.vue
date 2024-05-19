@@ -3,10 +3,6 @@ import { ref } from 'vue';
 import { supabase, userState } from '../clients/supabase';
 import { disponible } from "../main";
 
-// if(!userActive.value){
-//   window.location.href = '/login';
-// }
-
 disponible.value = true;
 
 const tematica = ref('');
@@ -48,11 +44,33 @@ async function publicar() {
   }
 }
 
+async function obtenerId(){
+  const { data: { user }, error } = await supabase.auth.getUser();
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (error) {
+    logOut();
+    return false;
+  }
+  console.log(user);
+  const userIdHashed = await hashUserId(user.id);
+  return userIdHashed;
+}
+
+/*Función para encriptar el Id del usuario.*/
+async function hashUserId(userId) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(userId);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+// console.log(imagen);
+// console.log(ruta);
+// console.log(imagen.name + ' este es el nombre');
+
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
-  console.log(imagen);
-  const ruta = `usuario/${imagen.name}`;
-  console.log(imagen.name + ' este es el nombre');
+  const ruta = `users/user-${await obtenerId()}/${imagen.name}`;
+
   const { data, error } = await supabase.storage
     .from('files')
     .upload(ruta, imagen)
@@ -65,11 +83,11 @@ async function insertarImagen() {
 
 function validarTematica() {
   // if (!/['"]/.test(tematica.value)) {
-    if (tematica.value.length <= 35) {
-      return true;
-    } else {
-      aviso('La temática ingresada es demasiado larga.', tematicaInput);
-    }
+  if (tematica.value.length <= 35) {
+    return true;
+  } else {
+    aviso('La temática ingresada es demasiado larga.', tematicaInput);
+  }
   // } else {
   //   aviso('La temática contiene comillas simples o dobles.', tematicaInput);
   // }
@@ -78,11 +96,11 @@ function validarTematica() {
 
 function validarContenido() {
   // if (!/['"]/.test(contenido.value)) {
-    if (contenido.value.length <= 440) {
-      return true;
-    } else {
-      aviso('El contenido es demasiado largo.', contenidoInput);
-    }
+  if (contenido.value.length <= 440) {
+    return true;
+  } else {
+    aviso('El contenido es demasiado largo.', contenidoInput);
+  }
   // } else {
   //   aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
   // }
@@ -761,7 +779,7 @@ svg.girar_imagen {
     top: -13.5px;
   }
 
-  .contenido{
+  .contenido {
     margin-top: 55px;
   }
 }
@@ -921,10 +939,12 @@ svg.girar_imagen {
 }
 
 @media(max-width: 300px) {
+
   .todo_publicar,
   .publicar_container {
     height: 1000px;
   }
+
   .prev_imagen {
     height: 220px;
     width: 220px;

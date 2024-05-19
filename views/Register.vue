@@ -98,7 +98,8 @@ function mensaje(mensaje, Input) {
 
 //Comprobamos el nombre ingresado.
 function validarNombre() {
-    if (/^[a-zñáéíóú\s-]{3,14}$/i.test(nombre.value)) {
+    const nombreT = nombre.value.trim();
+    if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,14}$/i.test(nombreT)) {
         return true;
     }
     mensaje('El nombre debe contener entre 3 y 14 letras.', nombreInput);
@@ -107,7 +108,8 @@ function validarNombre() {
 
 //Comprobamos los apellidos ingresados.
 function validarApellidos() {
-    if (/^[a-zñáéíóú\s-]{3,24}$/i.test(apellidos.value)) {
+    const apellidosT = apellidos.value.trim();
+    if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,24}$/i.test(apellidosT)) {
         return true;
     }
     mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidosInput);
@@ -179,7 +181,7 @@ async function validarEmail() {
 //Comprobamos las contraseñas ingresadas.
 function validarContras() {
     //Si las contraseñas son iguales y seguras, la contraseña es válida.
-    if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password.value)) {
+    if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/.test(password.value)){
         return true;
     } else {
         //Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.

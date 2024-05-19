@@ -26,7 +26,12 @@ onMounted(() => {
 onMounted(async () => {
   //Borrar
   guardarIP();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (error) {
+    logOut();
+    return false;
+  }
   if (user) {
     await revisarCarpeta(user);
     await revisarGymtag(user);
@@ -42,24 +47,29 @@ async function hashUserId(userId) {
 }
 
 async function revisarCarpeta(user) {
+  /*Construcción de la ruta de la carpeta propia del usuario.*/
   const ruta = `users/user-${await hashUserId(user.id)}/`;
+  /*Comprobamos si existe una carpeta con el nombre de la ruta.*/
   const { data: carpeta, error: errorCarpeta } = await supabase
     .storage
     .from('files')
     .list(ruta);
 
+  /*Si no hay ninguna carpeta con el nombre especificado, la longitud será 0.*/
   if (carpeta.length === 0) {
+    /*Creamos la carpeta con un archivo vacío.*/
     const { error: errorSubida } = await supabase.storage
       .from('files')
       .upload(ruta + 'dummy.txt', new Blob(['dummy content']), {
         cacheControl: '3600',
         upsert: false
       });
-
+    /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
     if (errorSubida) {
       logOut();
       return false;
     }
+    /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   } else if (errorCarpeta) {
     logOut();
     return false;
@@ -72,7 +82,7 @@ async function revisarGymtag(user) {
     .from('usuarios')
     .select('gymtag')
     .eq('id', user.id);
-  /*Deslogueamos al usuario en caso de error para que se repita el proceso.*/
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (error) {
     logOut();
     return false;
@@ -92,7 +102,7 @@ async function revisarGymtag(user) {
         .select('gymtag')
         .eq('gymtag', nuevoGymtag);
 
-      /*Deslogueamos al usuario en caso de error para que se repita el proceso.*/
+      /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
       if (gymtagError) {
         logOut();
         return false;
@@ -107,7 +117,7 @@ async function revisarGymtag(user) {
       .from('usuarios')
       .update({ gymtag: nuevoGymtag })
       .eq('id', user.id);
-    /*Deslogueamos al usuario en caso de error para que se repita el proceso.*/
+    /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
     if (updateError) {
       logOut();
       return false;

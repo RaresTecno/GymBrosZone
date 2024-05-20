@@ -18,6 +18,7 @@ const mensajeError = ref("");
 const nombreRegex = /^[a-zñáéíóú\s]{3,14}$/i;
 const apellidosRegex = /^[a-zñáéíóú\s-]{4,24}$/i;
 const gymtagRegex = /^[a-z0-9ñ._]{3,14}$/i;
+const localidadRegex = /^[a-zñáéíóú\s]{3,14}$/i;
 
 const validarNombre = () => {
   if (!nombreRegex.test(nombre.value)) {
@@ -37,18 +38,18 @@ const validarApellidos = () => {
   return false;
 };
 
-const validarGym = () => {
-  if (!nombreRegex.test(nombre.value)) {
-    mensajeError.value = "El Gym debe contener entre 3 y 14 letras.";
+const validarLocalidad = () => {
+  if (!localidadRegex.test(localidad.value)) {
+    mensajeError.value = "La localidad debe contener entre 3 y 14 letras.";
     mostrarMensaje.value = true;
     return true;
   }
   return false;
 };
 
-const validarLocalidad = () => {
-  if (!nombreRegex.test(nombre.value)) {
-    mensajeError.value = "La localidad debe contener entre 3 y 14 letras.";
+const validarGym = () => {
+  if (!nombreRegex.test(gym.value)) {
+    mensajeError.value = "El Gym debe contener entre 3 y 14 letras.";
     mostrarMensaje.value = true;
     return true;
   }
@@ -78,8 +79,47 @@ const validarGymtag = () => {
   return false;
 };
 
-const validateForm = () => {
-  // Validar que todos los campos estén llenos
+const validarEdad = () => {
+  if (!edad.value) {
+    mensajeError.value = "Por favor, ingrese su fecha de nacimiento.";
+    mostrarMensaje.value = true;
+    return true;
+  }
+  return false;
+};
+
+const validarPeso = () => {
+  const pesoNum = parseFloat(peso.value);
+  if (isNaN(pesoNum) || pesoNum <= 0) {
+    mensajeError.value = "Por favor, ingrese un peso válido.";
+    mostrarMensaje.value = true;
+    return true;
+  }
+  return false;
+};
+
+const validarSexo = () => {
+  if (!sexo.value) {
+    mensajeError.value = "Por favor, ingrese su sexo.";
+    mostrarMensaje.value = true;
+    return true;
+  }
+  return false;
+};
+
+const validarAltura = () => {
+  const alturaNum = parseFloat(altura.value);
+  if (isNaN(alturaNum) || alturaNum <= 0) {
+    mensajeError.value = "Por favor, ingrese una altura válida.";
+    mostrarMensaje.value = true;
+    return true;
+  }
+  return false;
+};
+
+const validateForm = (event) => {
+  event.preventDefault();
+  
   if (
     !nombre.value ||
     !edad.value ||
@@ -94,17 +134,23 @@ const validateForm = () => {
     mostrarMensaje.value = true;
     return false;
   }
-  mostrarMensaje.value = false;
-  mensajeError.value = "";
+
   if (
     validarNombre() ||
     validarApellidos() ||
     validarGymtag() ||
     validarGym() ||
-    validarLocalidad()
+    validarLocalidad() ||
+    validarEdad() ||
+    validarPeso() ||
+    validarSexo() ||
+    validarAltura()
   ) {
-    return;
+    return false;
   }
+
+  mostrarMensaje.value = false;
+  mensajeError.value = "";
   return true;
 };
 
@@ -138,10 +184,11 @@ console.log(urlFoto);
       <form
         action="Profile.vue"
         method="POST"
-        class="formulario"
-        novalidation
-        @submit="validateForm"
+        class="fuera-formulario"
+        novalidate
+        @submit.prevent="validateForm"
       >
+      <div class="formulario">
         <div class="column">
           <label for="nombre">Nombre:</label>
           <input
@@ -156,7 +203,7 @@ console.log(urlFoto);
             <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
           </div>
           <label for="edad">Fecha de Nacimiento:</label>
-          <input type="date" class="inputs" name="edad" autocomplete="off" />
+          <input v-model="edad" type="date" class="inputs" name="edad" autocomplete="off" />
           <div class="container_lapiz">
             <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
           </div>
@@ -213,7 +260,7 @@ console.log(urlFoto);
           <label for="altura">Altura:</label>
           <input
             v-model="altura"
-            ype="text"
+            type="text"
             class="inputs"
             name="altura"
             placeholder="Escriba su altura"
@@ -224,6 +271,7 @@ console.log(urlFoto);
           </div>
           <label for="gym">Gym:</label>
           <input
+            v-model="gym"
             type="text"
             class="inputs"
             name="gym"
@@ -234,13 +282,14 @@ console.log(urlFoto);
             <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
           </div>
         </div>
+      </div>
+        <button type="submit" class="actualizar">
+          Actualizar
+        </button>
       </form>
       <div v-if="mostrarMensaje" class="mensaje-error-container">
-        <div class="mensaje-error">{{ mensajeError }}</div>
+          <div class="mensaje-error">{{ mensajeError }}</div>
       </div>
-      <button type="submit" class="actualizar" @click="validateForm">
-        <RouterLink to="/"><a href="">Actualizar</a></RouterLink>
-      </button>
     </div>
     <button class="cerrar-sesion" v-if="!userActive">
       <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
@@ -252,7 +301,6 @@ console.log(urlFoto);
 .container {
   width: 100vw;
   height: fit-content;
-  background: var(--bg-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -294,6 +342,11 @@ console.log(urlFoto);
   width: 75vw;
   height: fit-content;
   max-width: 1050px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fuera-formulario{
   display: flex;
   flex-direction: column;
 }
@@ -441,6 +494,7 @@ button {
 
 .cerrar-sesion:hover,
 .actualizar:hover {
+  color: black;
   background: aliceblue;
   -webkit-transform: translate(0, 0.25em);
   transform: translate(0, 0.25em);
@@ -474,9 +528,14 @@ button:hover a {
   color: black;
 }
 
-button .cerrar-sesion {
+.cerrar-sesion {
   margin-bottom: 2%;
   box-shadow: none;
+}
+
+.actualizar, .mensaje-error-container{
+  display:flex;
+  flex-direction: column;
 }
 
 @media (max-width: 1440px) {

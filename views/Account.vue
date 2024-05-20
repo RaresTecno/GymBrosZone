@@ -294,8 +294,8 @@ console.log(urlFoto);
   width: 75vw;
   height: fit-content;
   max-width: 1050px;
-  display: flex; /* Agrega esta línea */
-  flex-direction: column; /* Agrega esta línea */
+  display: flex;
+  flex-direction: column;
 }
 
 .formulario {
@@ -405,11 +405,11 @@ button.actualizar {
   border-radius: 0.75em;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
-  -webkit-transition: background 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
-  transition: transform 150ms cubic-bezier(0, 0, 0.58, 1),
-    background 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
+  -webkit-transition: background 150ms,
+    -webkit-transform 150ms;
+  transition: transform 150ms,
+    background 150ms,
+    -webkit-transform 150ms;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 2%;
@@ -430,13 +430,13 @@ button.actualizar::before {
   background: var(--dark-blue);
   border-radius: inherit;
   -webkit-box-shadow: 0 0 0 2px var(--blue), 0 0.625em 0 0 var(--dark-blue);
-  box-shadow: 0 0 0 2px rgb(63, 63, 65), 0 0.625em 0 0;
+  box-shadow: none;
   -webkit-transform: translate3d(0, 0.75em, -1em);
   transform: translate3d(0, 0.75em, -1em);
-  transition: transform 150ms cubic-bezier(0, 0, 0.58, 1),
-    box-shadow 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
+  transition: transform 150ms,
+    box-shadow 150ms,
+    -webkit-transform 150ms,
+    -webkit-box-shadow 150ms;
 }
 
 button.cerrar-sesion:hover,
@@ -449,14 +449,13 @@ button.actualizar:hover {
 button.cerrar-sesion:hover::before,
 button.actualizar:hover::before {
   -webkit-box-shadow: 0 0 0 2px var(--alt-black), 0 0.5em 0 0 black;
-  box-shadow: 0 0 0 2px grey, 0 0.5em 0 0;
+  box-shadow: none;
   -webkit-transform: translate3d(0, 0.5em, -1em);
   transform: translate3d(0, 0.5em, -1em);
 }
 
 button.cerrar-sesion:active,
 button.actualizar:active {
-  background: whitesmoke;
   -webkit-transform: translate(0em, 0.75em);
   transform: translate(0em, 0.75em);
 }
@@ -464,7 +463,7 @@ button.actualizar:active {
 button.cerrar-sesion:active::before,
 button.actualizar:active::before {
   -webkit-box-shadow: 0 0 0 2px grey, 0 0 rgb(95, 88, 88);
-  box-shadow: 0 0 0 2px rgb(65, 58, 58), 0 0 rgb(192, 178, 178);
+  box-shadow: none;
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
 }
@@ -479,13 +478,9 @@ button.cerrar-sesion {
   margin-bottom: 2%;
 }
 
-.cerrar-sesion a{
-  color: aliceblue !important;
-}
-
 @media (max-width: 1440px) {
   .container_formulario {
-    margin-top: 15%;
+    margin-top: 1%;
   }
 }
 

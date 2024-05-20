@@ -381,6 +381,7 @@ a:hover {
 }
 
 button {
+  color: aliceblue;
   position: relative;
   display: inline-block;
   cursor: pointer;
@@ -396,7 +397,7 @@ button {
 button.cerrar-sesion,
 button.actualizar {
   font-weight: 600;
-  color: black;
+  color: aliceblue;
   text-transform: uppercase;
   padding: 1.25em 2em;
   background: var(--blue);
@@ -417,6 +418,7 @@ button.actualizar {
 
 button.cerrar-sesion::before,
 button.actualizar::before {
+  color: aliceblue;
   position: absolute;
   content: "";
   width: 100%;
@@ -477,9 +479,13 @@ button.cerrar-sesion {
   margin-bottom: 2%;
 }
 
+.cerrar-sesion a{
+  color: aliceblue !important;
+}
+
 @media (max-width: 1440px) {
   .container_formulario {
-    margin-top: 7%;
+    margin-top: 15%;
   }
 }
 
@@ -509,7 +515,7 @@ button.cerrar-sesion {
   }
 }
 
-@media (max-width: 425px) {
+@media (max-width: 516px) {
   .img-icon {
     width: 25px;
   }
@@ -522,10 +528,12 @@ button.cerrar-sesion {
   .formulario {
     grid-template-columns: 1fr;
     gap: 10px;
+    margin-right: 5%;
   }
 
   .inputs {
     width: 55vw;
+    margin-right: 5%;
   }
 
   .lapiz {
@@ -537,6 +545,8 @@ button.cerrar-sesion {
 }
 
 @media (max-width: 375px) {
-
+  .formulario {
+    margin-right: 5%;
+  }
 }
 </style>

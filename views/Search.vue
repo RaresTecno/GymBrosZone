@@ -61,43 +61,43 @@ async function verApi() {
     ProductoFat_100.value = producto.product.nutriments["fat_100g"];
     ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
     ProductoSaturedFat_100.value =
-    producto.product.nutriments["saturated-fat_100g"];
+      producto.product.nutriments["saturated-fat_100g"];
     ProductoSaturedFatUnit.value =
-    producto.product.nutriments["saturated-fat_unit"];
+      producto.product.nutriments["saturated-fat_unit"];
     ProductoCarbohydrates_100g.value =
       producto.product.nutriments["carbohydrates_100g"];
-      ProductoCarbohydratesUnit.value =
+    ProductoCarbohydratesUnit.value =
       producto.product.nutriments["carbohydrates_unit"];
-      ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
-      ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
-      ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
-      ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
-      ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
-      ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
-      ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
-      ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
-      ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
-      ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
-      ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
-      ProductoCantidad.value = producto.product.quantity;
-      
-      ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
-      ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
-      ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
-      ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
-      ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
-      ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
-      ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
-      ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
-      ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
-      ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
-      
-      console.log(ProductoNegativePoints.value)
-      buscado.value = true;
-    } catch (error) {
-      console.log(error);
-    }
+    ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
+    ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
+    ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
+    ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
+    ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
+    ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
+    ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
+    ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
+    ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
+    ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
+    ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+    ProductoCantidad.value = producto.product.quantity;
+
+    ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
+    ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
+    ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
+    ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
+    ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
+    ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
+    ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
+    ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
+    ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
+    ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
+
+    console.log(ProductoNegativePoints.value)
+    buscado.value = true;
+  } catch (error) {
+    console.log(error);
   }
+}
 function nombre(producto) {
   if (
     producto.product.product_name_es != null &&
@@ -205,7 +205,27 @@ onMounted(() => {
   });
   scanner.value.render(success, error);
 });
+document.addEventListener('DOMContentLoaded', function() {
+    // Encuentra el elemento con el id "reader"
+    var readerElement = document.getElementById("reader");
 
+    // Verifica si el elemento existe
+    if (readerElement) {
+        // Crea un nuevo div
+        var newDiv = document.createElement("div");
+
+        // Añade la clase 'ocultar-i' al nuevo div
+        newDiv.classList.add('ocultar-i');
+
+        // Opcional: Añadir contenido al nuevo div
+        newDiv.innerHTML = "<p>Este es un nuevo contenido</p>";
+
+        // Añade el nuevo div como hijo del elemento "reader"
+        readerElement.appendChild(newDiv);
+    } else {
+        console.error('Elemento con id "reader" no encontrado.');
+    }
+});
 onUnmounted(() => {
   if (scanner.value) {
     scanner.value.clear();
@@ -250,8 +270,14 @@ function error(err) {
       <div class="cerrar">x</div>
     </div>
   </div>
-  <div id="reader"></div>
-  <div id="result"></div>
+  <div id="reader">
+    
+    
+  </div>
+  
+  <div id="result">
+    
+  </div>
   <div v-if="buscado" class="productos">
     <div class="producto-arriba">
       <div class="producto-img">
@@ -343,6 +369,27 @@ function error(err) {
 </template>
 
 <style scoped>
+#result {
+  position: relative;
+}
+
+#reader {
+  position: relative;
+  margin-left: 60px;
+  border: none
+}
+
+.ocultar-i {
+  position: absolute;
+  background-color: red;
+  height: 150px;
+  width: 50px;
+  right: 0;
+  top: 1px;
+  z-index: 100;
+  background: var(--bg-color);
+}
+
 .buscador {
   margin: 80px 0 0 60px;
   height: 80px;
@@ -424,7 +471,6 @@ function error(err) {
   align-items: center;
   flex: 1;
   justify-content: center;
-  margin-top: ;
   margin: 15px 20px 20px 0;
 
 }
@@ -494,26 +540,32 @@ function error(err) {
 .tabla-nutrientes .tr :first-child {
   border-right: 2px solid black;
 }
-.tabla-nutriscore{
+
+.tabla-nutriscore {
   display: flex;
 }
-.points{
+
+.points {
   display: flex;
   flex-direction: column;
   margin: 20px;
   width: 50%;
 }
-.points span{
+
+.points span {
   margin: 2px;
 }
-.nutriscore-points{
+
+.nutriscore-points {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.nutriscore-points *{
+
+.nutriscore-points * {
   margin: 0 50px;
 }
+
 @media (max-width: 1150px) {
   .producto-novagroup {
     margin: 0 2% 0 2%;

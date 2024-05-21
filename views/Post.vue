@@ -37,48 +37,96 @@ async function publicar() {
   if (validarTematica() && validarContenido()) {
     if (hayImagen.value) {
       const data = await insertarImagen();
+      const data2 = await guardarPublicacion(data);
       console.log(data);
+      console.log(data2);
     } else {
       avisoImagen('Debes incluir una imagen.');
     }
   }
 }
 
-async function obtenerId(){
+async function obtenerId() {
   const { data: { user }, error } = await supabase.auth.getUser();
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (error) {
     logOut();
     return false;
   }
-  console.log(user);
-  const userIdHashed = await hashUserId(user.id);
-  return userIdHashed;
+  // const userIdHashed = await hashString(user.id);
+  return user.id;
 }
 
 /*Función para encriptar el Id del usuario.*/
-async function hashUserId(userId) {
+async function hashString(cadena) {
   const encoder = new TextEncoder();
-  const data = encoder.encode(userId);
+  const data = encoder.encode(cadena);
   const hash = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
-// console.log(imagen);
-// console.log(ruta);
-// console.log(imagen.name + ' este es el nombre');
 
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
-  const ruta = `users/user-${await obtenerId()}/${imagen.name}`;
 
-  const { data, error } = await supabase.storage
-    .from('files')
-    .upload(ruta, imagen)
+  let nombreDisponible = false;
+  let contador = 1;
+  let nombrePublicacion;
+  let ruta;
+  let id = await obtenerId();
+  let encId = await hashString(id);
 
-  if (error) {
-    avisoImagen('Ha ocurrido un error al guardar la imagen.');
+  do {
+    nombrePublicacion = 'post-' + contador;
+    ruta = `users/user-${encId}/post/`;
+
+    const { data: publicacion, error: errorPublicacion } = await supabase
+      .storage
+      .from('files')
+      .list(ruta);
+
+    if (errorPublicacion) {
+      avisoImagen('Ha ocurrido un error al guardar la publicación.');
+      return false;
+    }
+
+    const nombreArchivo = await hashString(id + nombrePublicacion);
+    const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
+
+    if (!existePublicacion) {
+      nombreDisponible = true;
+      /*Guardamos la publicación.*/
+      const rutaFinal = `${ruta}${nombreArchivo}`;
+      console.log(rutaFinal);
+      const { data, error } = await supabase.storage
+        .from('files')
+        .upload(rutaFinal, imagen);
+
+      if (error) {
+        avisoImagen('Ha ocurrido un error al guardar la publicación.');
+        return false;
+      }
+      console.log(id + ' hola ' + rutaFinal);
+      return [id, rutaFinal];
+    } else {
+      contador++;
+    }
+  } while (!nombreDisponible);
+  avisoImagen('Ha ocurrido un error al guardar la publicación.');
+  return false;
+}
+
+async function guardarPublicacion(data) {
+  console.log(data[0]);
+  console.log(data[1]);
+  console.log(tematica.value);
+  const { error: insertError } = await supabase
+    .from('publicaciones')
+    .insert([{ idusuario: data[0], tematica: tematica.value, contenido: contenido.value, ruta: data[1] }]);
+
+  if (insertError) {
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
   }
-  return data;
 }
 
 function validarTematica() {

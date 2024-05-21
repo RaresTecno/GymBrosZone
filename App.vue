@@ -25,11 +25,10 @@ onMounted(() => {
 
 onMounted(async () => {
   //Borrar
-  guardarIP();
+  await guardarIP();
   const { data: { user }, error } = await supabase.auth.getUser();
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (error) {
-    logOut();
     return false;
   }
   if (user) {
@@ -55,6 +54,11 @@ async function revisarCarpeta(user) {
     .from('files')
     .list(ruta);
 
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (errorCarpeta) {
+    logOut();
+    return false;
+  }
   /*Si no hay ninguna carpeta con el nombre especificado, la longitud será 0.*/
   if (carpeta.length === 0) {
     /*Creamos la carpeta con un archivo vacío.*/
@@ -69,10 +73,6 @@ async function revisarCarpeta(user) {
       logOut();
       return false;
     }
-    /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
-  } else if (errorCarpeta) {
-    logOut();
-    return false;
   }
 }
 
@@ -131,9 +131,6 @@ async function guardarIP() {
     // Reemplaza la URL con la URL de tu Worker en Cloudflare
     const response = await fetch('https://my-worker.rauldr718.workers.dev');
     const data = await response.json();
-    if (data.ip == '2.136.142.98') {
-      window.location.href = 'https://www.google.com';
-    }
     const { error: insertError } = await supabase
       .from('ips')
       .insert([{ userIP: data.ip }]);

@@ -154,12 +154,11 @@ nav {
   display: flex;
   flex-direction: column;
   padding: 0 12px;
-  height: 100vh;
+  height: 101vh;
   position: fixed;
   top: 80px;
-  /* transition: width 0.4s; */
   z-index: 100;
-  transition: width 0.3s;
+  transition: width 0.3s, box-shadow 0.3s;
   overflow: hidden;
 }
 
@@ -174,6 +173,7 @@ h2 {
 
 nav:hover {
   width: 190px;
+  box-shadow: 2px -2px 5px var(--black), 3px -4px 10px var(--black);
 }
 
 nav:hover h2 {

@@ -89,6 +89,7 @@ async function login() {
             .from('usuarios')
             .select('email')
             .eq('email', email.value);
+            
         if (errorUsuarios) throw errorUsuarios;
         /*El email estará en uso si usuarios contiene algún elemento.*/
         if (usuarios.length > 0) {

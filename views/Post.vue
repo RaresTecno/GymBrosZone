@@ -21,31 +21,39 @@ const div_girar_imagen = ref(null);
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
 
+/*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
 function aviso(mensaje, Input) {
   mensajeAviso.value = mensaje;
   mostrarAviso.value = true;
+  /*Ponemos el foco en el input que sea más largo de lo que debería.*/
   Input.value.focus();
 }
 
+/*Se avisa al usuario de que ha incluido un archivo inválido o que ha ocurrido algún error al guardar la imagen o la publicación.*/
 function avisoImagen(mensaje) {
   mensajeAviso.value = mensaje;
   mostrarAviso.value = true;
+  /*Quitamos la imagen.*/
   quitar_imagen();
 }
 
+/*Función para realizar la publicación.*/
 async function publicar() {
+  /*Validamos la temática y el contenido de la publicación.*/
   if (validarTematica() && validarContenido()) {
+    /*Comprobamos si hay una imagen para así realizar la publicación.*/
     if (hayImagen.value) {
+      /*Guardamos la imagen en la base de datos.*/
       const data = await insertarImagen();
-      const data2 = await guardarPublicacion(data);
-      console.log(data);
-      console.log(data2);
+      /*Guardamos la ruta, la temática y el contenido en la bdd.*/
+      await guardarPublicacion(data);
     } else {
       avisoImagen('Debes incluir una imagen.');
     }
   }
 }
 
+/*Función para obtener el id del usuario.*/
 async function obtenerId() {
   const { data: { user }, error } = await supabase.auth.getUser();
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
@@ -53,11 +61,10 @@ async function obtenerId() {
     logOut();
     return false;
   }
-  // const userIdHashed = await hashString(user.id);
   return user.id;
 }
 
-/*Función para encriptar el Id del usuario.*/
+/*Función para encriptar cadenas de texto.*/
 async function hashString(cadena) {
   const encoder = new TextEncoder();
   const data = encoder.encode(cadena);
@@ -65,9 +72,9 @@ async function hashString(cadena) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/*Función para guardar la imagen en la bdd.*/
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
-
   let nombreDisponible = false;
   let contador = 1;
   let nombrePublicacion;
@@ -75,95 +82,109 @@ async function insertarImagen() {
   let id = await obtenerId();
   let encId = await hashString(id);
 
+  /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
   do {
+    /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
     nombrePublicacion = 'post-' + contador;
+    /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
     ruta = `users/user-${encId}/post/`;
-
+    /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
     const { data: publicacion, error: errorPublicacion } = await supabase
       .storage
       .from('files')
       .list(ruta);
-
+    /*Avisamos al usuario en caso de error.*/
     if (errorPublicacion) {
       avisoImagen('Ha ocurrido un error al guardar la publicación.');
       return false;
     }
 
+    /*Encriptamos el nombre de la imagen que vamos a guardar.*/
     const nombreArchivo = await hashString(id + nombrePublicacion);
+    /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
     const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
 
+    /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
     if (!existePublicacion) {
       nombreDisponible = true;
       /*Guardamos la publicación.*/
       const rutaFinal = `${ruta}${nombreArchivo}`;
-      console.log(rutaFinal);
       const { data, error } = await supabase.storage
         .from('files')
         .upload(rutaFinal, imagen);
-
+      /*Avisamos al usuario en caso de error.*/
       if (error) {
         avisoImagen('Ha ocurrido un error al guardar la publicación.');
         return false;
       }
-      console.log(id + ' hola ' + rutaFinal);
       return [id, rutaFinal];
     } else {
       contador++;
     }
   } while (!nombreDisponible);
+  /*Avisamos al usuario en caso de error.*/
   avisoImagen('Ha ocurrido un error al guardar la publicación.');
   return false;
 }
 
+/*Función para guarda la publicación del usuario.*/
 async function guardarPublicacion(data) {
-  console.log(data[0]);
-  console.log(data[1]);
-  console.log(tematica.value);
+  /*Guardamos la publicación.*/
+  let resolucion = '';
+  if(imagenPreview.value.style.objectFit == 'cover'){
+    resolucion = 'cover';
+  }else{
+    resolucion = 'normal';
+  }
   const { error: insertError } = await supabase
     .from('publicaciones')
-    .insert([{ idusuario: data[0], tematica: tematica.value, contenido: contenido.value, ruta: data[1] }]);
+    .insert([{ idusuario: data[0], tematica: tematica.value, contenido: contenido.value, ruta: data[1], resolucion: resolucion }]);
 
+  /*Avisamos al usuario en caso de error.*/
   if (insertError) {
     avisoImagen('Ha ocurrido un error al guardar la publicación.');
     return false;
+  }else{
+    /*Si se ha guardado la publicación, vaciamos todos los campos.*/
+    quitar_imagen();
+    tematica.value = '';
+    contenido.value = '';
   }
 }
 
+/*Función para validar la temática.*/
 function validarTematica() {
-  // if (!/['"]/.test(tematica.value)) {
   if (tematica.value.length <= 35) {
     return true;
   } else {
+    /*Avisamos al usuario en caso de error.*/
     aviso('La temática ingresada es demasiado larga.', tematicaInput);
   }
-  // } else {
-  //   aviso('La temática contiene comillas simples o dobles.', tematicaInput);
-  // }
   return false;
 }
 
+/*Función para validar el contenido.*/
 function validarContenido() {
-  // if (!/['"]/.test(contenido.value)) {
   if (contenido.value.length <= 440) {
     return true;
   } else {
+    /*Avisamos al usuario en caso de error.*/
     aviso('El contenido es demasiado largo.', contenidoInput);
   }
-  // } else {
-  //   aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
-  // }
   return false;
 }
 
-//Para que cuando se haga click en el preview de la foto se autopulse el input de la foto.
+/*Para que cuando se haga click en el preview de la foto se autopulse el input de la foto.*/
 function triggerFileInput() {
   fileInput.value.click();
 }
 
+/*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_publicar() {
   window.location.href = "/";
 }
 
+/*Función para quitar la previsualización de la imagen.*/
 function quitar_imagen() {
   hayImagen.value = false;
   imagenPreview.value.src = '';
@@ -172,9 +193,9 @@ function quitar_imagen() {
   fondo_imagen.value.style.backgroundColor = 'var(--light-blue-text)';
   div_quitar_imagen.value.style.display = 'none';
   div_girar_imagen.value.style.display = 'none';
-
 }
 
+/*Función para cambiar la resolución de la imagen.*/
 function girar_imagen() {
   if (imagenPreview.value.style.objectFit == 'cover') {
     imagenPreview.value.style.maxWidth = '100%';
@@ -191,35 +212,40 @@ function girar_imagen() {
   }
 }
 
+/*Función para resetear el input de la imagen.*/
 function resetInput(event) {
   hayImagen.value = false;
   event.target.value = null;
 }
 
-function handleImageChange(event) {
+/*Función para comprobar la imagen.*/
+function comprobarImagen(event) {
   const file = event.target.files[0];
-
-  //Comprobamos que haya un archivo
+  /*Comprobamos que haya un archivo*/
   if (!file) return;
 
-  //Comprobación del tipo de archivo
+  /*Comprobación del tipo de archivo*/
   if (!file.type.startsWith('image/')) {
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('Por favor, selecciona una imagen válida.');
-    //Limpiamos el input si el archivo no es una imagen
+    /*Limpiamos el input si el archivo no es una imagen.*/
     event.target.value = '';
     return;
   }
-  //Máximo 4MB
+  /*Máximo 4MB*/
   const tamMax = 4 * 1024 * 1024;
   if (file.size > tamMax) {
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('El archivo supera el tamaño máximo permitido, 4 MB.');
-    //Limpiamos el input si el archivo es demasiado grande
+    /*Limpiamos el input si el archivo es demasiado grande.*/
     event.target.value = '';
     return;
   }
+  /*Llamamos a la función para mostrar la previsualización de la imagen.*/
   mostrarImagen(file);
 }
 
+/*Función para mostrar la previsualización de la imagen.*/
 function mostrarImagen(file) {
   mensajeAviso.value = '';
   mostrarAviso.value = false;
@@ -282,7 +308,7 @@ function mostrarImagen(file) {
             </div>
           </div>
           <div class="div_input_imagen">
-            <input class="input_file" type="file" ref="fileInput" @change="handleImageChange" @click="resetInput" />
+            <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
             <div class="anadir">
               <div class="anadir_texto">
                 <button>

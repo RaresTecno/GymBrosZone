@@ -1,7 +1,26 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
-import { userActive } from "../clients/supabase";
+import { supabase, userActive } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
+import { ref, reactive } from "vue"
+const todasPublicaciones = ref()
+const idPublicacion = ref()
+const cantidadPublicaciones = ref()
+
+async function mostrarp() {
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*');
+
+    todasPublicaciones.value = publicaciones
+
+  } catch (error) {
+
+  }
+}
+mostrarp()
+
 
 disponible.value = true;
 </script>
@@ -49,14 +68,11 @@ disponible.value = true;
     </template>
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
-        <template v-for="n in 50" :key="n">
-          <Publicacion />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+          <Publicacion :id="publicacion.idpublicacion" />
         </template>
       </div>
     </div>
-    <button v-if="!userActive" class="post">
-      <RouterLink to="./post"><a href=""><b>+</b></a></RouterLink>
-    </button>
   </main>
 </template>
 
@@ -78,9 +94,6 @@ main {
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  justify-items: center;
-  /* Centra el contenido horizontalmente */
-  justify-content: center;
   /* Centra el contenido verticalmente */
 }
 
@@ -250,15 +263,20 @@ button:hover a {
 }
 
 @media (max-width: 1100px) {
+  
+  .publicaciones {
+    margin-left: 0;
+    padding-top: 0;
+  }
   .vista {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 80%;
     align-items: center;
   }
 }
 
-@media (max-width: 875px) {
+@media (max-width: 625px) {
 
   .publicaciones {
     margin-left: 0;
@@ -266,10 +284,8 @@ button:hover a {
   }
 
   .vista {
-    margin: 0px;
-
     width: 100%;
-    grid-template-columns: repeat(1, 1fr);
+    margin: 0px;
   }
 }
 </style>

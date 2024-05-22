@@ -149,9 +149,7 @@ function mensaje(mensaje, Input) {
                             class="input" required autocomplete="off" ref="passwordInput">
                         <label class="label">Contraseña</label>
                         <div class="contenedor_ojo">
-                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"
-                                :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'"
-                                @click="contraVisible = !contraVisible" />
+                            <font-awesome-icon :icon="contraVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" :class="contraVisible ? 'ojo  ojo_abierto' : 'ojo'" @click="contraVisible = !contraVisible" />
                         </div>
                     </div>
                 </div>
@@ -169,12 +167,9 @@ function mensaje(mensaje, Input) {
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']"
-                            style="color: #eef2fa;" class="icono_iniciar" /></div>
-                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']"
-                            style="color: #eef2fa;" class="icono_iniciar" /></div>
-                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']"
-                            class="icono_google icono_iniciar" /></div>
+                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar" /></div>
+                    <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar" /></div>
+                    <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar" /></div>
                 </div>
             </div>
             <div class="cuenta_existente">
@@ -187,7 +182,6 @@ function mensaje(mensaje, Input) {
                         </RouterLink>
                     </button>
                 </div>
-
             </div>
         </div>
     </div>

@@ -8,7 +8,7 @@ const posicionAnt = ref(0);
 const mostrar = ref(true);
 
 watch(() => route.path, (newPath) => {
-  mostrar.value = newPath !== '/post';
+  mostrar.value = newPath !== '/post' && newPath !== '/account';
 }, { immediate: true });
 
 function mostrarHeader() {
@@ -19,14 +19,14 @@ function mostrarHeader() {
     if (posicionActual < posicionAnt.value) {
       mostrar.value = true;
       watch(() => route.path, (newPath) => {
-        mostrar.value = newPath !== '/post';
+        mostrar.value = newPath !== '/post' && newPath !== '/account';
       }, { immediate: true });
       
     }
   } else {
     mostrar.value = true;
       watch(() => route.path, (newPath) => {
-        mostrar.value = newPath !== '/post';
+        mostrar.value = newPath !== '/post' && newPath !== '/account';
       }, { immediate: true });
   }
   posicionAnt.value = posicionActual;
@@ -46,7 +46,7 @@ onMounted(() => {
           </RouterLink>
         </div>
         <div>
-          <RouterLink to="/Profile" class="RouterLink">
+          <RouterLink to="/profile" class="RouterLink">
             <font-awesome-icon class="icon usuario" :icon="['fas', 'user']" />
           </RouterLink>
         </div>

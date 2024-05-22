@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { supabase, userState } from '../clients/supabase';
+import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
 
 disponible.value = true;
@@ -51,17 +51,6 @@ async function publicar() {
       avisoImagen('Debes incluir una imagen.');
     }
   }
-}
-
-/*Función para obtener el id del usuario.*/
-async function obtenerId() {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
-  if (error) {
-    logOut();
-    return false;
-  }
-  return user.id;
 }
 
 /*Función para encriptar cadenas de texto.*/
@@ -131,9 +120,9 @@ async function insertarImagen() {
 async function guardarPublicacion(data) {
   /*Guardamos la publicación.*/
   let resolucion = '';
-  if(imagenPreview.value.style.objectFit == 'cover'){
+  if (imagenPreview.value.style.objectFit == 'cover') {
     resolucion = 'cover';
-  }else{
+  } else {
     resolucion = 'normal';
   }
   const { error: insertError } = await supabase
@@ -144,7 +133,7 @@ async function guardarPublicacion(data) {
   if (insertError) {
     avisoImagen('Ha ocurrido un error al guardar la publicación.');
     return false;
-  }else{
+  } else {
     /*Si se ha guardado la publicación, vaciamos todos los campos.*/
     quitar_imagen();
     tematica.value = '';
@@ -778,7 +767,6 @@ svg.girar_imagen {
   .publicar_container {
     width: 100%;
     margin-top: 10px;
-    /* height: 850px; */
     height: fit-content;
     background-color: var(--dark-blue);
     max-width: 1126px;
@@ -794,9 +782,6 @@ svg.girar_imagen {
   .div_imagen {
     width: 100%;
     height: fit-content;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 20px 0;
   }
 
@@ -826,19 +811,11 @@ svg.girar_imagen {
   }
 
   .aviso {
-    height: 35px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     transform: translateY(-135px);
   }
 
   .aviso_texto {
-    width: fit-content;
     font-size: 19px;
-    padding: 3px 15px;
-    border-radius: 2px;
     color: var(--light-blue-text);
     border: none;
     background-color: transparent;
@@ -888,10 +865,6 @@ svg.girar_imagen {
     font-size: 16px;
     width: 200px;
   }
-
-  /* .aviso {
-    transform: translateY(-135px);
-  } */
 
   .aviso_texto {
     font-size: 17px;
@@ -949,17 +922,6 @@ svg.girar_imagen {
     height: 920px;
   }
 
-  .tit_publicar {
-    font-size: 32px;
-    height: 60px;
-  }
-
-  .div_contenido,
-  .subcontainer,
-  .container {
-    min-width: 0;
-  }
-
   .prev_imagen {
     height: 250px;
     width: 250px;
@@ -974,7 +936,6 @@ svg.girar_imagen {
   }
 
   .publicar {
-    margin-bottom: 5px;
     margin-top: 60px;
   }
 

@@ -6,7 +6,7 @@ import NavLateral from './components/BarraLateral.vue'
 import NavInferior from './components/BarraInferior.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
-import { supabase, userActive, userData, logOut } from './clients/supabase'
+import { supabase, userActive, logOut } from './clients/supabase'
 import { usandoMovil, disponible } from './main'
 
 import { ref, computed, onMounted } from "vue";

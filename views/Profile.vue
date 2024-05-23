@@ -13,7 +13,7 @@ function arriba() {
 
 const gymTag = ref("GymTag");
 const sobreMi = ref(
-  "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+  "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmma"
 );
 const editing = ref(false);
 const seguidores = ref(0);
@@ -158,7 +158,7 @@ onMounted(() => {
   word-wrap: break-word;
   /* Para navegadores antiguos */
   overflow-wrap: break-word;
-  max-height: calc(1.2em * 6);
+  max-height: calc(1.2em * 7);
   /* Aproximadamente 7 líneas */
   overflow: hidden;
 }

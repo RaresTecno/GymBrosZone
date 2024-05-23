@@ -23,7 +23,7 @@ export async function obtenerId() {
 
 export async function userState(){
     const currentUser = await supabase.auth.getSession();
-    // console.log(currentUser)
+    console.log(currentUser)
     if (currentUser.data.session == null) {
         console.log("null")
         userActive.value = false;

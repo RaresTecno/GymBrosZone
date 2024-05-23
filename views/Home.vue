@@ -1,7 +1,26 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
-import { userActive } from "../clients/supabase";
+import { supabase, userActive } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
+import { ref, reactive } from "vue"
+const todasPublicaciones = ref()
+const idPublicacion = ref()
+const cantidadPublicaciones = ref()
+
+async function mostrarp() {
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*');
+
+    todasPublicaciones.value = publicaciones.reverse()
+
+  } catch (error) {
+
+  }
+}
+mostrarp()
+
 
 
 
@@ -9,6 +28,7 @@ disponible.value = true;
 </script>
 
 <template>
+  <main>
   <div v-if="!userActive" class="todo-section">
     <div class="section-container">
       <div class="section">
@@ -51,14 +71,14 @@ disponible.value = true;
       </div>
     </div>
   </div>
-
-  <div v-if="userActive" class="publicaciones">
-    <div class="vista">
-      <template v-for="n in 50" :key="n">
-        <Publicacion />
-      </template>
+    <div v-if="userActive" class="publicaciones">
+      <div class="vista">
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+          <Publicacion :id="publicacion.idpublicacion" />
+        </template>
+      </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped>
@@ -185,7 +205,7 @@ disponible.value = true;
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  justify-items: center;
+  /* Centra el contenido verticalmente */
 }
 
 @media (min-width: 1800px) {
@@ -209,11 +229,15 @@ disponible.value = true;
 @media (max-width: 1100px) {
   .todo-section {
     margin-top: 15%;
+  
+  .publicaciones {
+    margin-left: 0;
+    padding-top: 0;
   }
   .vista {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 80%;
     align-items: center;
   }
   .buttons {
@@ -241,6 +265,7 @@ disponible.value = true;
     margin-bottom: 10px;
     font-size: 18px;
   }
+@media (max-width: 625px) {
 
   .section-text p {
     margin: 0;
@@ -252,9 +277,8 @@ disponible.value = true;
   }
 
   .vista {
-    margin: 0px;
     width: 100%;
-    grid-template-columns: repeat(1, 1fr);
+    margin: 0px;
   }
 }
 

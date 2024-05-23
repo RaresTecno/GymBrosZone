@@ -76,6 +76,11 @@ const router = createRouter({
       component: () => import("@/views/Post.vue"),
       meta: { requiresAuth: true }
     },
+    {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import("@/views/PrivacyPolicy.vue"),
+    },
     // Ruta comodín para manejar rutas no encontradas
     {
       path: "/:catchAll(.*)",

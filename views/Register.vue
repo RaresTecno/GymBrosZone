@@ -209,6 +209,7 @@ function validarEdad() {
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
         mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
     }
+    return false;
 }
 
 //Comprobamos que el usuario haya aceptado las políticas y condiciones de GymBros Zone.

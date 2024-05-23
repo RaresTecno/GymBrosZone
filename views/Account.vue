@@ -299,7 +299,7 @@ function cancelar() {
       <div class="contenido_publicar">
         <div class="div_imagen">
           <div class="prev_imagen" @click="triggerFileInput" ref="fondo_imagen">
-            <img id="imagen" ref="imagenPreview" src="" />
+            <img id="imagen" ref="imagenPreview" src=""/>
           </div>
           <div class="botones_imagen">
             <div class="contenedor_boton contendor_boton1">
@@ -432,7 +432,7 @@ function cancelar() {
   width: 48%;
 }
 
-.contenedor_input{
+.contenedor_input {
   position: relative;
   display: flex;
   width: 60%;

@@ -300,7 +300,7 @@ function mostrarImagen(file) {
             <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
             <div class="anadir">
               <div class="anadir_texto">
-                <button>
+                <button @click="triggerFileInput">
                   Seleccionar imagen
                 </button>
               </div>
@@ -355,7 +355,7 @@ function mostrarImagen(file) {
 
 .publicar_container {
   width: 80%;
-  margin-top: 140px;
+  margin-top: 120px;
   height: 520px;
   background-color: var(--dark-blue);
   max-width: 1026px;
@@ -538,7 +538,7 @@ svg.girar_imagen {
   width: 200px;
   border-radius: 2px;
   position: relative;
-  top: 18.5px;
+  top: -1800.5px;
   cursor: pointer;
 }
 
@@ -550,7 +550,6 @@ svg.girar_imagen {
   align-items: center;
   position: relative;
   top: -18.5px;
-  pointer-events: none;
 }
 
 .anadir_texto {
@@ -571,7 +570,6 @@ svg.girar_imagen {
   border-radius: 2px;
   font-size: 18px;
   transition: background-color 0.5s, border 0.5s, color 0.5s;
-  pointer-events: none;
 }
 
 .anadir_texto button:hover,

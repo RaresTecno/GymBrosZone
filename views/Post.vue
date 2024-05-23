@@ -732,6 +732,7 @@ svg.girar_imagen {
 @media(max-width: 1040px) {
   .publicar_container {
     width: 89%;
+    min-width: 794px;
   }
 
   .div_imagen {
@@ -740,10 +741,6 @@ svg.girar_imagen {
 
   .div_contenido {
     min-width: 430px;
-  }
-
-  .publicar_container {
-    min-width: 794px;
   }
 }
 

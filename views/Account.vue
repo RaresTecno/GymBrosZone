@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import predeterminada from '../assets/img/foto-perfil-predeterminada2.jpg';
+import predeterminada from '../assets/img/foto-perfil-predeterminada.jpg';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
 
@@ -14,8 +14,8 @@ const fondo_imagen = ref(null);
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
 
-
-
+const mostrarPregunta = ref(false);
+const esPredeterminada = ref(true);
 
 
 //Comprobamos el nombre ingresado.
@@ -170,25 +170,6 @@ async function insertarImagen() {
   return false;
 }
 
-/*Función para guarda la publicación del usuario.*/
-// async function guardarPublicacion(data) {
-//   /*Guardamos la publicación.*/
-//   const { error: insertError } = await supabase
-//     .from('publicaciones')
-//     .insert([{ idusuario: data[0], tematica: tematica.value, contenido: contenido.value, ruta: data[1] }]);
-
-//   /*Avisamos al usuario en caso de error.*/
-//   if (insertError) {
-//     avisoImagen('Ha ocurrido un error al guardar la publicación.');
-//     return false;
-//   } else {
-//     /*Si se ha guardado la publicación, vaciamos todos los campos.*/
-//     quitar_imagen();
-//     tematica.value = '';
-//     contenido.value = '';
-//   }
-// }
-
 /*Para que cuando se haga click en el preview de la foto se autopulse el input de la foto.*/
 function triggerFileInput() {
   fileInput.value.click();
@@ -202,6 +183,7 @@ function cerrar_mi_cuenta() {
 /*Función para quitar la previsualización de la imagen.*/
 function quitar_imagen() {
   hayImagen.value = false;
+  esPredeterminada.value = true;
   imagenPreview.value.src = predeterminada;
 }
 
@@ -247,6 +229,7 @@ function mostrarImagen(file) {
   reader.onload = (e) => {
     imagenPreview.value.src = e.target.result;
     fondo_imagen.value.style.backgroundColor = 'rgba(12, 12, 12, 0.804)';
+    esPredeterminada.value = false;
   };
   reader.readAsDataURL(file);
 }
@@ -260,75 +243,49 @@ onMounted(async () => {
     .eq('id', id);
   if (error) {
     console.log(error);
+    imagenPreview.value.src = predeterminada;
+    esPredeterminada.value = true;
   }
   if (foto[0].fotoperfil === '/predeterminada.png' || foto[0].fotoperfil === null) {
     imagenPreview.value.src = predeterminada;
+    esPredeterminada.value = true;
   } else {
     imagenPreview.value.src = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + foto[0].fotoperfil;
+    esPredeterminada.value = false;
   }
 });
 
 function confirmacion() {
-  const overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100vw';
-  overlay.style.height = '100vh';
-  overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-  overlay.style.display = 'flex';
-  overlay.style.justifyContent = 'center';
-  overlay.style.alignItems = 'center';
-  overlay.style.zIndex = '1000';
+  if (!esPredeterminada.value) {
+    mostrarPregunta.value = true;
+    document.body.style.overflow = 'hidden';
+  }
+};
 
-  // Crear el contenedor del contenido del modal
-  const modalContent = document.createElement('div');
-  modalContent.style.backgroundColor = 'white';
-  modalContent.style.padding = '20px';
-  modalContent.style.borderRadius = '5px';
-  modalContent.style.textAlign = 'center';
+function confirmar() {
+  mostrarPregunta.value = false;
+  document.body.style.overflow = '';
+  quitar_imagen();
+};
 
-  // Crear el texto del modal
-  const modalText = document.createElement('p');
-  modalText.textContent = '¿Estás seguro?';
-
-  // Crear el botón de confirmar
-  const confirmButton = document.createElement('button');
-  confirmButton.textContent = 'Confirmar';
-  confirmButton.onclick = () => {
-    document.body.removeChild(overlay);
-    document.body.style.overflow = ''; // Re-enable scrolling
-    console.log('Confirmado');
-  };
-
-  // Crear el botón de cancelar
-  const cancelButton = document.createElement('button');
-  cancelButton.textContent = 'Cancelar';
-  cancelButton.onclick = () => {
-    document.body.removeChild(overlay);
-    document.body.style.overflow = ''; // Re-enable scrolling
-    console.log('Cancelado');
-  };
-
-  // Agregar los elementos al contenido del modal
-  modalContent.appendChild(modalText);
-  modalContent.appendChild(confirmButton);
-  modalContent.appendChild(cancelButton);
-
-  // Agregar el contenido del modal al overlay
-  overlay.appendChild(modalContent);
-
-  // Agregar el overlay al body
-  document.body.appendChild(overlay);
-
-  // Disable scrolling
-  document.body.style.overflow = 'hidden';
-}
+function cancelar() {
+  mostrarPregunta.value = false;
+  document.body.style.overflow = '';
+};
 
 </script>
 
 <template>
   <div class="todo_account">
+    <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
+      <div class="div_pregunta" @click.stop>
+        <div>¿Quieres eliminar tu foto de perfil?</div>
+        <div class="botones_pregunta">
+          <button @click="confirmar">Eliminar</button>
+          <button @click="cancelar">Cancelar</button>
+        </div>
+      </div>
+    </div>
     <div class="account_container">
       <div class="titulo_account">
         <div class="cerrar_account">
@@ -363,7 +320,8 @@ function confirmacion() {
                 <div class="anadir quitar">
                   <div class="boton_quitar_imagen">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="quitar_imagen"
-                      @click="quitar_imagen">
+                      @click="confirmacion"
+                      :class="{ 'no_permitido': esPredeterminada, 'permitido': !esPredeterminada }">
                       <path
                         d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" />
                     </svg>
@@ -377,36 +335,66 @@ function confirmacion() {
       <div class="editar_datos">
         <div class="fila1">
           <div class="fila_izquierda">
-            <!-- <input type="text" id="fecha_nacimiento" class="input" required autocomplete="off"
-              v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
-            <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label> -->
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Nombre</label>
+            </div>
           </div>
           <div class="fila_derecha">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Apellidos</label>
+            </div>
           </div>
         </div>
         <div class="fila2">
           <div class="fila_izquierda">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="date" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Fecha de nacimiento</label>
+            </div>
           </div>
           <div class="fila_derecha">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Sexo</label>
+            </div>
           </div>
         </div>
         <div class="fila3">
           <div class="fila_izquierda">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Peso</label>
+            </div>
           </div>
           <div class="fila_derecha">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Altura (en cm)</label>
+            </div>
           </div>
         </div>
         <div class="fila4">
           <div class="fila_izquierda">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Nombre</label>
+            </div>
           </div>
           <div class="fila_derecha">
-
+            <div class="contenedor_input">
+              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
+                ref="emailInput">
+              <label class="label">Apellidos</label>
+            </div>
           </div>
         </div>
       </div>
@@ -421,6 +409,66 @@ function confirmacion() {
 </template>
 
 <style scoped>
+.editar_datos {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.editar_datos>div {
+  width: 100%;
+  height: fit-content;
+  background-color: red;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 70px;
+}
+
+.fila_izquierda,
+.fila_derecha {
+  display: flex;
+  justify-content: center;
+  width: 48%;
+}
+
+.contenedor_input{
+  position: relative;
+  display: flex;
+  width: 60%;
+}
+
+.input {
+  width: 100%;
+  height: 45px;
+  border: none;
+  outline: none;
+  padding: 0px 8px;
+  border-radius: 2px;
+  color: var(--light-blue-text);
+  font-size: 18px;
+  background-color: var(--blue-inputs);
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 1);
+  cursor: pointer;
+  border: 2px solid var(--grey-buttons-inputs-border);
+}
+
+.input:valid,
+.input:focus {
+  border: 2px solid var(--grey-buttons-inputs-border);
+}
+
+.label {
+  font-size: 24px;
+  padding-left: 1px;
+  position: absolute;
+  top: 9px;
+  transition: 0.3s;
+  pointer-events: none;
+  transform: translateY(-37px);
+  color: var(--light-blue-text);
+}
+
 .todo_account {
   background-color: var(--bg-color);
   width: 100vw;
@@ -436,7 +484,7 @@ function confirmacion() {
 .account_container {
   width: 90%;
   margin-top: 80px;
-  height: 520px;
+  height: fit-content;
   background-color: var(--dark-blue);
   max-width: 1326px;
   border: var(--black) 4px solid;
@@ -498,6 +546,7 @@ function confirmacion() {
   justify-content: space-between;
   padding-top: 15px;
   position: relative;
+  margin-bottom: 50px;
 }
 
 .prev_imagen {
@@ -519,7 +568,6 @@ function confirmacion() {
   height: 40px;
   transition: filter 0.3s;
   filter: opacity(0.9);
-
 }
 
 #imagen {
@@ -534,6 +582,68 @@ function confirmacion() {
 .prev_imagen:hover svg,
 .prev_imagen:active svg {
   filter: opacity(0.7);
+}
+
+.todo_mostrar_pregunta {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.div_pregunta {
+  color: var(--light-blue-text);
+  background-color: var(--dark-blue);
+  padding: 25px 30px;
+  border-radius: 5px;
+  border: var(--black) 2px solid;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 120px;
+  cursor: default;
+  margin-left: 60px;
+}
+
+.botones_pregunta {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botones_pregunta button {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
+  padding: 5px 10px;
+}
+
+.botones_pregunta button:hover,
+.botones_pregunta button:active {
+  border-color: #eef2fa81;
+}
+
+.no_permitido {
+  cursor: not-allowed;
+}
+
+.permitido {
+  cursor: pointer;
 }
 
 .div_contenido {
@@ -601,9 +711,7 @@ function confirmacion() {
 
 svg.quitar_imagen {
   width: 30px !important;
-  /* background-color: var(--light-blue-text); */
   height: 30px !important;
-  cursor: pointer !important;
 }
 
 .div_quitar_imagen svg path {
@@ -634,12 +742,12 @@ svg.quitar_imagen {
   align-items: center;
   position: relative;
   top: -18.5px;
-  /* pointer-events: none; */
   cursor: pointer;
 }
 
 .anadir.quitar {
   pointer-events: auto;
+  cursor: default;
 }
 
 .anadir_texto {
@@ -653,7 +761,7 @@ svg.quitar_imagen {
 
 .boton_quitar_imagen {
   width: 28%;
-  min-width: 275px;
+  min-width: 40px;
   height: 100%;
   display: flex;
   justify-content: center;
@@ -669,12 +777,6 @@ svg.quitar_imagen {
   border-radius: 2px;
   font-size: 18px;
   transition: background-color 0.5s, border 0.5s, color 0.5s;
-  /* pointer-events: none; */
-}
-
-.boton_quitar_imagen{
-  pointer-events: none;
-
 }
 
 .anadir_texto button:hover,
@@ -686,29 +788,10 @@ svg.quitar_imagen {
   margin-bottom: 25px;
 }
 
-.input {
-  width: 100%;
-  height: 45px;
-  border: none;
-  outline: none;
-  padding: 0px 8px;
-  border-radius: 2px;
-  color: var(--light-blue-text);
-  font-size: 18px;
-  background-color: var(--blue-inputs);
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 1);
-  cursor: pointer;
-}
-
-.input:focus {
+/* .input:focus {
   border: 2px solid transparent;
   color: var(--light-blue-text);
-}
-
-.container .input:valid,
-.container .input:focus {
-  border: 2px solid var(--grey-buttons-inputs-border);
-}
+} */
 
 .publicar_div {
   width: 80%;
@@ -771,9 +854,9 @@ svg.quitar_imagen {
     height: 305px;
   }
 
-  .account_container {
+  /* .account_container {
     height: 500px;
-  }
+  } */
 
   .container {
     margin-bottom: 42px;
@@ -791,6 +874,7 @@ svg.quitar_imagen {
 @media(max-width: 1040px) {
   .account_container {
     width: 89%;
+    min-width: 794px;
   }
 
   .div_imagen {
@@ -799,10 +883,6 @@ svg.quitar_imagen {
 
   .div_contenido {
     min-width: 430px;
-  }
-
-  .account_container {
-    min-width: 794px;
   }
 }
 
@@ -972,8 +1052,8 @@ svg.quitar_imagen {
 
 @media(max-width: 380px) {
 
-  .todo_account,
-  .account_container {
+  /* .account_container, */
+  .todo_account {
     height: 920px;
   }
 
@@ -1041,8 +1121,8 @@ svg.quitar_imagen {
 
 @media(max-width: 300px) {
 
-  .todo_account,
-  .account_container {
+  /* .account_container, */
+  .todo_account {
     height: 1000px;
   }
 

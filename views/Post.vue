@@ -1,11 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { supabase, userState } from '../clients/supabase';
+import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
-
-// if(!userActive.value){
-//   window.location.href = '/login';
-// }
 
 disponible.value = true;
 
@@ -25,79 +21,159 @@ const div_girar_imagen = ref(null);
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
 
+/*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
 function aviso(mensaje, Input) {
   mensajeAviso.value = mensaje;
   mostrarAviso.value = true;
+  /*Ponemos el foco en el input que sea más largo de lo que debería.*/
   Input.value.focus();
 }
 
+/*Se avisa al usuario de que ha incluido un archivo inválido o que ha ocurrido algún error al guardar la imagen o la publicación.*/
 function avisoImagen(mensaje) {
   mensajeAviso.value = mensaje;
   mostrarAviso.value = true;
+  /*Quitamos la imagen.*/
   quitar_imagen();
 }
 
+/*Función para realizar la publicación.*/
 async function publicar() {
+  /*Validamos la temática y el contenido de la publicación.*/
   if (validarTematica() && validarContenido()) {
+    /*Comprobamos si hay una imagen para así realizar la publicación.*/
     if (hayImagen.value) {
+      /*Guardamos la imagen en la base de datos.*/
       const data = await insertarImagen();
-      console.log(data);
+      /*Guardamos la ruta, la temática y el contenido en la bdd.*/
+      await guardarPublicacion(data);
     } else {
       avisoImagen('Debes incluir una imagen.');
     }
   }
 }
 
+/*Función para encriptar cadenas de texto.*/
+async function hashString(cadena) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(cadena);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/*Función para guardar la imagen en la bdd.*/
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
-  console.log(imagen);
-  const ruta = `usuario/${imagen.name}`;
-  console.log(imagen.name + ' este es el nombre');
-  const { data, error } = await supabase.storage
-    .from('files')
-    .upload(ruta, imagen)
+  let nombreDisponible = false;
+  let contador = 1;
+  let nombrePublicacion;
+  let ruta;
+  let id = await obtenerId();
+  let encId = await hashString(id);
 
-  if (error) {
-    avisoImagen('Ha ocurrido un error al guardar la imagen.');
+  /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
+  do {
+    /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
+    nombrePublicacion = 'post-' + contador;
+    /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
+    ruta = `users/user-${encId}/post/`;
+    /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
+    const { data: publicacion, error: errorPublicacion } = await supabase
+      .storage
+      .from('files')
+      .list(ruta);
+    /*Avisamos al usuario en caso de error.*/
+    if (errorPublicacion) {
+      avisoImagen('Ha ocurrido un error al guardar la publicación.');
+      return false;
+    }
+
+    /*Encriptamos el nombre de la imagen que vamos a guardar.*/
+    const nombreArchivo = await hashString(id + nombrePublicacion);
+    /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
+    const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
+
+    /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
+    if (!existePublicacion) {
+      nombreDisponible = true;
+      /*Guardamos la publicación.*/
+      const rutaFinal = `${ruta}${nombreArchivo}`;
+      const { data, error } = await supabase.storage
+        .from('files')
+        .upload(rutaFinal, imagen);
+      /*Avisamos al usuario en caso de error.*/
+      if (error) {
+        avisoImagen('Ha ocurrido un error al guardar la publicación.');
+        return false;
+      }
+      return [id, rutaFinal];
+    } else {
+      contador++;
+    }
+  } while (!nombreDisponible);
+  /*Avisamos al usuario en caso de error.*/
+  avisoImagen('Ha ocurrido un error al guardar la publicación.');
+  return false;
+}
+
+/*Función para guarda la publicación del usuario.*/
+async function guardarPublicacion(data) {
+  /*Guardamos la publicación.*/
+  let resolucion = '';
+  if (imagenPreview.value.style.objectFit == 'cover') {
+    resolucion = 'cover';
+  } else {
+    resolucion = 'normal';
   }
-  return data;
+  const { error: insertError } = await supabase
+    .from('publicaciones')
+    .insert([{ idusuario: data[0], tematica: tematica.value, contenido: contenido.value, ruta: data[1], resolucion: resolucion }]);
+
+  /*Avisamos al usuario en caso de error.*/
+  if (insertError) {
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  } else {
+    /*Si se ha guardado la publicación, vaciamos todos los campos.*/
+    quitar_imagen();
+    tematica.value = '';
+    contenido.value = '';
+  }
 }
 
+/*Función para validar la temática.*/
 function validarTematica() {
-  // if (!/['"]/.test(tematica.value)) {
-    if (tematica.value.length <= 35) {
-      return true;
-    } else {
-      aviso('La temática ingresada es demasiado larga.', tematicaInput);
-    }
-  // } else {
-  //   aviso('La temática contiene comillas simples o dobles.', tematicaInput);
-  // }
+  if (tematica.value.length <= 35) {
+    return true;
+  } else {
+    /*Avisamos al usuario en caso de error.*/
+    aviso('La temática ingresada es demasiado larga.', tematicaInput);
+  }
   return false;
 }
 
+/*Función para validar el contenido.*/
 function validarContenido() {
-  // if (!/['"]/.test(contenido.value)) {
-    if (contenido.value.length <= 440) {
-      return true;
-    } else {
-      aviso('El contenido es demasiado largo.', contenidoInput);
-    }
-  // } else {
-  //   aviso('El contenido contiene comillas simples o dobles.', contenidoInput);
-  // }
+  if (contenido.value.length <= 440) {
+    return true;
+  } else {
+    /*Avisamos al usuario en caso de error.*/
+    aviso('El contenido es demasiado largo.', contenidoInput);
+  }
   return false;
 }
 
-//Para que cuando se haga click en el preview de la foto se autopulse el input de la foto.
+/*Para que cuando se haga click en el preview de la foto se autopulse el input de la foto.*/
 function triggerFileInput() {
   fileInput.value.click();
 }
 
+/*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_publicar() {
   window.location.href = "/";
 }
 
+/*Función para quitar la previsualización de la imagen.*/
 function quitar_imagen() {
   hayImagen.value = false;
   imagenPreview.value.src = '';
@@ -106,9 +182,9 @@ function quitar_imagen() {
   fondo_imagen.value.style.backgroundColor = 'var(--light-blue-text)';
   div_quitar_imagen.value.style.display = 'none';
   div_girar_imagen.value.style.display = 'none';
-
 }
 
+/*Función para cambiar la resolución de la imagen.*/
 function girar_imagen() {
   if (imagenPreview.value.style.objectFit == 'cover') {
     imagenPreview.value.style.maxWidth = '100%';
@@ -125,35 +201,40 @@ function girar_imagen() {
   }
 }
 
+/*Función para resetear el input de la imagen.*/
 function resetInput(event) {
   hayImagen.value = false;
   event.target.value = null;
 }
 
-function handleImageChange(event) {
+/*Función para comprobar la imagen.*/
+function comprobarImagen(event) {
   const file = event.target.files[0];
-
-  //Comprobamos que haya un archivo
+  /*Comprobamos que haya un archivo*/
   if (!file) return;
 
-  //Comprobación del tipo de archivo
+  /*Comprobación del tipo de archivo*/
   if (!file.type.startsWith('image/')) {
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('Por favor, selecciona una imagen válida.');
-    //Limpiamos el input si el archivo no es una imagen
+    /*Limpiamos el input si el archivo no es una imagen.*/
     event.target.value = '';
     return;
   }
-  //Máximo 4MB
+  /*Máximo 4MB*/
   const tamMax = 4 * 1024 * 1024;
   if (file.size > tamMax) {
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('El archivo supera el tamaño máximo permitido, 4 MB.');
-    //Limpiamos el input si el archivo es demasiado grande
+    /*Limpiamos el input si el archivo es demasiado grande.*/
     event.target.value = '';
     return;
   }
+  /*Llamamos a la función para mostrar la previsualización de la imagen.*/
   mostrarImagen(file);
 }
 
+/*Función para mostrar la previsualización de la imagen.*/
 function mostrarImagen(file) {
   mensajeAviso.value = '';
   mostrarAviso.value = false;
@@ -216,7 +297,7 @@ function mostrarImagen(file) {
             </div>
           </div>
           <div class="div_input_imagen">
-            <input class="input_file" type="file" ref="fileInput" @change="handleImageChange" @click="resetInput" />
+            <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
             <div class="anadir">
               <div class="anadir_texto">
                 <button>
@@ -651,6 +732,7 @@ svg.girar_imagen {
 @media(max-width: 1040px) {
   .publicar_container {
     width: 89%;
+    min-width: 794px;
   }
 
   .div_imagen {
@@ -659,10 +741,6 @@ svg.girar_imagen {
 
   .div_contenido {
     min-width: 430px;
-  }
-
-  .publicar_container {
-    min-width: 794px;
   }
 }
 
@@ -686,7 +764,6 @@ svg.girar_imagen {
   .publicar_container {
     width: 100%;
     margin-top: 10px;
-    /* height: 850px; */
     height: fit-content;
     background-color: var(--dark-blue);
     max-width: 1126px;
@@ -702,9 +779,6 @@ svg.girar_imagen {
   .div_imagen {
     width: 100%;
     height: fit-content;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 20px 0;
   }
 
@@ -734,19 +808,11 @@ svg.girar_imagen {
   }
 
   .aviso {
-    height: 35px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     transform: translateY(-135px);
   }
 
   .aviso_texto {
-    width: fit-content;
     font-size: 19px;
-    padding: 3px 15px;
-    border-radius: 2px;
     color: var(--light-blue-text);
     border: none;
     background-color: transparent;
@@ -761,7 +827,7 @@ svg.girar_imagen {
     top: -13.5px;
   }
 
-  .contenido{
+  .contenido {
     margin-top: 55px;
   }
 }
@@ -796,10 +862,6 @@ svg.girar_imagen {
     font-size: 16px;
     width: 200px;
   }
-
-  /* .aviso {
-    transform: translateY(-135px);
-  } */
 
   .aviso_texto {
     font-size: 17px;
@@ -857,17 +919,6 @@ svg.girar_imagen {
     height: 920px;
   }
 
-  .tit_publicar {
-    font-size: 32px;
-    height: 60px;
-  }
-
-  .div_contenido,
-  .subcontainer,
-  .container {
-    min-width: 0;
-  }
-
   .prev_imagen {
     height: 250px;
     width: 250px;
@@ -882,7 +933,6 @@ svg.girar_imagen {
   }
 
   .publicar {
-    margin-bottom: 5px;
     margin-top: 60px;
   }
 
@@ -921,10 +971,12 @@ svg.girar_imagen {
 }
 
 @media(max-width: 300px) {
+
   .todo_publicar,
   .publicar_container {
     height: 1000px;
   }
+
   .prev_imagen {
     height: 220px;
     width: 220px;

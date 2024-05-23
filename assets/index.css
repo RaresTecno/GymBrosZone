@@ -16,6 +16,9 @@
 
     --bg-color2: rgba(36, 44, 89, 0.161);
     --border-bg-color2: 2px solid rgba(36, 44, 89, 0.374);
+    --black-privacy-text: #0e0d0d;
+
+    --transparent: rgba(0, 0, 0, 0);
 }
 
 body {

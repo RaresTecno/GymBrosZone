@@ -13,22 +13,22 @@ import { ref, onMounted } from "vue";
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Search" class="RouterLink">
+        <RouterLink to="/search" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Publicar" class="RouterLink">
+        <RouterLink to="/post" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Likes" class="RouterLink">
+        <RouterLink to="/likes" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Keep" class="RouterLink">
+        <RouterLink to="/keep" class="RouterLink">
           <font-awesome-icon
             class="icon"
             :icon="['fas', 'bookmark']"
@@ -90,5 +90,12 @@ nav > div {
   nav > div {
     margin: 0 10%;
   }
+}
+
+@media (max-width: 360px){
+  nav .botonesNav {
+  justify-content: space-around;
+  width: 100%;
+}
 }
 </style>

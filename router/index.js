@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { userActive, userState } from '../clients/supabase'
+import { userActive } from '../clients/supabase'
 
 // import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
 
@@ -43,12 +43,6 @@ const router = createRouter({
       path: "/search",
       name: "search",
       component: () => import("@/views/Search.vue"),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: "/tabla",
-      name: "tabla",
-      component: () => import("@/components/Tabla.vue"),
       meta: { requiresAuth: true }
     },
     {

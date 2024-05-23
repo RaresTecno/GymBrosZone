@@ -10,8 +10,15 @@ export const userActive = ref(false);
 
 // console.log(supabase.auth.user())
 
-export async function userData(){    
-    const { data: { user } } = await supabase.auth.getUser();
+/*Función para obtener el id del usuario.*/
+export async function obtenerId() {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (error) {
+    logOut();
+    return false;
+  }
+  return user.id;
 }
 
 export async function userState(){

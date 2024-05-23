@@ -1,9 +1,7 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase, userState, userActive } from '../clients/supabase';
-import { usandoMovil } from '@/main';
-
+import { supabase, userState } from '../clients/supabase';
 
 //https://www.youtube.com/watch?v=efNX5x7O0cY
 
@@ -23,10 +21,10 @@ async function createAccount() {
         }
     });
     if (error) {
+        console.log(error);
         return null;
     } else {
-        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
-        window.location.href = `/waiting-verification?email=${emailEncoded}`;
+        window.location.href = "/waiting-verification";
     }
 }
 
@@ -90,29 +88,28 @@ function primeraParte() {
 }
 
 //Función para mostrar el mensaje de error y limpiar el input que contiene el error.
-function mensaje(mensaje, Input) {
+function mensaje(mensaje, input, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
+    input.value = '';
     Input.value.focus();
 }
 
 //Comprobamos el nombre ingresado.
 function validarNombre() {
-    const nombreT = nombre.value.trim();
-    if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,14}$/i.test(nombreT)) {
+    if (/^[a-zñáéíóú\s]{3,14}$/i.test(nombre.value)) {
         return true;
     }
-    mensaje('El nombre debe contener entre 3 y 14 letras.', nombreInput);
+    mensaje('El nombre debe contener entre 3 y 14 letras.', nombre, nombreInput);
     return false;
 }
 
 //Comprobamos los apellidos ingresados.
 function validarApellidos() {
-    const apellidosT = apellidos.value.trim();
-    if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,24}$/i.test(apellidosT)) {
+    if (/^[a-zñáéíóú\s-]{3,24}$/i.test(apellidos.value)) {
         return true;
     }
-    mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidosInput);
+    mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidos, apellidosInput);
     return false;
 }
 
@@ -122,12 +119,12 @@ async function validarGymtag() {
     gymtag.value = gymtagMin;
     //Comprobamos que el tamaño del GymTag sea el deseado.
     if (gymtagMin.length < 3 || gymtagMin.length > 14) {
-        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtagInput);
+        mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtag, gymtagInput);
         return false;
     }
     //Comprobamos que los caracteres ingresados sean válidos.
     if (!/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
-        mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtagInput);
+        mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtag, gymtagInput);
         return false;
     }
     //Comprobamos si el GymTag está disponible.
@@ -140,13 +137,13 @@ async function validarGymtag() {
         if (error) throw error;
         //El gymtag estará en uso si usuarios contiene algún elemento.
         if (usuarios.length > 0) {
-            mensaje('El GymTag ingresado ya está en uso.', gymtagInput);
+            mensaje('El GymTag ingresado ya está en uso.', gymtag, gymtagInput);
             return false;
         }
         //GymTag disponible.
         return true;
     } catch (error) {
-        mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtagInput);
+        mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtag, gymtagInput);
         return false;
     }
 }
@@ -154,11 +151,11 @@ async function validarGymtag() {
 //Comprobamos si el email ingresado tiene formato de email.
 async function validarEmail() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        mensaje('El email ingresado no es válido.', emailInput);
+        mensaje('El email ingresado no es válido.', email, emailInput);
         return false;
     }
-    //Comprobamos si el email está disponible.
-    try {
+     //Comprobamos si el email está disponible.
+     try {
         const { data: usuarios, error } = await supabase
             .from('usuarios')
             .select('email')
@@ -167,13 +164,13 @@ async function validarEmail() {
         if (error) throw error;
         //El email estará en uso si usuarios contiene algún elemento.
         if (usuarios.length > 0) {
-            mensaje('El Email ingresado ya está en uso.', emailInput);
+            mensaje('El Email ingresado ya está en uso.', email, emailInput);
             return false;
         }
         //Email disponible.
         return true;
     } catch (error) {
-        mensaje('Hubo un error al verificar el Email. Por favor, inténtalo de nuevo.', emailInput);
+        mensaje('Hubo un error al verificar el Email. Por favor, inténtalo de nuevo.', email, emailInput);
         return false;
     }
 }
@@ -181,14 +178,15 @@ async function validarEmail() {
 //Comprobamos las contraseñas ingresadas.
 function validarContras() {
     //Si las contraseñas son iguales y seguras, la contraseña es válida.
-    if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/.test(password.value)){
+    if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password.value)) {
         return true;
     } else {
         //Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.
         if (password.value !== password2.value) {
-            mensaje('Las contraseñas no coinciden.', password2Input);
+            mensaje('Las contraseñas no coinciden.', password2, password2Input);
         } else {
-            mensaje('La contraseña debe contener al menos 8 caracteres e incluir una mayúscula y un número.', password2Input);
+            password.value = '';
+            mensaje('La contraseña debe contener al menos 8 caracteres e incluir una mayúscula y un número.', password2, password2Input);
             passwordInput.value.focus();
         }
         return false;
@@ -204,7 +202,7 @@ function validarEdad() {
         return true;
     } else {
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
-        mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
+        mensaje('Debes tener más de 14 años.', fecha_nacimiento, fecha_nacimientoInput);
     }
 }
 
@@ -234,23 +232,20 @@ async function creaCuenta() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
     if (validarNombre() && validarApellidos() && await validarGymtag() && await validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
+        //Aquí va lo del supa y la redirección a home
         console.log('supa');
         createAccount();
+        console.log('supa fin');
     } else {
         return;
     }
-}
-
-function verPoliticas() {
-    window.location.href = '/politicas-y-condiciones';
 }
 </script>
 <template>
     <div class="todo_register">
         <div class="register">
-            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte">
-                <font-awesome-icon :icon="['fas', 'circle-left']" @click="primeraParte" />
-            </div>
+            <div class="volver_parte_uno" v-if="!pantallaGrande && !mostrarPrimeraParte"><font-awesome-icon
+                    :icon="['fas', 'circle-left']" @click="primeraParte" /></div>
             <div class="titulo">Registro</div>
             <div class="nombre_y_apellidos" v-if="(mostrarPrimeraParte) || pantallaGrande">
                 <div class="nombre">
@@ -278,13 +273,7 @@ function verPoliticas() {
                         <input type="text" id="gymtag" class="input" required autocomplete="off" v-model="gymtag"
                             ref="gymtagInput">
                         <label class="label" for="gymtag">GymTag</label>
-
-                        <div class="tooltip">
-                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"
-                                @click="mostrar()" />
-                            <div class="tooltiptext">Este será tu nombre de usuario</div>
-                        </div>
-
+                        <!-- <font-awesome-icon :icon="['fas', 'circle-info']" class="info" @click="mostrar()" /> -->
                     </div>
                 </div>
             </div>
@@ -332,7 +321,7 @@ function verPoliticas() {
                             v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
                         <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label>
                         <div class="contenedor_calendario">
-                            <font-awesome-icon v-if="usandoMovil" :icon="['fas', 'calendar']" class="calendario" />
+                            <font-awesome-icon :icon="['fas', 'calendar']" class="calendario" />
                         </div>
                     </div>
                 </div>
@@ -346,8 +335,7 @@ function verPoliticas() {
                             pathLength="575.0541381835938" class="path"></path>
                     </svg>
                 </label>
-                <label class="aceptar" for="aceptar" @click=verPoliticas>Aceptar políticas y condiciones de GymBros
-                    Zone.</label>
+                <label class="aceptar" for="aceptar">Aceptar políticas y condiciones de GymBros Zone.</label>
             </div>
             <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
                 <div class="mensaje_texto">
@@ -373,7 +361,7 @@ function verPoliticas() {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 165px;
+    padding-top: 145px;
 }
 
 .register {
@@ -387,7 +375,7 @@ function verPoliticas() {
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 70px;
+    margin-bottom: 85px;
     position: relative;
 }
 
@@ -430,7 +418,7 @@ function verPoliticas() {
 
 .gymtag {
     width: 100%;
-    padding: 50px 0 25px;
+    padding: 60px 0 35px;
     display: flex;
     justify-content: center;
 }
@@ -439,50 +427,11 @@ function verPoliticas() {
     width: 55%;
 }
 
-.tooltip {
-    position: relative;
-}
-
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 200px;
-    background-color: var(--very-dark-blue);
-    color: #dfe8f8;
-    text-align: center;
-    border-radius: 5px;
-    padding: 10px;
-    position: absolute;
-    z-index: 1;
-    right: -140px;
-    bottom: 48px;
-    transform: translateX(0);
-    opacity: 0;
-    transition: opacity 0.3s;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.418);
-}
-
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
-}
-
-.tooltip .tooltiptext::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 28px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: var(--very-dark-blue) transparent transparent transparent;
-}
-
 .info {
     font-size: 28px;
-    padding: 0 !important;
+    padding: 7.5px 0;
+    margin-left: -35px;
     cursor: pointer;
-    margin-left: -48px !important;
-    margin-top: 7px !important;
-    cursor: pointer !important;
 }
 
 .subcontainer {
@@ -549,7 +498,7 @@ function verPoliticas() {
 .password,
 .password2,
 .fecha_nacimiento {
-    margin-top: 45px;
+    margin-top: 60px;
 }
 
 .aceptar_politicas {
@@ -575,6 +524,7 @@ function verPoliticas() {
     margin-left: -35px;
     cursor: default;
     position: relative;
+    /* pointer-events: none; */
 }
 
 .calendario,
@@ -605,7 +555,7 @@ function verPoliticas() {
 .siguiente {
     margin-top: 35px;
     margin-bottom: 40px;
-    height: 45px;
+    height: 55px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -656,15 +606,6 @@ function verPoliticas() {
 .aceptar {
     margin-left: 20px;
     margin-bottom: 3px;
-    cursor: pointer;
-    text-decoration: underline;
-    transition: text-shadow 0.3s;
-
-}
-
-.aceptar:hover,
-.aceptar:active {
-    text-shadow: 0 0 5px #eef2fa66;
 }
 
 .container_checkbox {
@@ -723,7 +664,7 @@ function verPoliticas() {
     }
 }
 
-@media(max-width: 1139px) {
+@media(max-width: 1140px) {
     .register {
         width: 88%;
     }
@@ -737,7 +678,7 @@ function verPoliticas() {
         flex-direction: column;
         padding: 0;
         justify-content: space-around;
-        height: 200px;
+        height: 260px;
     }
 
     .nombre_y_apellidos .container {
@@ -756,13 +697,12 @@ function verPoliticas() {
     .password input,
     .password2 input,
     .fecha_nacimiento input {
-        height: 50px;
-        max-width: 800px;
+        height: 70px;
     }
 
     .container .label {
-        font-size: 25px;
-        top: 12px;
+        font-size: 30px;
+        top: 17.5px;
     }
 
     .container .input:valid~.label,
@@ -770,18 +710,17 @@ function verPoliticas() {
     .fecha_nacimiento .input~.label {
         transition: 0.3s;
         padding-left: 2px;
-        transform: translateY(-42.5px);
+        transform: translateY(-52.5px);
     }
 
     .subcontainer {
         display: flex;
         justify-content: start;
         width: 85%;
-        max-width: 750px;
     }
 
     .input {
-        font-size: 24px;
+        font-size: 26px;
     }
 
     .siguiente,
@@ -801,25 +740,12 @@ function verPoliticas() {
         margin-bottom: 30px;
     }
 
-    .tooltip .tooltiptext {
-        right: -10px;
-        bottom: -60px;
-    }
-
-    .tooltip .tooltiptext::after {
-        top: -29%;
-        left: 158px;
-        border-color: transparent transparent var(--very-dark-blue) transparent;
-    }
-
     .gymtag .container,
     .email .container,
     .password .container,
     .password2 .container,
     .fecha_nacimiento .container {
         width: 100%;
-        display: flex;
-        justify-content: center;
     }
 
     .email .container .subcontainer,
@@ -829,80 +755,45 @@ function verPoliticas() {
         width: 85%;
         min-width: 0;
         padding: 0;
-        display: flex;
     }
 
     .info {
         font-size: 42px;
-        padding: 0 !important;
-        padding-top: 4px !important;
-        margin-left: -48px !important;
+        padding: 14px 0;
+        margin-left: -50px;
         cursor: pointer;
     }
 
     .siguiente button,
     .crear button {
-        max-width: 750px;
-        height: 55px;
+        height: 70px;
     }
 
     .contenedor_calendario,
     .contenedor_ojo {
-        width: 32px;
-        height: 32px;
+        width: 40px;
+        height: 40px;
         font-size: 37px;
         padding: 14px 0;
-        margin-top: 5px;
+        margin-left: -50px;
     }
 
     .contenedor_ojo {
-        font-size: 28px;
-        margin-left: -40px;
-        padding: 12px 0;
-    }
-
-    .contenedor_calendario {
-        width: 30px;
-        height: 30px;
-        margin-top: 7px;
-        background-color: var(--blue-inputs);
-        font-size: 30px;
-        padding: 7.5px 0;
-        margin-left: -35px;
-        /* pointer-events: none; */
-    }
-
-    .calendario {
-        color: var(--light-blue-text);
-        position: relative;
-        top: -7.5px;
-        right: 3px;
-        cursor: default;
-        text-align: center;
-    }
-
-    .mensaje {
-        margin-top: 10px;
+        font-size: 34px;
+        margin-left: -53px;
+        padding: 17px 0;
     }
 }
 
 @media(max-width: 875px) {
     .todo_register {
-        padding-top: 174px;
+        padding-top: 159px;
     }
 }
 
 @media(max-width: 600px) {
-    .titulo {
-        margin-top: 0;
-        padding: 20px 0;
-        height: 80px;
-        font-size: 40px;
-
-    }
-
     .todo_register {
-        padding-top: 227px;
+        padding-top: 232px;
     }
 
     .nombre_y_apellidos .nombre .input,
@@ -913,49 +804,34 @@ function verPoliticas() {
     .password2 input,
     .fecha_nacimiento input,
     .siguiente button {
-        height: 40px;
-        font-size: 20px;
+        height: 55px;
     }
 
     .container .label {
-        font-size: 22px;
-        top: 8px;
+        font-size: 25px;
+        top: 15px;
     }
 
     .siguiente,
     .crear {
-        margin-bottom: 25px;
+        margin-bottom: 35px;
     }
 
     .gymtag {
         margin-bottom: 20px;
     }
 
-    .tooltip .tooltiptext::after {
-        left: 162px;
-    }
-
-    .info {
-        padding: 0 !important;
-        margin-left: -40px !important;
-        margin-top: 6px !important;
-        cursor: pointer !important;
-        width: 28px !important;
-        height: 28px !important;
-    }
-
     .contenedor_calendario,
     .contenedor_ojo {
-        width: 32px;
-        height: 32px;
+        width: 35px;
+        height: 35px;
         font-size: 30px;
-        padding: 10px 0;
-        margin-left: -35px;
-        font-size: 25px;
+        padding: 12px 0;
+        margin-left: -40px;
     }
 
-    .contenedor_calendario {
-        padding: 8px 0;
+    .contenedor_ojo {
+        font-size: 27px;
     }
 
     .volver_parte_uno {
@@ -966,9 +842,12 @@ function verPoliticas() {
         font-size: 40px;
     }
 
+    .titulo {
+        padding: 50px 0 30px;
+    }
+
     .contenedor_calendario {
         pointer-events: none;
-
     }
 
     .calendario {
@@ -979,82 +858,71 @@ function verPoliticas() {
         width: 60%;
         margin-left: 15px;
     }
+}
+
+@media(max-width: 455px) {
+    .nombre_y_apellidos .container {
+        min-width: 0;
+    }
+
+    .titulo {
+        margin-top: 20px;
+        font-size: 46px;
+    }
+
+    .container .label {
+        font-size: 24px;
+        top: 14.5px;
+    }
 
     .container .input:valid~.label,
     .container .input:focus~.label,
     .fecha_nacimiento .input~.label {
         transition: 0.3s;
         padding-left: 2px;
-        transform: translateY(-37.5px);
+        transform: translateY(-44.5px);
     }
 
-    .nombre_y_apellidos {
-        height: 200px;
+    .input {
+        font-size: 23px;
     }
 
-    .mensaje_texto {
-        font-size: 18px;
-    }
-
-    .mensaje {
-        margin-top: 10px;
-    }
-
-    .aceptar_politicas {
-        margin-top: 30px;
-    }
-}
-
-@media(max-width: 455px) {
-    .titulo {
-        font-size: 30px;
-        margin-top: 20px;
-        height: 70px;
-    }
-
-    .nombre_y_apellidos .container {
-        min-width: 0;
+    .nombre_y_apellidos .nombre .input,
+    .nombre_y_apellidos .apellidos .input,
+    .gymtag .input {
+        height: 60px;
     }
 
     .nombre_y_apellidos {
         flex-direction: column;
         padding: 0;
         justify-content: space-around;
+        height: 240px;
     }
 
-    /* .info {
+    .gymtag {
+        margin-bottom: 20px;
+    }
+
+    .info {
         font-size: 36px;
         padding: 12px 0;
         margin-left: -47px;
         cursor: pointer;
-    } */
+    }
 
     .mensaje {
-        height: fit-content;
+        font-size: 18px;
+        height: 52px;
         visibility: hidden;
         display: flex;
         justify-content: center;
-        margin: 20px 0 0;
+        margin: 10px 0 0;
         align-items: center;
     }
 
-    .mensaje_texto {
-        font-size: 16px;
-    }
-
     .siguiente {
-        margin-top: 10px;
-    }
-
-    .gymtag {
-        margin-bottom: 10px;
-    }
-
-    .volver_parte_uno {
-        font-size: 33px;
-        top: 10px;
-        left: 8px;
-        ;
+        margin-top: 20px;
     }
 }
 

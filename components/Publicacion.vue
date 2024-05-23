@@ -263,6 +263,7 @@ const foto = supabase.storage
 @media (max-width: 625px) {
   #publicacion {
     border-radius: 0;
+    margin: 2px;
 
   }
 }

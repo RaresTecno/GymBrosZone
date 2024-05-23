@@ -74,9 +74,9 @@ disponible.value = true;
   align-items: center;
   padding: 20px;
   border-radius: 25px;
-  background: linear-gradient(145deg, var(--blue), var(--alt-black));
-  box-shadow: 3px 3px 3px var(--alt-black);
-  width: 70%;
+/*   background: linear-gradient(145deg, var(--blue), var(--alt-black)); */
+/*   box-shadow: 3px 3px 3px var(--alt-black); */
+  width: 80%;
 }
 
 .section {

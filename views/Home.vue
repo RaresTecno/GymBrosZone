@@ -227,13 +227,15 @@ disponible.value = true;
 }
 
 @media (max-width: 1100px) {
-  .todo-section {
-    margin-top: 15%;
-  
+  main {
+    margin-top: 60px;
+  }
+
   .publicaciones {
     margin-left: 0;
     padding-top: 0;
   }
+
   .vista {
     display: flex;
     flex-direction: column;
@@ -266,6 +268,9 @@ disponible.value = true;
     font-size: 18px;
   }
 @media (max-width: 625px) {
+  main {
+    margin-top: 35px;
+  }
 
   .section-text p {
     margin: 0;

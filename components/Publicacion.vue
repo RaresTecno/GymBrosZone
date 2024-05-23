@@ -181,7 +181,7 @@ const foto = supabase.storage
 
 #inicial {
   display: flex;
-  background: rgb(255, 7, 7);
+  /* background: rgb(255, 7, 7); */
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;

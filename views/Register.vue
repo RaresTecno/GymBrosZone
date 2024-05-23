@@ -202,7 +202,10 @@ function validarEdad() {
     const anno = parseInt(fecha_nacimiento.value.split("-")[0], 10);
     if (/^(\d{4})-(\d{2})-(\d{2})$/.test(fecha_nacimiento.value) && (anno >= 1900 && anno <= (annoActual - 14))) {
         return true;
-    } else {
+    } else if(anno >= 1900){
+        //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
+        mensaje('La edad ingresada no es válida.', fecha_nacimientoInput);
+    }else if(anno <= (annoActual - 14)){
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
         mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
     }

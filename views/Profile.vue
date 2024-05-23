@@ -4,7 +4,25 @@ import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
 import Tabla from "@/components/Tabla.vue";
+import { supabase, userActive } from "../clients/supabase";
 
+const todasPublicaciones = ref()
+const idPublicacion = ref()
+const cantidadPublicaciones = ref()
+
+async function mostrarp() {
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*');
+
+    todasPublicaciones.value = publicaciones.reverse()
+
+  } catch (error) {
+
+  }
+}
+mostrarp()
 disponible.value = true;
 
 function arriba() {
@@ -71,8 +89,8 @@ onMounted(() => {
         <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
-        <template v-for="n in 50" :key="n">
-          <Publicacion />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+          <Publicacion :id="publicacion.idpublicacion" />
         </template>
       </div>
       <div v-if="vista == 'Tablas'" id="tablas" class="vista">

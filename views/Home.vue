@@ -267,6 +267,7 @@ disponible.value = true;
     margin-bottom: 10px;
     font-size: 18px;
   }
+}
 @media (max-width: 625px) {
   main {
     margin-top: 35px;

@@ -29,11 +29,6 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: "/politicas-y-condiciones",
-      name: "politicas-y-condiciones",
-      component: () => import("@/views/Politicas_y_condiciones.vue"),
-    },
-    {
       path: "/account",
       name: "account",
       component: () => import("@/views/Account.vue"),

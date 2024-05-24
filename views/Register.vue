@@ -96,6 +96,11 @@ function mensaje(mensaje, Input) {
     Input.value.focus();
 }
 
+/*Para que cuando se haga clic en el div que tapa el icono del formulario, se haga focus en el input de la fecha de nacimiento.*/
+function triggerDateInput(){
+    fecha_nacimientoInput.value.focus();
+}
+
 //Comprobamos el nombre ingresado.
 function validarNombre() {
     const nombreT = nombre.value.trim();
@@ -335,7 +340,7 @@ function verPoliticas() {
                         <input type="date" id="fecha_nacimiento" class="input" required autocomplete="off"
                             v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
                         <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label>
-                        <div class="contenedor_calendario">
+                        <div class="contenedor_calendario" @click="triggerDateInput">
                             <font-awesome-icon v-if="usandoMovil" :icon="['fas', 'calendar']" class="calendario" />
                         </div>
                     </div>
@@ -577,7 +582,7 @@ function verPoliticas() {
     font-size: 30px;
     padding: 7.5px 0;
     margin-left: -35px;
-    cursor: default;
+    cursor: pointer;
     position: relative;
 }
 
@@ -873,7 +878,6 @@ function verPoliticas() {
         font-size: 30px;
         padding: 7.5px 0;
         margin-left: -35px;
-        /* pointer-events: none; */
     }
 
     .calendario {
@@ -972,7 +976,6 @@ function verPoliticas() {
 
     .contenedor_calendario {
         pointer-events: none;
-
     }
 
     .calendario {

@@ -8,8 +8,17 @@ disponible.value = true;
 
 const hayImagen = ref(false);
 const fileInput = ref(null);
+const gymtagInput = ref(null);
+const fecha_nacimientoInput = ref(null);
+const nombreInput = ref(null);
+const apellidosInput = ref(null);
 const imagenPreview = ref(null);
 const fondo_imagen = ref(null);
+
+const gymtag = ref('');
+const fecha_nacimiento = ref('');
+const nombre = ref('');
+const apellidos = ref('');
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
@@ -91,21 +100,21 @@ function avisoImagen(mensaje) {
   quitar_imagen();
 }
 
-/*Función para realizar la publicación.*/
-async function publicar() {
-  /*Validamos la temática y el contenido de la publicación.*/
-  if (validarTematica() && validarContenido()) {
-    /*Comprobamos si hay una imagen para así realizar la publicación.*/
-    if (hayImagen.value) {
-      /*Guardamos la imagen en la base de datos.*/
-      const data = await insertarImagen();
-      /*Guardamos la ruta, la temática y el contenido en la bdd.*/
-      await guardarPublicacion(data);
-    } else {
-      avisoImagen('Debes incluir una imagen.');
-    }
-  }
-}
+// /*Función para realizar la información del usuario.*/
+// async function guardar() {
+//   /*Validamos la temática y el contenido de la publicación.*/
+//   if (validarTematica() && validarContenido()) {
+//     /*Comprobamos si hay una imagen para así realizar la publicación.*/
+//     if (hayImagen.value) {
+//       /*Guardamos la imagen en la base de datos.*/
+//       const data = await insertarImagen();
+//       /*Guardamos la ruta, la temática y el contenido en la bdd.*/
+//       await guardarPublicacion(data);
+//     } else {
+//       avisoImagen('Debes incluir una imagen.');
+//     }
+//   }
+// }
 
 /*Función para encriptar cadenas de texto.*/
 async function hashString(cadena) {
@@ -170,9 +179,14 @@ async function insertarImagen() {
   return false;
 }
 
-/*Para que cuando se haga click en el preview de la foto se autopulse el input de la foto.*/
+/*Para que cuando se haga clic en el preview de la foto se autopulse el input de la foto.*/
 function triggerFileInput() {
   fileInput.value.click();
+}
+
+/*Para que cuando se haga clic en el div que tapa el icono del formulario, se haga focus en el input de la fecha de nacimiento.*/
+function triggerDateInput() {
+  fecha_nacimientoInput.value.focus();
 }
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
@@ -234,15 +248,36 @@ function mostrarImagen(file) {
   reader.readAsDataURL(file);
 }
 
+async function mostrarDatos(id){
+  const {data, error} = await supabase
+      .from('usuarios')
+      .select('gymtag', 'nombre', 'apellidos', 'fechanacimiento')
+      .eq('id', id);
+  if(error){
+    mensaje('Hubo un error al cargar tu información.', gymtagInput);
+  }
+  // const {dataAuth, errorAuth} = await supabase
+  //     .from('usuarios')
+  //     .select('gymtag', 'nombre', 'apellidos', 'fechanacimiento')
+  //     .eq('id', id);
+  // if(errorAuth){
+  //   mensaje('Hubo un error al cargar tu información.', gymtagInput);
+  // }
+  console.log(data);
+  gymtag.value = data[0].gymtag;
+  fecha_nacimiento.value = data.fechanacimiento;
+  nombre.value = data.nombre;
+  apellidos.value = data.apellidos;
+}
+
 /*Cuando carga, */
 onMounted(async () => {
   const id = await obtenerId();
-  let { data: foto, error } = await supabase
+  const { data: foto, error } = await supabase
     .from('usuarios')
     .select('fotoperfil')
     .eq('id', id);
   if (error) {
-    console.log(error);
     imagenPreview.value.src = predeterminada;
     esPredeterminada.value = true;
   }
@@ -253,6 +288,7 @@ onMounted(async () => {
     imagenPreview.value.src = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + foto[0].fotoperfil;
     esPredeterminada.value = false;
   }
+  mostrarDatos(id);
 });
 
 function confirmacion() {
@@ -299,7 +335,7 @@ function cancelar() {
       <div class="contenido_publicar">
         <div class="div_imagen">
           <div class="prev_imagen" @click="triggerFileInput" ref="fondo_imagen">
-            <img id="imagen" ref="imagenPreview" src=""/>
+            <img id="imagen" ref="imagenPreview" src="" />
           </div>
           <div class="botones_imagen">
             <div class="contenedor_boton contendor_boton1">
@@ -336,69 +372,41 @@ function cancelar() {
         <div class="fila1">
           <div class="fila_izquierda">
             <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
-              <label class="label">Nombre</label>
+              <input v-model="gymtag" type="text" class="input" required autocomplete="off"
+                ref="gymtagInput" placeholder="Escribe tu GymTag">
+              <label class="label">GymTag</label>
             </div>
           </div>
           <div class="fila_derecha">
             <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
-              <label class="label">Apellidos</label>
+              <input v-model="fecha_nacimiento" type="date" class="input" required autocomplete="off"
+                ref="fecha_nacimientoInput">
+              <label class="label">Fecha de nacimiento</label>
+              <div class="tapar" @click="triggerDateInput"></div>
             </div>
           </div>
         </div>
         <div class="fila2">
           <div class="fila_izquierda">
             <div class="contenedor_input">
-              <input v-model="email" type="date" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
-              <label class="label">Fecha de nacimiento</label>
-            </div>
-          </div>
-          <div class="fila_derecha">
-            <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
-              <label class="label">Sexo</label>
-            </div>
-          </div>
-        </div>
-        <div class="fila3">
-          <div class="fila_izquierda">
-            <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
-              <label class="label">Peso</label>
-            </div>
-          </div>
-          <div class="fila_derecha">
-            <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
-              <label class="label">Altura (en cm)</label>
-            </div>
-          </div>
-        </div>
-        <div class="fila4">
-          <div class="fila_izquierda">
-            <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
+              <input v-model="nombre" type="text" class="input" required autocomplete="off" ref="nombreInput"
+                placeholder="Escribe tu nombre">
               <label class="label">Nombre</label>
             </div>
           </div>
           <div class="fila_derecha">
             <div class="contenedor_input">
-              <input v-model="email" type="text" name="gymtag_o_email" class="input" required autocomplete="off"
-                ref="emailInput">
+              <input v-model="apellidos" type="text" class="input" required autocomplete="off" ref="apellidosInput"
+                placeholder="Escribe tus apellidos">
               <label class="label">Apellidos</label>
             </div>
           </div>
         </div>
+        <div class="guardar">
+          <button class="guardar_boton" @click="guardar">Guardar</button>
+        </div>
       </div>
-      <div class="aviso" :style="{ visibility: mostrarAviso ? 'visible' : 'hidden' }">
+      <div class="aviso" :style="{ display: mostrarAviso ? 'flex' : 'none' }">
         <div class="aviso_texto">
           {{ mensajeAviso }}
         </div>
@@ -418,7 +426,6 @@ function cancelar() {
 .editar_datos>div {
   width: 100%;
   height: fit-content;
-  background-color: red;
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -435,7 +442,7 @@ function cancelar() {
 .contenedor_input {
   position: relative;
   display: flex;
-  width: 60%;
+  width: 70%;
 }
 
 .input {
@@ -456,6 +463,16 @@ function cancelar() {
 .input:valid,
 .input:focus {
   border: 2px solid var(--grey-buttons-inputs-border);
+}
+
+.tapar {
+  height: 35px;
+  width: 35px;
+  position: absolute;
+  background-color: var(--blue-inputs);
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
 }
 
 .label {
@@ -482,11 +499,11 @@ function cancelar() {
 }
 
 .account_container {
-  width: 90%;
+  width: 80%;
   margin-top: 80px;
   height: fit-content;
   background-color: var(--dark-blue);
-  max-width: 1326px;
+  max-width: 1176px;
   border: var(--black) 4px solid;
   border-radius: 6px;
   min-width: 761px;
@@ -516,7 +533,7 @@ function cancelar() {
   align-items: center;
   width: 98%;
   margin-top: 10px;
-  height: 35px;
+  height: 30px;
 }
 
 .cerrar_account {
@@ -544,7 +561,7 @@ function cancelar() {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding-top: 15px;
+  padding-top: 0;
   position: relative;
   margin-bottom: 50px;
 }
@@ -561,6 +578,12 @@ function cancelar() {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  transition: border 0.3s;
+}
+
+.prev_imagen:hover,
+.prev_imagen:active {
+  border: 2px solid rgb(109, 109, 109);
 }
 
 .prev_imagen svg {
@@ -651,19 +674,36 @@ function cancelar() {
   height: 100%;
 }
 
-.publicar {
-  height: fit-content;
-  width: 100%;
+.fila2 {
+  margin-bottom: 60px !important;
 }
 
-.publicar {
+.guardar {
   margin-top: 5px;
-  margin-bottom: 40px;
-  height: 37px;
+  height: 45px !important;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 40px !important;
+}
+
+.guardar_boton {
+  cursor: pointer;
+  background-color: var(--blue-buttons);
+  width: 27%;
+  border: solid var(--black) 2px;
+  border-radius: 2px;
+  font-size: 18px;
+  transition: background-color 0.5s, border 0.5s, color 0.5s;
+  height: 100%;
+}
+
+.guardar_boton:hover,
+.guardar_boton:active {
+  background-color: var(--very-dark-blue);
+  color: var(--light-blue-text);
+  border: 2px solid var(--grey-buttons-inputs-border);
 }
 
 .botones_imagen {
@@ -726,7 +766,7 @@ svg.quitar_imagen {
   width: 200px;
   border-radius: 2px;
   position: relative;
-  top: 18.5px;
+  top: -1800.5px;
   cursor: pointer;
 }
 
@@ -788,37 +828,6 @@ svg.quitar_imagen {
   margin-bottom: 25px;
 }
 
-/* .input:focus {
-  border: 2px solid transparent;
-  color: var(--light-blue-text);
-} */
-
-.publicar_div {
-  width: 80%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  justify-content: end;
-}
-
-.publicar_div button {
-  cursor: pointer;
-  background-color: var(--blue-buttons);
-  width: 27%;
-  border: solid var(--black) 2px;
-  border-radius: 2px;
-  font-size: 18px;
-  transition: background-color 0.5s, border 0.5s, color 0.5s;
-}
-
-.publicar_div button:hover,
-.publicar_div button:active {
-  background-color: var(--very-dark-blue);
-  color: var(--light-blue-text);
-  border: 2px solid var(--grey-buttons-inputs-border);
-}
-
 #file-upload-button {
   cursor: pointer !important;
   width: 0 !important;
@@ -853,10 +862,6 @@ svg.quitar_imagen {
     width: 305px;
     height: 305px;
   }
-
-  /* .account_container {
-    height: 500px;
-  } */
 
   .container {
     margin-bottom: 42px;
@@ -900,12 +905,11 @@ svg.quitar_imagen {
   .account_container {
     width: 100%;
     margin-top: 10px;
-    height: fit-content;
-    background-color: var(--dark-blue);
     max-width: 1126px;
     border: none;
     border-radius: 0;
     min-width: 0;
+    padding-bottom: 120px;
   }
 
   .contenido_publicar {
@@ -914,12 +918,12 @@ svg.quitar_imagen {
 
   .div_imagen {
     height: fit-content;
-    padding: 20px 0;
+    padding: 50px 0 20px;
   }
 
   .prev_imagen {
-    width: 400px;
-    height: 400px;
+    width: 300px;
+    height: 300px;
   }
 
   .div_contenido {
@@ -937,9 +941,13 @@ svg.quitar_imagen {
     font-size: 24px;
   }
 
-  .publicar {
-    margin-top: 70px;
+  .guardar {
+    margin-top: 5px !important;
     margin-bottom: 20px;
+  }
+
+  .guardar_boton {
+    min-width: 200px
   }
 
   .aviso {
@@ -955,10 +963,6 @@ svg.quitar_imagen {
     border: none;
     background-color: transparent;
     text-align: center;
-  }
-
-  .publicar_div {
-    justify-content: center;
   }
 
   .anadir {
@@ -986,19 +990,29 @@ svg.quitar_imagen {
   .cerrar_account {
     display: flex;
   }
+
+  .input,
+  .contenedor_input {
+    min-width: 245px;
+  }
 }
 
 @media(max-width: 600px) {
+  .account_container {
+    padding-bottom: 90px;
+  }
+
   .div_imagen {
-    padding-top: 10px;
+    padding-top: 60px;
+    margin-bottom: 10px;
   }
 
   .prev_imagen {
-    height: 350px;
-    width: 350px;
+    height: 250px;
+    width: 250px;
   }
 
-  .publicar_boton {
+  .guardar_boton {
     min-width: 125px;
   }
 
@@ -1019,25 +1033,57 @@ svg.quitar_imagen {
     margin-right: 20px;
     width: 240px;
   }
+
+  .editar_datos>div {
+    flex-direction: column;
+    margin: 0;
+  }
+
+  .editar_datos>div.fila1 {
+    margin-top: 25px;
+  }
+
+  .fila_izquierda,
+  .fila_derecha {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .contenedor_input {
+    margin-bottom: 60px;
+    min-width: 330px;
+  }
+
+  .fila2 {
+    margin-bottom: 0 !important;
+  }
+
+  .guardar {
+    margin-bottom: 0 !important;
+  }
 }
 
 @media(max-width: 440px) {
+
+  .account_container {
+    padding-bottom: 75px;
+  }
 
   .div_contenido {
     min-width: 0;
   }
 
   .div_imagen {
-    margin-top: 20px;
-    margin-bottom: 10px
+    margin-top: -10px;
   }
 
   .prev_imagen {
-    height: 300px;
-    width: 300px;
+    height: 225px;
+    width: 225px;
   }
 
-  .publicar {
+  .guardar {
     margin-bottom: 5px;
   }
 
@@ -1052,9 +1098,8 @@ svg.quitar_imagen {
 
 @media(max-width: 380px) {
 
-  /* .account_container, */
-  .todo_account {
-    height: 920px;
+  .account_container {
+    padding-bottom: 80px;
   }
 
   .div_contenido {
@@ -1070,28 +1115,28 @@ svg.quitar_imagen {
     min-width: 0;
   }
 
-  .publicar {
+  .guardar {
     margin-bottom: 5px;
     margin-top: 60px;
   }
 
   ::placeholder {
-    font-size: 15px;
+    font-size: 16px;
     word-spacing: -2px;
   }
 
   ::-moz-placeholder {
-    font-size: 15px;
+    font-size: 16px;
     word-spacing: -2px;
   }
 
   :-ms-input-placeholder {
-    font-size: 15px;
+    font-size: 16px;
     word-spacing: -2px;
   }
 
   ::-ms-input-placeholder {
-    font-size: 15px;
+    font-size: 16px;
     word-spacing: -2px;
   }
 
@@ -1117,18 +1162,60 @@ svg.quitar_imagen {
     width: 26px !important;
     height: 26px !important;
   }
+
+  .editar_datos>div.fila1 {
+    margin-top: 25px;
+  }
+
+  .fila_izquierda,
+  .fila_derecha {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .contenedor_input {
+    margin-bottom: 50px;
+    min-width: 270px;
+    width: 80%;
+  }
+
+  .label {
+    font-size: 20px;
+    transform: translateY(-32px) translateX(2px)
+  }
+
+  .input {
+    height: 37px;
+    font-size: 17px;
+  }
+
+  .tapar {
+    height: 30px;
+    width: 33px;
+    right: 5px;
+  }
+}
+
+@media(max-width: 350px) {
+  .contenedor_boton.contendor_boton1 {
+    width: 65%;
+  }
+
+  .div_quitar_imagen {
+    padding-left: 20px;
+  }
 }
 
 @media(max-width: 300px) {
 
-  /* .account_container, */
-  .todo_account {
-    height: 1000px;
-  }
-
   .prev_imagen {
     height: 220px;
     width: 220px;
+  }
+
+  .div_imagen {
+    padding-bottom: 10px;
   }
 
   .aviso {
@@ -1140,24 +1227,22 @@ svg.quitar_imagen {
     width: 90%;
   }
 
-  ::placeholder {
-    font-size: 13px;
-    word-spacing: -2px;
+  .contenedor_input {
+    margin-bottom: 60px;
+    min-width: 220px;
   }
 
-  ::-moz-placeholder {
-    font-size: 13px;
-    word-spacing: -2px;
+  .input {
+    width: 100%;
+    min-width: 100%;
   }
 
-  :-ms-input-placeholder {
-    font-size: 13px;
-    word-spacing: -2px;
+  .editar_datos>div>div {
+    margin-bottom: -10px;
   }
 
-  ::-ms-input-placeholder {
-    font-size: 13px;
-    word-spacing: -2px;
+  .account_container {
+    padding-bottom: 120px;
   }
 }
 </style>

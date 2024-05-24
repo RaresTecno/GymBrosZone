@@ -68,8 +68,8 @@ async function insertarImagen() {
   let contador = 1;
   let nombrePublicacion;
   let ruta;
-  let id = await obtenerId();
-  let encId = await hashString(id);
+  const id = await obtenerId();
+  const encId = await hashString(id);
 
   /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
   do {
@@ -490,9 +490,6 @@ svg.girar_imagen {
 }
 
 #imagen {
-  /* width: 100%;
-  height: 100%;
-  object-fit: cover; */
   max-width: 100%;
   max-height: 100%;
 }
@@ -505,11 +502,6 @@ svg.girar_imagen {
 .div_contenido {
   width: calc(55% + 2px);
   height: 100%;
-}
-
-.publicar {
-  height: fit-content;
-  width: 100%;
 }
 
 .publicar {

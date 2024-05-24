@@ -1,7 +1,26 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
-import { userActive } from "../clients/supabase";
+import { supabase, userActive } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
+import { ref, reactive } from "vue"
+const todasPublicaciones = ref()
+const idPublicacion = ref()
+const cantidadPublicaciones = ref()
+
+async function mostrarp() {
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*');
+
+    todasPublicaciones.value = publicaciones.reverse()
+
+  } catch (error) {
+
+  }
+}
+mostrarp()
+
 
 
 
@@ -51,14 +70,11 @@ disponible.value = true;
     </template>
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
-        <template v-for="n in 50" :key="n">
-          <Publicacion />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+          <Publicacion :id="publicacion.idpublicacion" />
         </template>
       </div>
     </div>
-    <button v-if="!userActive" class="post">
-      <RouterLink to="./post"><a href=""><b>+</b></a></RouterLink>
-    </button>
   </main>
 </template>
 

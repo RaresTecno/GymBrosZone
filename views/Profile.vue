@@ -1,20 +1,42 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineProps } from "vue";
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
 import Tabla from "@/components/Tabla.vue";
 import { supabase, userActive } from "../clients/supabase";
 
+const props = defineProps({
+  gymtag: {
+    type: Boolean
+  }
+});
+console.log("perfil: " + props.gymtag)
+
 const todasPublicaciones = ref()
 const idPublicacion = ref()
 const cantidadPublicaciones = ref()
-
+const gymTag = ref();
+const sobreMi = ref(
+  "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmma"
+);
+const editing = ref(false);
+const seguidores = ref(0);
+const seguidos = ref(0);
+const publicaciones = ref(0);
+const fotoPerfil = ref();
 async function mostrarp() {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('gymtag', props.gymtag);
+  fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917"+usuario[0].fotoperfil
+  gymTag.value = usuario[0].gymtag
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
-      .select('*');
+      .select('*')
+    .eq('idusuario', usuario[0].id);
 
     todasPublicaciones.value = publicaciones.reverse()
 
@@ -29,14 +51,6 @@ function arriba() {
   window.scrollTo(0, 0);
 }
 
-const gymTag = ref("GymTag");
-const sobreMi = ref(
-  "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmma"
-);
-const editing = ref(false);
-const seguidores = ref(0);
-const seguidos = ref(0);
-const publicaciones = ref(0);
 
 const vista = ref(sessionStorage.getItem("vista") || "Publicaciones");
 function cambiarVista(tipo) {
@@ -56,7 +70,9 @@ onMounted(() => {
     <div id="info">
       <div id="info-top">
         <div id="foto-gymTag">
-          <div id="foto"></div>
+          <div id="foto">
+            <img :src="fotoPerfil" />
+          </div>
           <h2 id="gymTag">
             {{ gymTag }}
           </h2>
@@ -90,7 +106,7 @@ onMounted(() => {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
-          <Publicacion :id="publicacion.idpublicacion" />
+          <Publicacion :id="publicacion.idpublicacion" :ProfileView="true" />
         </template>
       </div>
       <div v-if="vista == 'Tablas'" id="tablas" class="vista">
@@ -104,7 +120,7 @@ onMounted(() => {
         aaaa
       </div>
       <div v-if="vista == 'editProfile'" id="edit-profile" class="vista">
-        <editProfile/>
+        <editProfile />
         vvvvvv
       </div>
     </div>
@@ -221,9 +237,11 @@ onMounted(() => {
   justify-content: center;
   /* Centra el contenido verticalmente */
 }
+
 .vista #publicacion {
   padding: 0;
 }
+
 @media (max-width: 875px) {
   .perfil {
     margin: 60px 0 0 0;
@@ -235,6 +253,44 @@ onMounted(() => {
 
   #contenido {
     width: 100%;
+  }
+}
+
+@media (max-width: 1100px) {
+  #forzar-publicacion {
+    background-color: var(--dark-blue);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    aspect-ratio: 1;
+    position: relative;
+    max-height: fit-content;
+    /* max-width: 500px; */
+    border: 1px solid black;
+    border-radius: 0;
+    margin-top: 0;
+    /* overflow-clip-margin: content-box;
+  overflow: clip; */
+  }
+
+  #forzar-inicial {
+    display: flex;
+    /* background: rgb(255, 7, 7); */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    /* height: 100%; */
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 625px) {
+  .publicacion {
+    border-radius: 0;
+    margin: 2px;
+
   }
 }
 

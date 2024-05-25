@@ -1,13 +1,21 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
-import { userActive } from "../clients/supabase";
+import { userId, supabase } from "../clients/supabase";
 
+const gymTag = ref()
+async function cargarUsuario() {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('id', userId.value);
+  gymTag.value = usuario[0].gymtag;
+}
+cargarUsuario();
 const posicionAnt = ref(0);
 const altura = ref(80);
 const windowWidth = ref(window.innerWidth);
 
-console.log('lateral:'+ userActive.value);
 const posicionActual = window.scrollY;
 
 //hacerlo tambien primero con el width
@@ -101,7 +109,7 @@ onMounted(() => {
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/profile" class="RouterLink">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon usuario" :icon="['fas', 'user']" /></div>
           <h2>Perfil</h2>
         </RouterLink>

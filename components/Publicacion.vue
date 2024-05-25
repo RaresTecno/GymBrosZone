@@ -8,14 +8,19 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  ProfileView:{
+    type: Boolean,
+    default: false
+  }
 });
-
 const gymTag = ref();
 const ruta = ref();
 const fotoPerfil = ref();
 const tematica = ref();
 const descripcion = ref();
 const isCover = ref(true);
+
+const isProfile =  ref(props.ProfileView)
 
 async function cargarPublicacion() {
   try {
@@ -35,14 +40,12 @@ async function cargarPublicacion() {
     tematica.value = publicacion[0].tematica
     if (publicacion[0].resolucion == "cover") {
 
-      console.log("cover")
       isCover.value = true;
     } else {
       if (windowWidth < 1100) {
         isCover.value = false;
 
       }
-      console.log("no cover")
 
     }
 
@@ -96,8 +99,8 @@ const cerrar = () => {
 // });
 </script>
 <template>
-  <div id="publicacion">
-    <div class="header-publicacion" v-if="(windowWidth < 1100)">
+  <div class="publicacion" id="forzar-publicacion">
+    <div class="header-publicacion" v-if="(windowWidth < 1100 &&  !isProfile)">
       <div class="header-publicacion-izq">
         <img :src="fotoPerfil" alt="">
         <h2 class="gymtag">{{ gymTag }}</h2>
@@ -106,22 +109,22 @@ const cerrar = () => {
         <font-awesome-icon class="icon" :icon="['fas', 'ellipsis-vertical']" />
       </div>
     </div>
-    <div @click="mostrar" id="inicial">
-      <img :src="ruta" :class="isCover ? 'cover' : 'normal'" />
+    <div @click="mostrar" class="inicial" id="forzar-inicial">
+      <img :src="ruta" :class="true ? 'cover' : 'normal'" />
     </div>
-    <div class="footer-publicacion" v-if="(windowWidth < 1100)">
-      <h2 class="tematica">{{ tematica }}</h2>
+    <div class="footer-publicacion" v-if="(windowWidth < 1100 && !isProfile)">
+      <h2 class="tematica">Tematica: {{ tematica }}</h2>
     </div>
-    <div id="final" v-if="mostrarFinal">
-      <div id="contenido">
-        <div @click="cerrar" id="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" /></div>
-        <div id="imagen">
+    <div class="final" v-if="mostrarFinal">
+      <div class="contenido">
+        <div @click="cerrar" class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" /></div>
+        <div class="imagen">
           <img :src="ruta" />
         </div>
-        <div id="cuerpo">
-          <div id="encabezado"></div>
+        <div class="cuerpo">
+          <div class="encabezado"></div>
 
-          <div id="descripcion">a</div>
+          <div class="descripcion">a</div>
         </div>
       </div>
     </div>
@@ -129,7 +132,7 @@ const cerrar = () => {
 </template>
 
 <style scoped>
-#publicacion {
+.publicacion {
   background-color: var(--dark-blue);
   display: flex;
   flex-direction: column;
@@ -197,7 +200,7 @@ const cerrar = () => {
   color: var(--light-blue-text);
 }
 
-#inicial {
+.inicial {
   display: flex;
   /* background: rgb(255, 7, 7); */
   background-repeat: no-repeat;
@@ -219,7 +222,7 @@ const cerrar = () => {
   max-width: 100%;
 }
 
-#final {
+.final {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -230,7 +233,7 @@ const cerrar = () => {
   z-index: 200;
 }
 
-#contenido {
+.contenido {
   background-color: rgb(255, 255, 255);
   position: absolute;
   top: 50%;
@@ -239,31 +242,31 @@ const cerrar = () => {
   display: flex;
 }
 
-#cerrar {
+.cerrar {
   position: absolute;
   top: 5px;
   left: 5px;
 }
 
-#imagen {
+.imagen {
   background-color: burlywood;
   width: 500px;
   height: 500px;
 }
 
-#imagen img {
+.imagen img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-#cuerpo {
+.cuerpo {
   background: rgb(248, 59, 59);
   width: 400px;
 }
 
 @media (max-width: 1100px) {
-  #publicacion {
+  .publicacion {
     height: fit-content;
     aspect-ratio: 0;
     border: 2px solid black;
@@ -272,14 +275,14 @@ const cerrar = () => {
     overflow: hidden;
   }
 
-  #inicial {
-    height: fit-content;
+  .inicial {
+    /* height: fit-content; */
   }
 
 }
 
 @media (max-width: 625px) {
-  #publicacion {
+  .publicacion {
     border-radius: 0;
     margin: 2px;
 

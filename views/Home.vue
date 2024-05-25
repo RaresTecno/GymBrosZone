@@ -74,7 +74,7 @@ disponible.value = true;
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
-          <Publicacion :id="publicacion.idpublicacion" />
+          <Publicacion :id="publicacion.idpublicacion" :ProfileView="false" />
         </template>
       </div>
     </div>

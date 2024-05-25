@@ -2,7 +2,18 @@
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from 'vue-router';
+import { userId, supabase } from "../clients/supabase";
 
+
+const gymTag = ref()
+async function cargarUsuario() {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('id', userId.value);
+  gymTag.value = usuario[0].gymtag;
+}
+cargarUsuario();
 const route = useRoute();
 const posicionAnt = ref(0);
 const mostrar = ref(true);
@@ -34,6 +45,12 @@ function mostrarHeader() {
 onMounted(() => {
   window.addEventListener("scroll", mostrarHeader);
 });
+
+function reloadPage(event) {
+  event.preventDefault();
+  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
+  window.location.href = url;
+}
 </script>
 
 <template>
@@ -45,9 +62,8 @@ onMounted(() => {
             <img src="../assets/img/logo.png" />
           </RouterLink>
         </div>
-        <div>
-          <RouterLink :to="{ name: 'profile', params: { gymtag: 'rares' } }" class="RouterLink">
-
+        <div v-if="gymTag">
+          <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
             <font-awesome-icon class="icon usuario" :icon="['fas', 'user']" />
           </RouterLink>
         </div>

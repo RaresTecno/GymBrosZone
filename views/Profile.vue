@@ -8,38 +8,35 @@ import { supabase, userActive } from "../clients/supabase";
 
 const props = defineProps({
   gymtag: {
-    type: Boolean
+    type: String
   }
 });
 console.log("perfil: " + props.gymtag)
 
 const todasPublicaciones = ref()
-const idPublicacion = ref()
 const cantidadPublicaciones = ref()
 const gymTag = ref();
-const sobreMi = ref(
-  "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmma"
-);
-const editing = ref(false);
+const nombreCompleto = ref();
+const sobreMi = ref();
 const seguidores = ref(0);
 const seguidos = ref(0);
-const publicaciones = ref(0);
 const fotoPerfil = ref();
 async function mostrarp() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('gymtag', props.gymtag);
-  fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917"+usuario[0].fotoperfil
+  // fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917"+usuario[0].fotoperfil
   gymTag.value = usuario[0].gymtag
+
+  nombreCompleto.value = usuario[0].nombre +" "+ usuario[0].apellidos
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
       .select('*')
     .eq('idusuario', usuario[0].id);
-
     todasPublicaciones.value = publicaciones.reverse()
-
+    cantidadPublicaciones.value = publicaciones.length
   } catch (error) {
 
   }
@@ -78,7 +75,7 @@ onMounted(() => {
           </h2>
         </div>
         <div id="sobre-mi">
-          <h2>Nombre y Apellidos</h2>
+          <h2>{{ nombreCompleto }}</h2>
           <p>{{ sobreMi }}</p>
           <button @click="cambiarVista('editProfile')">Editar Perfil</button>
         </div>
@@ -94,7 +91,7 @@ onMounted(() => {
         </div>
         <div id="publicaciones">
           <h2>Publicaciones</h2>
-          {{ publicaciones }}
+          {{ cantidadPublicaciones }}
         </div>
       </div>
     </div>

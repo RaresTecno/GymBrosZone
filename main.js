@@ -26,7 +26,7 @@ async function init() {
   }
 
   await userState();
-  await obtenerId();
+  // await obtenerId();
   library.add(fas);
   library.add(fab);
   const app = createApp(App);

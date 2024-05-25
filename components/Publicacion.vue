@@ -102,8 +102,10 @@ const cerrar = () => {
   <div class="publicacion" id="forzar-publicacion">
     <div class="header-publicacion" v-if="(windowWidth < 1100 &&  !isProfile)">
       <div class="header-publicacion-izq">
-        <img :src="fotoPerfil" alt="">
-        <h2 class="gymtag">{{ gymTag }}</h2>
+        <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
+          <img :src="fotoPerfil" alt="">
+          <h2 class="gymtag">{{ gymTag }}</h2>
+        </RouterLink>
       </div>
       <div class="header-publicacion-der">
         <font-awesome-icon class="icon" :icon="['fas', 'ellipsis-vertical']" />

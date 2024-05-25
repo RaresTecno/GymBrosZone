@@ -97,6 +97,12 @@ onMounted(() => {
   window.addEventListener("scroll", reposicionarBarra);
   window.addEventListener("resize", updateWidth);
 });
+
+function reloadPage(event) {
+  event.preventDefault();
+  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
+  window.location.href = url;
+}
 </script>
 
 <template>
@@ -108,8 +114,8 @@ onMounted(() => {
           <h2>Home</h2>
         </RouterLink>
       </div>
-      <div>
-        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
+      <div v-if="gymTag">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon usuario" :icon="['fas', 'user']" /></div>
           <h2>Perfil</h2>
         </RouterLink>

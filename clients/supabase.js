@@ -28,6 +28,7 @@ export async function userState(){
     if (currentUser.data.session == null) {
         userActive.value = false;
     }else{
+        await obtenerId();
         userActive.value = true;
     }
 }

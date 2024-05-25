@@ -24,16 +24,17 @@ onMounted(() => {
 });
 
 onMounted(async () => {
-  //Borrar
-  await guardarIP();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
-  if (error) {
-    return false;
-  }
-  if (user) {
-    await revisarCarpeta(user);
-    await revisarGymtag(user);
+  if (userActive.value) {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+    if (error) {
+      return false;
+    }
+    if (user) {
+      await revisarCarpeta(user);
+      await revisarGymtag(user);
+    }
+    
   }
 });
 
@@ -125,25 +126,6 @@ async function revisarGymtag(user) {
   }
 }
 
-//Borrar
-async function guardarIP() {
-  try {
-    // Reemplaza la URL con la URL de tu Worker en Cloudflare
-    const response = await fetch('https://my-worker.rauldr718.workers.dev');
-    const data = await response.json();
-    const { error: insertError } = await supabase
-      .from('ips')
-      .insert([{ userIP: data.ip }]);
-
-    if (insertError) {
-      console.error('Error guardando la IP del usuario:', insertError);
-      return false;
-    }
-  } catch (error) {
-    console.error('Error obteniendo la IP del usuario:', error);
-    return false;
-  }
-}
 
 </script>
 

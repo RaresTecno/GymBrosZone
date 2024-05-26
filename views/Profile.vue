@@ -1,18 +1,20 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted, defineProps } from "vue";
+import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
-import { supabase, userActive } from "../clients/supabase";
+import { supabase, userId } from "../clients/supabase";
 
 const props = defineProps({
   gymtag: {
     type: String
   }
 });
-console.log("perfil: " + props.gymtag)
 
+const profileId = ref()
+const siguiendo = ref()
 const todasPublicaciones = ref()
 const cantidadPublicaciones = ref()
 const gymTag = ref();
@@ -24,23 +26,39 @@ const fotoPerfil = ref();
 
 function obtenerFoto(foto) {
   if (foto == "/predeterminada.png") {
-    console.log("fot:"+foto)
     return "../assets/img/foto-perfil-predeterminada.jpg"
   } else {
     return "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917" + usuario[0].fotoperfil
   }
 }
 
+const router = useRouter();
 async function mostrarp() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('gymtag', props.gymtag);
+  if (usuario.length == 0) {
+    router.push('/NotFound');
+  }
 
-  fotoPerfil.value = obtenerFoto(usuario[0].fotoperfil);
+  // fotoPerfil.value = obtenerFoto(usuario[0].fotoperfil);
   gymTag.value = usuario[0].gymtag
 
   nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos
+  profileId.value = usuario[0].id;
+  console.log(profileId.value)
+  const { data: seguidores, error2 } = await supabase
+    .from('seguidores')
+    .select('*')
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', profileId.value);
+
+  if (seguidores.length == 0) {
+    siguiendo.value = false
+  } else {
+    siguiendo.value = true
+  }
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
@@ -70,6 +88,21 @@ onMounted(() => {
     sessionStorage.setItem("vista", "Publicaciones"); // Establecer la vista predeterminada si no hay una vista almacenada
   }
 });
+
+
+async function seguir() {
+  const { error: insertError } = await supabase
+    .from('seguidores')
+    .insert([{ idseguidor: userId.value, idseguido: profileId.value }]);
+}
+async function dejarSeguir() {
+  const { error: deleteError } = await supabase
+    .from('seguidores')
+    .delete()
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', profileId.value);
+
+}
 </script>
 
 <template>
@@ -84,6 +117,8 @@ onMounted(() => {
           <h2 id="gymTag">
             {{ gymTag }}
           </h2>
+          <button v-if="siguiendo == false" @click="seguir()">Seguir</button>
+          <button v-if="siguiendo == true" @click="dejarSeguir()">Dejar de seguir</button>
         </div>
         <div id="sobre-mi">
           <h2>{{ nombreCompleto }}</h2>
@@ -164,6 +199,11 @@ onMounted(() => {
   justify-content: center;
   margin: 10px;
   width: 40%;
+}
+
+#foto-gymTag button {
+  margin-top: 10px;
+  padding: 3px;
 }
 
 #foto {

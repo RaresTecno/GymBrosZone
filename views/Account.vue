@@ -26,6 +26,14 @@ const mostrarAviso = ref(false);
 const mostrarPregunta = ref(false);
 const esPredeterminada = ref(true);
 
+let id = ref('');
+
+/*Estas variables almacenarán los valores actuales delos datos del usuario.*/
+let gymtagActual;
+let nombreActual;
+let apellidosActual;
+let fecha_nacimientoActual;
+let fotoperfilActual;
 
 //Comprobamos el nombre ingresado.
 function validarNombre() {
@@ -33,7 +41,7 @@ function validarNombre() {
   if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,14}$/i.test(nombreT)) {
     return true;
   }
-  mensaje('El nombre debe contener entre 3 y 14 letras.', nombreInput);
+  mensaje('El nombre debe contener entre 3 y 14 letras.');
   return false;
 }
 
@@ -43,7 +51,7 @@ function validarApellidos() {
   if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,24}$/i.test(apellidosT)) {
     return true;
   }
-  mensaje('Los apellidos deben contener entre 3 y 24 letras.', apellidosInput);
+  mensaje('Los apellidos deben contener entre 3 y 24 letras.');
   return false;
 }
 
@@ -53,12 +61,12 @@ async function validarGymtag() {
   gymtag.value = gymtagMin;
   //Comprobamos que el tamaño del GymTag sea el deseado.
   if (gymtagMin.length < 3 || gymtagMin.length > 14) {
-    mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtagInput);
+    mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.');
     return false;
   }
   //Comprobamos que los caracteres ingresados sean válidos.
   if (!/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
-    mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtagInput);
+    mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.');
     return false;
   }
   //Comprobamos si el GymTag está disponible.
@@ -71,25 +79,38 @@ async function validarGymtag() {
     if (error) throw error;
     //El gymtag estará en uso si usuarios contiene algún elemento.
     if (usuarios.length > 0) {
-      mensaje('El GymTag ingresado ya está en uso.', gymtagInput);
+      mensaje('El GymTag ingresado ya está en uso.');
       return false;
     }
     //GymTag disponible.
     return true;
   } catch (error) {
-    mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtagInput);
+    mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.');
     return false;
   }
 }
 
-
+//Comprobamos si el usuario es mayor de 14 años.
+function validarEdad() {
+  var fechaActual = new Date();
+  var annoActual = fechaActual.getFullYear();
+  const anno = parseInt(fecha_nacimiento.value.split("-")[0], 10);
+  if (/^(\d{4})-(\d{2})-(\d{2})$/.test(fecha_nacimiento.value) && (anno >= 1900 && anno <= (annoActual - 14))) {
+    return true;
+  } else if (anno <= 1900) {
+    //Si el usuario ingresa una fecha anterior a 1900 se avisa de que la edad ingresada no es válida.
+    mensaje('La edad ingresada no es válida.');
+  } else if (anno >= (annoActual - 14)) {
+    //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
+    mensaje('Debes tener más de 14 años.');
+  }
+  return false;
+}
 
 /*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
-function aviso(mensaje, Input) {
+function mensaje(mensaje) {
   mensajeAviso.value = mensaje;
   mostrarAviso.value = true;
-  /*Ponemos el foco en el input que sea más largo de lo que debería.*/
-  Input.value.focus();
 }
 
 /*Se avisa al usuario de que ha incluido un archivo inválido o que ha ocurrido algún error al guardar la imagen o la publicación.*/
@@ -100,21 +121,102 @@ function avisoImagen(mensaje) {
   quitar_imagen();
 }
 
-// /*Función para realizar la información del usuario.*/
-// async function guardar() {
-//   /*Validamos la temática y el contenido de la publicación.*/
-//   if (validarTematica() && validarContenido()) {
-//     /*Comprobamos si hay una imagen para así realizar la publicación.*/
-//     if (hayImagen.value) {
-//       /*Guardamos la imagen en la base de datos.*/
-//       const data = await insertarImagen();
-//       /*Guardamos la ruta, la temática y el contenido en la bdd.*/
-//       await guardarPublicacion(data);
-//     } else {
-//       avisoImagen('Debes incluir una imagen.');
-//     }
-//   }
-// }
+/*Función para actualizar la información del usuario.*/
+async function guardar() {
+  let consulta = {};
+  /*Comprobamos el gymtag.*/
+  if (gymtagActual !== gymtag.value && validarGymtag()) {
+    consulta.gymtag = gymtag.value;
+  } else if (gymtagActual === gymtag.value) {
+  } else {
+    return false;
+  }
+
+  /*Comprobamos la fecha de nacimiento.*/
+  if (fecha_nacimientoActual !== fecha_nacimiento.value && validarEdad()) {
+    consulta.fechanacimiento = fecha_nacimiento.value;
+  } else if (fecha_nacimientoActual === fecha_nacimiento.value) {
+  } else {
+    return false;
+  }
+
+  /*Comprobamos el nombre.*/
+  if (nombreActual !== nombre.value && validarNombre()) {
+    consulta.nombre = nombre.value;
+  } else if (nombreActual === nombre.value) {
+  } else {
+    return false;
+  }
+
+  /*Comprobamos los apellidos.*/
+  if (apellidosActual !== apellidos.value && validarApellidos()) {
+    consulta.apellidos = apellidos.value;
+  } else if (apellidosActual === apellidos.value) {
+  } else {
+    return false;
+  }
+
+  /*Encriptamos el id del usuario para comprobar su carpeta.*/
+  const encId = await hashString(id);
+  /*Creamos la carpeta de la imagen de perfil.*/
+  const ruta = 'users/user-' + encId + '/fotoperfil';
+
+  //https://gymbroszone.com/src/assets/img/foto-perfil-predeterminada.jpg
+  /*Si el usuario borra su foto de perfil.*/
+  if (imagenPreview.value.src === 'http://localhost:5173/src/assets/img/foto-perfil-predeterminada.jpg' && fotoperfilActual !== '/predeterminada.png') {
+    /*Borramos la foto de perfil.*/
+    const { data: dataBorrado, error: errorBorrado } = await supabase.storage
+      .from('files')
+      .remove([ruta]);
+    /*Avisamos al usuario en caso de error.*/
+    if (errorBorrado) {
+      mensaje('Ha ocurrido un error al actualizar tu foto de perfil.');
+      return false;
+    }
+    consulta.fotoperfil = '/predeterminada.png';
+    fotoperfilActual = '/predeterminada.png';
+    //https://gymbroszone.com/src/assets/img/foto-perfil-predeterminada.jpg
+    imagenPreview.value.src = 'http://localhost:5173/src/assets/img/foto-perfil-predeterminada.jpg';
+    /*No ha cambiado su foto de perfil anterior.*/
+  } else if (imagenPreview.value.src === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual) {
+    /*No ha quitado la foto de perfil predeterminada.*/
+    //https://gymbroszone.com/src/assets/img/foto-perfil-predeterminada.jpg
+  } else if (imagenPreview.value.src === 'http://localhost:5173/src/assets/img/foto-perfil-predeterminada.jpg' && fotoperfilActual === '/predeterminada.png') {
+  } else {
+    /*Cambia su foto antigua de perfil por una nueva o añade una nueva quitando así la predeterminada.*/
+    if (fotoperfilActual !== '/predeterminada.png') {
+      /*Si tenía una foto de perfil, la eliminamos para poder añadir la nueva.*/
+      const { data: dataBorrado, error: errorBorrado } = await supabase.storage
+        .from('files')
+        .remove([ruta]);
+      /*Avisamos al usuario en caso de error.*/
+      if (errorBorrado) {
+        mensaje('Ha ocurrido un error al actualizar tu foto de perfil.');
+        return false;
+      }
+    }
+    /*Subimos la nueva foto de perfil.*/
+    const imagen = fileInput.value.files[0];
+    const { data: subir, error: errorSubir } = await supabase.storage
+      .from('files')
+      .upload(ruta, imagen);
+    /*Avisamos al usuario en caso de error.*/
+    if (errorSubir) {
+      mensaje('Ha ocurrido un error al actualizar tu foto de perfil.');
+      return false;
+    }
+    fotoperfilActual = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + ruta;
+    consulta.fotoperfil = ruta;
+  }
+  /*Actualizamos la información del usuario.*/
+  const { data, error } = await supabase
+    .from('usuarios')
+    .update(consulta)
+    .eq('id', id)
+  if (error) {
+    mensaje('Ha ocurrido un error al actualizar tu información.');
+  }
+}
 
 /*Función para encriptar cadenas de texto.*/
 async function hashString(cadena) {
@@ -124,67 +226,12 @@ async function hashString(cadena) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-/*Función para guardar la imagen en la bdd.*/
-async function insertarImagen() {
-  const imagen = fileInput.value.files[0];
-  let nombreDisponible = false;
-  let contador = 1;
-  let nombrePublicacion;
-  let ruta;
-  let id = await obtenerId();
-  let encId = await hashString(id);
-
-  /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
-  do {
-    /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
-    nombrePublicacion = 'post-' + contador;
-    /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
-    ruta = `users/user-${encId}/post/`;
-    /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
-    const { data: publicacion, error: errorPublicacion } = await supabase
-      .storage
-      .from('files')
-      .list(ruta);
-    /*Avisamos al usuario en caso de error.*/
-    if (errorPublicacion) {
-      avisoImagen('Ha ocurrido un error al guardar la publicación.');
-      return false;
-    }
-
-    /*Encriptamos el nombre de la imagen que vamos a guardar.*/
-    const nombreArchivo = await hashString(id + nombrePublicacion);
-    /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
-    const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
-
-    /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
-    if (!existePublicacion) {
-      nombreDisponible = true;
-      /*Guardamos la publicación.*/
-      const rutaFinal = `${ruta}${nombreArchivo}`;
-      const { data, error } = await supabase.storage
-        .from('files')
-        .upload(rutaFinal, imagen);
-      /*Avisamos al usuario en caso de error.*/
-      if (error) {
-        avisoImagen('Ha ocurrido un error al guardar la publicación.');
-        return false;
-      }
-      return [id, rutaFinal];
-    } else {
-      contador++;
-    }
-  } while (!nombreDisponible);
-  /*Avisamos al usuario en caso de error.*/
-  avisoImagen('Ha ocurrido un error al guardar la publicación.');
-  return false;
-}
-
 /*Para que cuando se haga clic en el preview de la foto se autopulse el input de la foto.*/
 function triggerFileInput() {
   fileInput.value.click();
 }
 
-/*Para que cuando se haga clic en el div que tapa el icono del formulario, se haga focus en el input de la fecha de nacimiento.*/
+/*Para que cuando se haga clic en el div que tapa el icono del calendario, se haga focus en el input de la fecha de nacimiento.*/
 function triggerDateInput() {
   fecha_nacimientoInput.value.focus();
 }
@@ -242,55 +289,50 @@ function mostrarImagen(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     imagenPreview.value.src = e.target.result;
-    fondo_imagen.value.style.backgroundColor = 'rgba(12, 12, 12, 0.804)';
     esPredeterminada.value = false;
   };
   reader.readAsDataURL(file);
 }
 
-async function mostrarDatos(id){
-  const {data, error} = await supabase
-      .from('usuarios')
-      .select('gymtag', 'nombre', 'apellidos', 'fechanacimiento')
-      .eq('id', id);
-  if(error){
-    mensaje('Hubo un error al cargar tu información.', gymtagInput);
-  }
-  // const {dataAuth, errorAuth} = await supabase
-  //     .from('usuarios')
-  //     .select('gymtag', 'nombre', 'apellidos', 'fechanacimiento')
-  //     .eq('id', id);
-  // if(errorAuth){
-  //   mensaje('Hubo un error al cargar tu información.', gymtagInput);
-  // }
-  console.log(data);
-  gymtag.value = data[0].gymtag;
-  fecha_nacimiento.value = data.fechanacimiento;
-  nombre.value = data.nombre;
-  apellidos.value = data.apellidos;
-}
-
-/*Cuando carga, */
+/*Cuando carga, obtenemos los datos del usuarios para mostrarlos.*/
 onMounted(async () => {
-  const id = await obtenerId();
-  const { data: foto, error } = await supabase
+  id = await obtenerId();
+  const { data, error } = await supabase
     .from('usuarios')
-    .select('fotoperfil')
+    .select('gymtag, nombre, apellidos, fechanacimiento, fotoperfil')
     .eq('id', id);
   if (error) {
-    imagenPreview.value.src = predeterminada;
-    esPredeterminada.value = true;
-  }
-  if (foto[0].fotoperfil === '/predeterminada.png' || foto[0].fotoperfil === null) {
+    /*Si ocurre un error avisamos al usuario y colocamos en la previsualización de la foto de perfil la imagen predeterminada.*/
+    mensaje('Hubo un error al cargar tu información.');
     imagenPreview.value.src = predeterminada;
     esPredeterminada.value = true;
   } else {
-    imagenPreview.value.src = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + foto[0].fotoperfil;
-    esPredeterminada.value = false;
+    /*Si no hay error, guardamos los datos en variables para luego operar con ellos.*/
+    gymtagActual = data[0].gymtag;
+    fecha_nacimientoActual = data[0].fechanacimiento;
+    nombreActual = data[0].nombre;
+    apellidosActual = data[0].apellidos;
+    fotoperfilActual = data[0].fotoperfil;
+
+    /*Colocamos los datos en los inputs.*/
+    gymtag.value = data[0].gymtag;
+    fecha_nacimiento.value = data[0].fechanacimiento;
+    nombre.value = data[0].nombre;
+    apellidos.value = data[0].apellidos;
+
+    /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
+    if (fotoperfilActual === '/predeterminada.png' || fotoperfilActual === null || fotoperfilActual === '') {
+      imagenPreview.value.src = predeterminada;
+      esPredeterminada.value = true;
+    } else {
+      /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+      imagenPreview.value.src = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual;
+      esPredeterminada.value = false;
+    }
   }
-  mostrarDatos(id);
 });
 
+/*Confirmación de si se elimina la foto de perfil.*/
 function confirmacion() {
   if (!esPredeterminada.value) {
     mostrarPregunta.value = true;
@@ -298,19 +340,19 @@ function confirmacion() {
   }
 };
 
+/*El usuario confirma la eliminación de la foto de perfil.*/
 function confirmar() {
   mostrarPregunta.value = false;
   document.body.style.overflow = '';
   quitar_imagen();
 };
 
+/*El usuario cancela la eliminación de la foto de perfil.*/
 function cancelar() {
   mostrarPregunta.value = false;
   document.body.style.overflow = '';
 };
-
 </script>
-
 <template>
   <div class="todo_account">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
@@ -372,8 +414,8 @@ function cancelar() {
         <div class="fila1">
           <div class="fila_izquierda">
             <div class="contenedor_input">
-              <input v-model="gymtag" type="text" class="input" required autocomplete="off"
-                ref="gymtagInput" placeholder="Escribe tu GymTag">
+              <input v-model="gymtag" type="text" class="input" required autocomplete="off" ref="gymtagInput"
+                placeholder="Escribe tu GymTag">
               <label class="label">GymTag</label>
             </div>
           </div>
@@ -512,7 +554,8 @@ function cancelar() {
 .aviso {
   height: 35px;
   width: 100%;
-  margin-top: 30px;
+  margin-top: -20px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -523,8 +566,8 @@ function cancelar() {
   font-size: 20px;
   padding: 3px 15px;
   border-radius: 2px;
-  border: var(--border-bg-color2);
-  background-color: var(--bg-color2);
+  color: var(--light-blue-text);
+  text-align: center;
 }
 
 .titulo_account {
@@ -909,7 +952,7 @@ svg.quitar_imagen {
     border: none;
     border-radius: 0;
     min-width: 0;
-    padding-bottom: 120px;
+    padding-bottom: 80px;
   }
 
   .contenido_publicar {
@@ -950,19 +993,8 @@ svg.quitar_imagen {
     min-width: 200px
   }
 
-  .aviso {
-    transform: translateY(-135px);
-  }
-
   .aviso_texto {
-    width: fit-content;
     font-size: 19px;
-    padding: 3px 15px;
-    border-radius: 2px;
-    color: var(--light-blue-text);
-    border: none;
-    background-color: transparent;
-    text-align: center;
   }
 
   .anadir {
@@ -999,7 +1031,7 @@ svg.quitar_imagen {
 
 @media(max-width: 600px) {
   .account_container {
-    padding-bottom: 90px;
+    padding-bottom: 60px;
   }
 
   .div_imagen {
@@ -1010,6 +1042,10 @@ svg.quitar_imagen {
   .prev_imagen {
     height: 250px;
     width: 250px;
+  }
+
+  .guardar {
+    margin-top: -10px !important;
   }
 
   .guardar_boton {
@@ -1062,12 +1098,16 @@ svg.quitar_imagen {
   .guardar {
     margin-bottom: 0 !important;
   }
+
+  .aviso{
+    margin-top: 25px;
+  }
 }
 
 @media(max-width: 440px) {
 
   .account_container {
-    padding-bottom: 75px;
+    padding-bottom: 60px;
   }
 
   .div_contenido {
@@ -1087,10 +1127,6 @@ svg.quitar_imagen {
     margin-bottom: 5px;
   }
 
-  .aviso {
-    transform: translateY(-120px);
-  }
-
   .contendor_boton1 {
     width: 230px;
   }
@@ -1099,7 +1135,7 @@ svg.quitar_imagen {
 @media(max-width: 380px) {
 
   .account_container {
-    padding-bottom: 80px;
+    padding-bottom: 60px;
   }
 
   .div_contenido {
@@ -1120,6 +1156,57 @@ svg.quitar_imagen {
     margin-top: 60px;
   }
 
+  .aviso_texto {
+    width: 85%;
+  }
+  
+  .contendor_boton1 {
+    margin-right: 10px;
+    width: 230px;
+  }
+  
+  .quitar {
+    padding-top: 2px;
+  }
+  
+  svg.quitar_imagen {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .editar_datos>div.fila1 {
+    margin-top: 25px;
+  }
+  
+  .fila_izquierda,
+  .fila_derecha {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .contenedor_input {
+    margin-bottom: 50px;
+    min-width: 270px;
+    width: 80%;
+  }
+
+  .label {
+    font-size: 20px;
+    transform: translateY(-32px) translateX(2px)
+  }
+  
+  .input {
+    height: 37px;
+    font-size: 17px;
+  }
+  
+  .tapar {
+    height: 30px;
+    width: 33px;
+    right: 5px;
+  }
+
   ::placeholder {
     font-size: 16px;
     word-spacing: -2px;
@@ -1138,62 +1225,6 @@ svg.quitar_imagen {
   ::-ms-input-placeholder {
     font-size: 16px;
     word-spacing: -2px;
-  }
-
-  .aviso {
-    transform: translateY(-225px);
-  }
-
-  .aviso_texto {
-    font-size: 15px;
-    width: 85%;
-  }
-
-  .contendor_boton1 {
-    margin-right: 10px;
-    width: 230px;
-  }
-
-  .quitar {
-    padding-top: 2px;
-  }
-
-  svg.quitar_imagen {
-    width: 26px !important;
-    height: 26px !important;
-  }
-
-  .editar_datos>div.fila1 {
-    margin-top: 25px;
-  }
-
-  .fila_izquierda,
-  .fila_derecha {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .contenedor_input {
-    margin-bottom: 50px;
-    min-width: 270px;
-    width: 80%;
-  }
-
-  .label {
-    font-size: 20px;
-    transform: translateY(-32px) translateX(2px)
-  }
-
-  .input {
-    height: 37px;
-    font-size: 17px;
-  }
-
-  .tapar {
-    height: 30px;
-    width: 33px;
-    right: 5px;
   }
 }
 
@@ -1218,12 +1249,7 @@ svg.quitar_imagen {
     padding-bottom: 10px;
   }
 
-  .aviso {
-    transform: translateY(-340px);
-  }
-
   .aviso_texto {
-    font-size: 15px;
     width: 90%;
   }
 
@@ -1242,605 +1268,7 @@ svg.quitar_imagen {
   }
 
   .account_container {
-    padding-bottom: 120px;
+    padding-bottom: 105px;
   }
 }
 </style>
-
-<!-- <script setup>
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref } from "vue";
-import { supabase, logOut, userState } from "../clients/supabase";
-
-const nombre = ref("");
-const edad = ref("");
-const peso = ref("");
-const localidad = ref("");
-const apellidos = ref("");
-const sexo = ref("");
-const altura = ref("");
-const gym = ref("");
-const gymtag = ref("");
-const mostrarMensaje = ref(false);
-const mensajeError = ref("");
-
-const nombreRegex = /^[a-zñáéíóú\s]{3,14}$/i;
-const apellidosRegex = /^[a-zñáéíóú\s-]{4,24}$/i;
-const gymtagRegex = /^[a-z0-9ñ._]{3,14}$/i;
-const localidadRegex = /^[a-zñáéíóú\s]{3,14}$/i;
-
-const validarNombre = () => {
-  if (!nombreRegex.test(nombre.value)) {
-    mensajeError.value = "El nombre debe contener entre 3 y 14 letras.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarApellidos = () => {
-  if (!apellidosRegex.test(apellidos.value)) {
-    mensajeError.value = "Los apellidos deben contener entre 4 y 24 letras.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarLocalidad = () => {
-  if (!localidadRegex.test(localidad.value)) {
-    mensajeError.value = "La localidad debe contener entre 3 y 14 letras.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarGym = () => {
-  if (!nombreRegex.test(gym.value)) {
-    mensajeError.value = "El Gym debe contener entre 3 y 14 letras.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarGymtag = () => {
-  const gymtagMin = gymtag.value.toLowerCase();
-  gymtag.value = gymtagMin;
-
-  if (gymtagMin.length >= 3 && gymtagMin.length <= 14) {
-    if (!gymtagRegex.test(gymtagMin)) {
-      mensajeError.value =
-        "Tu GymTag solo puede tener letras, números y algunos caracteres especiales.";
-      mostrarMensaje.value = true;
-      gymtag.value = "";
-      return true;
-    }
-  } else {
-    mensajeError.value = "Tu GymTag debe tener entre 3 y 14 caracteres.";
-    mostrarMensaje.value = true;
-    gymtag.value = "";
-    return true;
-  }
-
-  // Verificar si GymTag está disponible
-  return false;
-};
-
-const validarEdad = () => {
-  if (!edad.value) {
-    mensajeError.value = "Por favor, ingrese su fecha de nacimiento.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarPeso = () => {
-  const pesoNum = parseFloat(peso.value);
-  if (isNaN(pesoNum) || pesoNum <= 0) {
-    mensajeError.value = "Por favor, ingrese un peso válido.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarSexo = () => {
-  if (!sexo.value) {
-    mensajeError.value = "Por favor, ingrese su sexo.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validarAltura = () => {
-  const alturaNum = parseFloat(altura.value);
-  if (isNaN(alturaNum) || alturaNum <= 0) {
-    mensajeError.value = "Por favor, ingrese una altura válida.";
-    mostrarMensaje.value = true;
-    return true;
-  }
-  return false;
-};
-
-const validateForm = (event) => {
-  event.preventDefault();
-  
-  if (
-    !nombre.value ||
-    !edad.value ||
-    !peso.value ||
-    !localidad.value ||
-    !apellidos.value ||
-    !sexo.value ||
-    !altura.value ||
-    !gym.value
-  ) {
-    mensajeError.value = "Por favor, complete todos los campos del formulario.";
-    mostrarMensaje.value = true;
-    return false;
-  }
-
-  if (
-    validarNombre() ||
-    validarApellidos() ||
-    validarGymtag() ||
-    validarGym() ||
-    validarLocalidad() ||
-    validarEdad() ||
-    validarPeso() ||
-    validarSexo() ||
-    validarAltura()
-  ) {
-    return false;
-  }
-
-  mostrarMensaje.value = false;
-  mensajeError.value = "";
-  return true;
-};
-
-const urlFoto = ref("../assets/img/logo.png");
-console.log(urlFoto);
-</script>
-
-<template>
-  <div class="container">
-    <div class="container_formulario">
-      <div class="img_perfil">
-        <div class="image-container"></div>
-        <img src="../assets/img/logo.png" alt="img-perfil" class="imgPerfil" />
-        <img
-          src="../assets/icons/imgUpload.png"
-          alt="upload IMG"
-          class="img-icon"
-        />
-        <br />
-        <input type="file" />
-        <br />
-        <label for="gymtag"></label>
-        <input
-          v-model="gymtag"
-          name="gymtag"
-          type="text"
-          class="gym_tag inputs"
-          placeholder="GymTag..."
-        />
-      </div>
-      <form
-        action="Profile.vue"
-        method="POST"
-        class="fuera-formulario"
-        novalidate
-        @submit.prevent="validateForm"
-      >
-      <div class="formulario">
-        <div class="column">
-          <label for="nombre">Nombre:</label>
-          <input
-            v-model="nombre"
-            class="inputs"
-            type="text"
-            name="nombre"
-            placeholder="Nombre"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-          <label for="edad">Fecha de Nacimiento:</label>
-          <input v-model="edad" type="date" class="inputs" name="edad" autocomplete="off" />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-          <label for="peso">Peso:</label>
-          <input
-            v-model="peso"
-            type="number"
-            class="inputs"
-            name="peso"
-            placeholder="Escriba su peso"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-          <label for="localidad">Localidad:</label>
-          <input
-            v-model="localidad"
-            type="text"
-            class="inputs"
-            name="localidad"
-            placeholder="Escriba su localidad"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-        </div>
-        <div class="column">
-          <label for="apellidos">Apellidos:</label>
-          <input
-            v-model="apellidos"
-            class="inputs"
-            type="text"
-            name="apellidos"
-            placeholder="Escriba sus apellidos"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-          <label for="sexo">Sexo:</label>
-          <input
-            v-model="sexo"
-            type="text"
-            class="inputs"
-            name="sexo"
-            placeholder="Escriba su sexo"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-          <label for="altura">Altura:</label>
-          <input
-            v-model="altura"
-            type="text"
-            class="inputs"
-            name="altura"
-            placeholder="Escriba su altura"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-          <label for="gym">Gym:</label>
-          <input
-            v-model="gym"
-            type="text"
-            class="inputs"
-            name="gym"
-            placeholder="¿Dónde entrenas?"
-            autocomplete="off"
-          />
-          <div class="container_lapiz">
-            <img src="../assets/icons/pen.png" alt="Lapiz" class="lapiz" />
-          </div>
-        </div>
-      </div>
-        <button type="submit" class="actualizar">
-          Actualizar
-        </button>
-      </form>
-      <div v-if="mostrarMensaje" class="mensaje-error-container">
-          <div class="mensaje-error">{{ mensajeError }}</div>
-      </div>
-    </div>
-    <button class="cerrar-sesion" v-if="!userActive">
-      <RouterLink to="/" @click="logOut"><i>Cerrar Sesión</i></RouterLink>
-    </button>
-  </div>
-</template>
-
-<style scoped>
-.container {
-  width: 100vw;
-  height: fit-content;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin-top: 120px;
-}
-
-.img_perfil {
-  text-align: center;
-}
-
-.imgPerfil {
-  width: 35%;
-  cursor: pointer;
-}
-
-.img-container {
-  display: flex;
-  align-items: center;
-}
-
-.img-icon {
-  margin-bottom: 14%;
-  width: 25px;
-  height: auto;
-  cursor: pointer;
-}
-
-.container_formulario {
-  margin-top: 30px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  margin: 15px auto 30px;
-  padding: 20px 30px;
-  background-color: var(--dark-blue);
-  box-shadow: 0 2px 5px var(--alt-black);
-  border: 3px solid black;
-  width: 75vw;
-  height: fit-content;
-  max-width: 1050px;
-  display: flex;
-  flex-direction: column;
-}
-
-.fuera-formulario{
-  display: flex;
-  flex-direction: column;
-}
-
-.formulario {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 55px;
-  flex-direction: column;
-  color: aliceblue;
-  text-align: center;
-  align-items: center;
-  font-size: 20px;
-  font-family: "BioRhyme", serif;
-  font-weight: bold;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "width" 100;
-  padding: 5px;
-  border-radius: 2px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-input, .gym_tag {
-  background-color: var(--blue);
-  color: rgba(240, 248, 255, 0.705);
-}
-
-.inputs{
-  height: 30px;
-  width: 220px;
-}
-
-input::placeholder, .gym_tag::placeholder {
-  color: rgba(240, 248, 255, 0.596);
-}
-
-input[type="file"] {
-  margin: 4%;
-}
-
-.container_lapiz {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin: 0;
-  cursor: pointer;
-  width: 20px;
-  height: 5%;
-}
-
-.lapiz {
-  width: 17px;
-  height: auto;
-  cursor: pointer;
-  position: relative;
-  top: -21px;
-  right: 20px;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-a {
-  text-decoration: none;
-  color: aliceblue;
-}
-
-a:hover {
-  color: black;
-}
-
-.mensaje-error-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mensaje-error {
-  color: aliceblue;
-}
-
-button {
-  color: aliceblue;
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  outline: none;
-  border: 0;
-  vertical-align: middle;
-  text-decoration: none;
-  font-family: inherit;
-  font-size: 15px;
-  margin: 1%;
-}
-
-.cerrar-sesion,
-.actualizar {
-  font-weight: 600;
-  color: aliceblue;
-  padding: 1.25em 2em;
-  background: var(--blue);
-  border: 2px solid var(--alt-black);
-  border-radius: 0.75em;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-  -webkit-transition: background 150ms,
-    -webkit-transform 150ms;
-  transition: transform 150ms,
-    background 150ms,
-    -webkit-transform 150ms;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 2%;
-  display: block;
-}
-
-.cerrar-sesion::before,
-.actualizar::before {
-  color: aliceblue;
-  position: absolute;
-  content: "";
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--dark-blue);
-  border-radius: inherit;
-  box-shadow: none;
-  -webkit-transform: translate3d(0, 0.75em, -1em);
-  transform: translate3d(0, 0.75em, -1em);
-  transition: transform 150ms,
-    box-shadow 150ms,
-    -webkit-transform 150ms,
-    -webkit-box-shadow 150ms;
-}
-
-.cerrar-sesion:hover,
-.actualizar:hover {
-  color: black;
-  background: aliceblue;
-  -webkit-transform: translate(0, 0.25em);
-  transform: translate(0, 0.25em);
-}
-
-.cerrar-sesion:hover::before,
-.actualizar:hover::before {
-  -webkit-box-shadow: 0 0 0 2px var(--alt-black), 0 0.5em 0 0 black;
-  box-shadow: none;
-  -webkit-transform: translate3d(0, 0.5em, -1em);
-  transform: translate3d(0, 0.5em, -1em);
-}
-
-.cerrar-sesion:active,
-.actualizar:active {
-  -webkit-transform: translate(0em, 0.75em);
-  transform: translate(0em, 0.75em);
-}
-
-.cerrar-sesion:active::before,
-.actualizar:active::before {
-  -webkit-box-shadow: 0 0 0 2px grey, 0 0 rgb(95, 88, 88);
-  box-shadow: none;
-  -webkit-transform: translate3d(0, 0, -1em);
-  transform: translate3d(0, 0, -1em);
-}
-button a {
-  color: white;
-}
-button:hover a {
-  color: black;
-}
-
-.cerrar-sesion {
-  margin-bottom: 2%;
-  box-shadow: none;
-}
-
-.actualizar, .mensaje-error-container{
-  display:flex;
-  flex-direction: column;
-}
-
-@media (max-width: 768px) {
-  .container_formulario {
-    margin-bottom: 2%;
-  }
-
-  .img-icon {
-    width: 25px;
-  }
-
-  input{
-    width: 320px;
-    margin: 2%;
-  }
-
-  .formulario {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 600px) {
-  .img-icon {
-    width: 25px;
-  }
-
-  input[type="file"] {
-    margin: 5vw;
-    width: 60vw;
-  }
-
-  .formulario {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-right: 5%;
-  }
-
-  .inputs {
-    width: 55vw;
-    margin-right: 5%;
-  }
-
-  .gym_tag{
-    margin: 2.5%;
-  }
-
-  .lapiz {
-    height: auto;
-    cursor: pointer;
-    position: relative;
-    top: -25px;
-  }
-}
-
-@media (max-width: 375px) {
-  .formulario {
-    margin-right: 5%;
-  }
-}
-</style> -->

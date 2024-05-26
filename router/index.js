@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { userActive } from '../clients/supabase'
 
-// import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -29,9 +27,9 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: "/politicas-y-condiciones",
-      name: "politicas-y-condiciones",
-      component: () => import("@/views/Politicas_y_condiciones.vue"),
+      path: "/policies",
+      name: "policies",
+      component: () => import("@/views/Policies.vue"),
     },
     {
       path: "/account",

@@ -18,7 +18,8 @@ async function createAccount() {
                 'fotoperfil': '/predeterminada.png',
                 'nombre': nombre.value,
                 'apellidos': apellidos.value,
-                'privacidad': 'publica'
+                'privacidad': 'publica',
+                'sobremi': ''
             }
         }
     });
@@ -96,7 +97,7 @@ function mensaje(mensaje, Input) {
     Input.value.focus();
 }
 
-/*Para que cuando se haga clic en el div que tapa el icono del formulario, se haga focus en el input de la fecha de nacimiento.*/
+/*Para que cuando se haga clic en el div que tapa el icono del calendario, se haga focus en el input de la fecha de nacimiento.*/
 function triggerDateInput(){
     fecha_nacimientoInput.value.focus();
 }
@@ -207,10 +208,10 @@ function validarEdad() {
     const anno = parseInt(fecha_nacimiento.value.split("-")[0], 10);
     if (/^(\d{4})-(\d{2})-(\d{2})$/.test(fecha_nacimiento.value) && (anno >= 1900 && anno <= (annoActual - 14))) {
         return true;
-    } else if(anno >= 1900){
+    } else if(anno <= 1900){
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
         mensaje('La edad ingresada no es válida.', fecha_nacimientoInput);
-    }else if(anno <= (annoActual - 14)){
+    }else if(anno >= (annoActual - 14)){
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
         mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
     }

@@ -977,7 +977,6 @@ svg.girar_imagen {
   }
 
   .aviso_texto {
-    font-size: 15px;
     width: 90%;
   }
 

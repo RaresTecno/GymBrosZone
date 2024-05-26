@@ -3,6 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref } from "vue";
 import { supabase, logOut, userState } from "../clients/supabase";
 
+import { disponible } from "../main";
+
+disponible.value = true;
+
 const nombre = ref("");
 const edad = ref("");
 const peso = ref("");
@@ -521,9 +525,11 @@ button {
   -webkit-transform: translate3d(0, 0, -1em);
   transform: translate3d(0, 0, -1em);
 }
+
 button a {
   color: white;
 }
+
 button:hover a {
   color: black;
 }

@@ -5,6 +5,7 @@ import { ref, onMounted } from "vue";
 
 <template>
   <nav>
+    <div class="borde"></div>
     <div class="botonesNav">
       <div>
         <RouterLink to="/" class="RouterLink">
@@ -12,22 +13,22 @@ import { ref, onMounted } from "vue";
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Search" class="RouterLink">
+        <RouterLink to="/search" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'magnifying-glass']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Publicar" class="RouterLink">
+        <RouterLink to="/post" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'circle-plus']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Likes" class="RouterLink">
+        <RouterLink to="/likes" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/Keep" class="RouterLink">
+        <RouterLink to="/keep" class="RouterLink">
           <font-awesome-icon
             class="icon"
             :icon="['fas', 'bookmark']"
@@ -48,14 +49,25 @@ nav {
   bottom: -10px;
   z-index: 100;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
+
+.borde{
+  width: 100%;
+  background-color: #eef2fa;
+  height: 1px;
+  transform: scaleY(0.4);
+  transform-origin: top;
+}
+
 nav .botonesNav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 80%;
   margin-top: 10px;
+  z-index: 10;
 }
 
 div .RouterLink {
@@ -78,5 +90,12 @@ nav > div {
   nav > div {
     margin: 0 10%;
   }
+}
+
+@media (max-width: 360px){
+  nav .botonesNav {
+  justify-content: space-around;
+  width: 100%;
+}
 }
 </style>

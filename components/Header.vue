@@ -83,7 +83,7 @@ header {
   justify-content: space-between;
   padding: 0 20px;
   position: fixed;
-  z-index: 100;
+  z-index: 400;
   box-shadow: 2px 0 15px var(--black), 3px 0 20px var(--black);
 }
 
@@ -94,7 +94,7 @@ header {
 
 .fondo_logo {
   border-radius: 50%;
-  background-color: black;
+  background-color: rgba(0, 0, 0, 0.815);
   width: 65px;
   height: 65px;
   position: relative;

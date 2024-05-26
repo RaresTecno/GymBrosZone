@@ -1,22 +1,82 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { usandoMovil } from "../main";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { ref, onMounted, defineProps } from "vue";
+import { useRouter } from 'vue-router';
+import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
-import Tabla from "@/components/Tabla.vue";
+import { supabase, userId } from "../clients/supabase";
+
+const props = defineProps({
+  gymtag: {
+    type: String
+  }
+});
+
+const profileId = ref()
+const siguiendo = ref()
+const todasPublicaciones = ref()
+const cantidadPublicaciones = ref()
+const gymTag = ref();
+const nombreCompleto = ref();
+const sobreMi = ref();
+const seguidores = ref(0);
+const seguidos = ref(0);
+const fotoPerfil = ref();
+
+function obtenerFoto(foto) {
+  if (foto == "/predeterminada.png") {
+    return "../assets/img/foto-perfil-predeterminada.jpg"
+  } else {
+    return "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917" + usuario[0].fotoperfil
+  }
+}
+
+const router = useRouter();
+async function mostrarp() {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('gymtag', props.gymtag);
+  if (usuario.length == 0) {
+    router.push('/NotFound');
+  }
+
+  // fotoPerfil.value = obtenerFoto(usuario[0].fotoperfil);
+  gymTag.value = usuario[0].gymtag
+
+  nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos
+  profileId.value = usuario[0].id;
+  console.log(profileId.value)
+  const { data: seguidores, error2 } = await supabase
+    .from('seguidores')
+    .select('*')
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', profileId.value);
+
+  if (seguidores.length == 0) {
+    siguiendo.value = false
+  } else {
+    siguiendo.value = true
+  }
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*')
+      .eq('idusuario', usuario[0].id);
+    todasPublicaciones.value = publicaciones.reverse()
+    cantidadPublicaciones.value = publicaciones.length
+  } catch (error) {
+
+  }
+}
+mostrarp()
+disponible.value = true;
 
 function arriba() {
   window.scrollTo(0, 0);
 }
 
-const gymTag = ref("GymTag");
-const sobreMi = ref(
-  "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
-);
-const editing = ref(false);
-const seguidores = ref(0);
-const seguidos = ref(0);
-const publicaciones = ref(0);
 
 const vista = ref(sessionStorage.getItem("vista") || "Publicaciones");
 function cambiarVista(tipo) {
@@ -28,23 +88,43 @@ onMounted(() => {
     sessionStorage.setItem("vista", "Publicaciones"); // Establecer la vista predeterminada si no hay una vista almacenada
   }
 });
+
+
+async function seguir() {
+  const { error: insertError } = await supabase
+    .from('seguidores')
+    .insert([{ idseguidor: userId.value, idseguido: profileId.value }]);
+}
+async function dejarSeguir() {
+  const { error: deleteError } = await supabase
+    .from('seguidores')
+    .delete()
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', profileId.value);
+
+}
 </script>
 
 <template>
-  <button @click="arriba" id="arriba">Volver arriba</button>
+  <!-- <button @click="arriba" id="arriba">Volver arriba</button> -->
   <div class="perfil" :class="{ usandoMovil: usandoMovil }">
     <div id="info">
       <div id="info-top">
         <div id="foto-gymTag">
-          <div id="foto"></div>
+          <div id="foto">
+            <img :src="fotoPerfil" />
+          </div>
           <h2 id="gymTag">
             {{ gymTag }}
           </h2>
+          <button v-if="siguiendo == false" @click="seguir()">Seguir</button>
+          <button v-if="siguiendo == true" @click="dejarSeguir()">Dejar de seguir</button>
         </div>
         <div id="sobre-mi">
-          <h2>Nombre y Apellidos</h2>
+          <h2>{{ nombreCompleto }}</h2>
           <p>{{ sobreMi }}</p>
-          <button @click="cambiarVista('editProfile')">Editar Perfil</button>
+          <button @click="cambiarVista('editProfile')"><font-awesome-icon :icon="['fas', 'pen']"
+              class="icono-pen" /></button>
         </div>
       </div>
       <div id="info-bot">
@@ -58,33 +138,25 @@ onMounted(() => {
         </div>
         <div id="publicaciones">
           <h2>Publicaciones</h2>
-          {{ publicaciones }}
+          {{ cantidadPublicaciones }}
         </div>
       </div>
     </div>
     <div id="contenido">
       <div id="botones">
         <button @click="cambiarVista('Publicaciones')">Publicaciones</button>
-        <button @click="cambiarVista('Tablas')">Tablas</button>
         <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
-        <template v-for="n in 50" :key="n">
-          <Publicacion />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+          <Publicacion :id="publicacion.idpublicacion" :ProfileView="true" />
         </template>
-      </div>
-      <div v-if="vista == 'Tablas'" id="tablas" class="vista">
-        <template v-for="n in 50" :key="n">
-          <Tabla />
-          tttttt
-        </template>
-
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
         aaaa
       </div>
       <div v-if="vista == 'editProfile'" id="edit-profile" class="vista">
-        <editProfile/>
+        <editProfile />
         vvvvvv
       </div>
     </div>
@@ -100,7 +172,6 @@ onMounted(() => {
 
 .perfil {
   margin-top: 80px;
-  background-color: rgb(179, 255, 0);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -109,9 +180,10 @@ onMounted(() => {
 }
 
 #info {
-  background-color: green;
+  background-color: var(--dark-blue);
   min-height: fit-content;
   width: 70%;
+  color: white;
 }
 
 #info-top {
@@ -127,6 +199,11 @@ onMounted(() => {
   justify-content: center;
   margin: 10px;
   width: 40%;
+}
+
+#foto-gymTag button {
+  margin-top: 10px;
+  padding: 3px;
 }
 
 #foto {
@@ -156,7 +233,7 @@ onMounted(() => {
   word-wrap: break-word;
   /* Para navegadores antiguos */
   overflow-wrap: break-word;
-  max-height: calc(1.2em * 6);
+  max-height: calc(1.2em * 7);
   /* Aproximadamente 7 líneas */
   overflow: hidden;
 }
@@ -165,6 +242,14 @@ onMounted(() => {
   position: absolute;
   right: 0;
   margin: 0;
+  background-color: transparent;
+  border: 0;
+  color: white;
+}
+
+#sobre-mi button .icono-pen {
+  width: 20px;
+  height: 20px;
 }
 
 #gymTag {
@@ -188,7 +273,7 @@ onMounted(() => {
 }
 
 #botones button {
-  width: 33.3333%;
+  width: 50%;
   padding: 10px;
 }
 
@@ -201,9 +286,11 @@ onMounted(() => {
   justify-content: center;
   /* Centra el contenido verticalmente */
 }
+
 .vista #publicacion {
   padding: 0;
 }
+
 @media (max-width: 875px) {
   .perfil {
     margin: 60px 0 0 0;
@@ -215,6 +302,44 @@ onMounted(() => {
 
   #contenido {
     width: 100%;
+  }
+}
+
+@media (max-width: 1100px) {
+  #forzar-publicacion {
+    background-color: var(--dark-blue);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    aspect-ratio: 1;
+    position: relative;
+    max-height: fit-content;
+    /* max-width: 500px; */
+    border: 1px solid black;
+    border-radius: 0;
+    margin-top: 0;
+    /* overflow-clip-margin: content-box;
+  overflow: clip; */
+  }
+
+  #forzar-inicial {
+    display: flex;
+    /* background: rgb(255, 7, 7); */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    /* height: 100%; */
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 625px) {
+  .publicacion {
+    border-radius: 0;
+    margin: 2px;
+
   }
 }
 

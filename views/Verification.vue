@@ -1,11 +1,43 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const mensaje = ref('');
+const url = ref('');
+let timeoutId;
 
 onMounted(() => {
-    setTimeout(() => {
-        window.location.href = "/login";
-    }, 20000); 
+    timeoutId = setTimeout(() => {
+        url.value = "/login";
+        redirigir();
+    }, 20000);
+
+    const route = useRoute();
+    const email = route.query.email ? decodeURIComponent(route.query.email) : '';
+    if (!email) {
+        window.location.href = '/';
+        return;
+    }
+    if (email.includes('@gmail.com')) {
+        mensaje.value = "Ir a Gmail";
+        url.value = "https://mail.google.com/mail/u/0/#inbox";
+    } else if (email.includes('@hotmail.com') || email.includes('@outlook.com')) {
+        mensaje.value = "Ir a Outlook";
+        url.value = "https://outlook.office365.com/mail/";
+    } else {
+        mensaje.value = "Ir a Login";
+        url.value = "/login";
+    }
 });
+
+onUnmounted(() => {
+    clearTimeout(timeoutId); 
+});
+
+function redirigir() {
+    window.location.href = url.value; 
+}
+
 </script>
 <template>
     <div class="todo_waiting">
@@ -19,7 +51,7 @@ onMounted(() => {
                     Tu cuenta está pendiente de verificación
                 </div>
                 <div class="pulsa">
-                    <a href="https://mail.google.com/mail/u/0/#inbox" target="blank">Ir a Gmail</a>
+                    <a href="" target="blank" @click="redirigir">{{ mensaje }}</a>
                 </div>
             </div>
             <div class="email_abajo">
@@ -201,15 +233,15 @@ onMounted(() => {
 
 
 @media (max-width: 285px) {
-    h1{
+    h1 {
         text-align: center;
     }
 
-    .mensaje{
+    .mensaje {
         text-align: center;
     }
 
-    .pulsa{
+    .pulsa {
         text-align: center;
     }
 
@@ -217,16 +249,16 @@ onMounted(() => {
         height: 280px;
     }
 
-    .login{
+    .login {
         height: 120px;
         justify-content: space-around;
     }
 
-    .email_abajo{
+    .email_abajo {
         justify-content: center;
     }
 
-    .email{
+    .email {
         top: -10px;
         left: 0;
     }

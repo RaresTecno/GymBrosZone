@@ -1,8 +1,26 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from 'vue-router';
+import { userId, supabase } from "../clients/supabase";
+
+
+const gymTag = ref()
+async function cargarUsuario() {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('id', userId.value);
+  gymTag.value = usuario[0].gymtag;
+}
+cargarUsuario();
+const route = useRoute();
 const posicionAnt = ref(0);
 const mostrar = ref(true);
+
+watch(() => route.path, (newPath) => {
+  mostrar.value = newPath !== '/post' && newPath !== '/account';
+}, { immediate: true });
 
 function mostrarHeader() {
   const posicionActual = window.scrollY;
@@ -11,15 +29,28 @@ function mostrarHeader() {
     mostrar.value = false;
     if (posicionActual < posicionAnt.value) {
       mostrar.value = true;
+      watch(() => route.path, (newPath) => {
+        mostrar.value = newPath !== '/post' && newPath !== '/account';
+      }, { immediate: true });
+
     }
   } else {
     mostrar.value = true;
+    watch(() => route.path, (newPath) => {
+      mostrar.value = newPath !== '/post' && newPath !== '/account';
+    }, { immediate: true });
   }
   posicionAnt.value = posicionActual;
 }
 onMounted(() => {
   window.addEventListener("scroll", mostrarHeader);
 });
+
+function reloadPage(event) {
+  event.preventDefault();
+  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
+  window.location.href = url;
+}
 </script>
 
 <template>
@@ -31,8 +62,8 @@ onMounted(() => {
             <img src="../assets/img/logo.png" />
           </RouterLink>
         </div>
-        <div>
-          <RouterLink to="/Profile" class="RouterLink">
+        <div v-if="gymTag">
+          <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
             <font-awesome-icon class="icon usuario" :icon="['fas', 'user']" />
           </RouterLink>
         </div>
@@ -46,14 +77,17 @@ onMounted(() => {
   transition: all ease;
   transform: translateY(-60px);
 }
+
 .slide-fade-leave-active {
   transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
 }
+
 .slide-fade-enter,
 .slide-fade-leave-to {
   transform: translateY(-60px);
   opacity: 0;
 }
+
 nav {
   background-color: var(--dark-blue);
   color: var(--light-blue-text);
@@ -66,12 +100,16 @@ nav {
   justify-content: center;
   align-items: center;
   transition: 0.4s;
+  z-index: 400;
+  box-shadow: 2px 0 10px var(--black), 3px 0 15px var(--black);
 }
+
 nav .botonesNav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+
 }
 
 .logo_header img {
@@ -86,7 +124,7 @@ div .RouterLink {
   cursor: pointer;
 }
 
-nav > div {
+nav>div {
   height: fit-content;
   margin: 0 20px;
 }
@@ -96,5 +134,4 @@ nav > div {
   width: 36px;
   height: 36px;
 }
-
 </style>

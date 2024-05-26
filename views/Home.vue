@@ -1,62 +1,80 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
-import { userActive } from "../clients/supabase";
+import { supabase, userActive } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
+import { ref, reactive } from "vue"
+const todasPublicaciones = ref()
+const idPublicacion = ref()
+const cantidadPublicaciones = ref()
+
+async function mostrarp() {
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*');
+
+    todasPublicaciones.value = publicaciones.reverse()
+
+  } catch (error) {
+
+  }
+}
+mostrarp()
+
+
+
 
 disponible.value = true;
 </script>
 
 <template>
-  <div v-if="!userActive" class="todo-section">
-    <div class="section-container">
-      <div class="section">
-        <img
-          src="../assets/img/GymBrosLanding2.jpeg"
-          alt="imagen 2"
-          class="section-image straight"
-        />
-        <div class="section-text">
-          <h2>Bienvenido a GymBros Zone</h2>
-          <p>
-            Inicia sesión o regístrate para acceder a GymBros Zone y disfrutar
-            de todos los beneficios que ofrecemos para tu entrenamiento.
-          </p>
-          <div class="buttons">
-            <RouterLink to="/login">
-              <button class="button-login_register">Login</button>
-            </RouterLink>
-            <RouterLink to="/register">
-              <button class="button-login_register">Registro</button>
-            </RouterLink>
+  <main>
+    <div v-if="!userActive" class="todo-section">
+      <div class="section-container">
+        <div class="section">
+          <img src="../assets/img/GymBrosLanding2.jpeg" alt="imagen 2" class="section-image straight" />
+          <div class="section-text">
+            <h2>Bienvenido a GymBros Zone</h2>
+            <p>
+              Inicia sesión o regístrate para acceder a GymBros Zone y disfrutar
+              de todos los beneficios que ofrecemos para tu entrenamiento.
+            </p>
+            <div class="buttons">
+              <RouterLink to="/login">
+                <button class="button-login_register">Login</button>
+              </RouterLink>
+              <RouterLink to="/register">
+                <button class="button-login_register">Registro</button>
+              </RouterLink>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="section">
-        <div class="section-text">
-          <h2>¿Qué ofrecemos?</h2>
-          <p>
-            GymBros Zone es una red social diseñada específicamente para entusiastas del fitness y la nutrición. Conecta con otros usuarios de gimnasio, comparte fotos e historias de tu progreso, crea publicaciones, establece objetivos o marcas y descubre nuevas dietas y rutinas de ejercicios. La plataforma incluye características únicas como la capacidad de escanear alimentos mediante códigos de barras para obtener información nutricional instantánea.
-          </p>
-          <RouterLink to="/privacy">
+        <div class="section">
+          <div class="section-text">
+            <h2>¿Qué ofrecemos?</h2>
+            <p>
+              GymBros Zone es una red social diseñada específicamente para entusiastas del fitness y la nutrición.
+              Conecta con otros usuarios de gimnasio, comparte fotos e historias de tu progreso, crea publicaciones,
+              establece objetivos o marcas y descubre nuevas dietas y rutinas de ejercicios. La plataforma incluye
+              características únicas como la capacidad de escanear alimentos mediante códigos de barras para obtener
+              información nutricional instantánea.
+            </p>
+            <RouterLink to="/privacy">
               <div class="privacy-link">Política de Privacidad</div>
-          </RouterLink>
+            </RouterLink>
+          </div>
+          <img src="../assets/img/GymBrosLanding1.jpeg" alt="imagen 1" class="section-image reverse" />
         </div>
-        <img
-          src="../assets/img/GymBrosLanding1.jpeg"
-          alt="imagen 1"
-          class="section-image reverse"
-        />
       </div>
     </div>
-  </div>
-
-  <div v-if="userActive" class="publicaciones">
-    <div class="vista">
-      <template v-for="n in 50" :key="n">
-        <Publicacion />
-      </template>
+    <div v-if="userActive" class="publicaciones">
+      <div class="vista">
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+          <Publicacion :id="publicacion.idpublicacion" :ProfileView="false" />
+        </template>
+      </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped>
@@ -176,13 +194,15 @@ disponible.value = true;
   align-items: center;
   margin-left: 60px;
   margin-bottom: 100px;
+  padding-top: 50px;
 }
 
 .vista {
+  margin-top: 35px;
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  justify-items: center;
+  /* Centra el contenido verticalmente */
 }
 
 @media (min-width: 1800px) {
@@ -204,15 +224,23 @@ disponible.value = true;
 }
 
 @media (max-width: 1100px) {
-  .todo-section {
-    margin-top: 15%;
+  main {
+    margin-top: 60px;
   }
+
+  .publicaciones {
+    margin-left: 0;
+    padding-top: 0;
+  }
+
   .vista {
+    margin-top: 25px;
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 80%;
     align-items: center;
   }
+
   .buttons {
     margin: 2%;
   }
@@ -222,34 +250,50 @@ disponible.value = true;
   .todo-section {
     margin-top: 17%;
   }
+
   .section {
     flex-direction: column;
   }
+
   .section-image {
     width: 250px;
     margin: 0 10px;
   }
+
   .section-tex {
     margin: 15%;
     overflow: auto;
   }
+
   .section-text h2 {
     margin-top: 10px;
     margin-bottom: 10px;
     font-size: 18px;
+  }
+  .vista{
+    margin-top: 5px;
+
+  }
+}
+
+@media (max-width: 625px) {
+  main {
+    margin-top: 35px;
   }
 
   .section-text p {
     margin: 0;
     font-size: 14px;
   }
+
   .publicaciones {
     margin-left: 0;
+    padding-top: 30px;
   }
+
   .vista {
-    margin: 0px;
     width: 100%;
-    grid-template-columns: repeat(1, 1fr);
+    margin: 0px;
   }
 }
 
@@ -258,6 +302,7 @@ disponible.value = true;
     margin-top: 40%;
     width: 100%;
   }
+
   .section {
     width: 100%;
     margin: 5%;
@@ -265,12 +310,15 @@ disponible.value = true;
     background: linear-gradient(145deg, var(--blue), var(--alt-black));
     box-shadow: 1px 1px 6px var(--alt-black), -1px -1px 4px var(--alt-black);
   }
+
   .section-image {
     width: 250px;
   }
+
   .section-text {
     width: 250px;
   }
+
   .buttons {
     margin-top: 5px;
   }

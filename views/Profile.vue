@@ -1,9 +1,9 @@
 <script setup>
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted, defineProps } from "vue";
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
-import Tabla from "@/components/Tabla.vue";
 import { supabase, userActive } from "../clients/supabase";
 
 const props = defineProps({
@@ -21,20 +21,31 @@ const sobreMi = ref();
 const seguidores = ref(0);
 const seguidos = ref(0);
 const fotoPerfil = ref();
+
+function obtenerFoto(foto) {
+  if (foto == "/predeterminada.png") {
+    console.log("fot:"+foto)
+    return "../assets/img/foto-perfil-predeterminada.jpg"
+  } else {
+    return "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917" + usuario[0].fotoperfil
+  }
+}
+
 async function mostrarp() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('gymtag', props.gymtag);
-  // fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/user-562027f6c9de79e000409157c9861fbbbf719102f7df4814d4c5b9ef5397c917"+usuario[0].fotoperfil
+
+  fotoPerfil.value = obtenerFoto(usuario[0].fotoperfil);
   gymTag.value = usuario[0].gymtag
 
-  nombreCompleto.value = usuario[0].nombre +" "+ usuario[0].apellidos
+  nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
       .select('*')
-    .eq('idusuario', usuario[0].id);
+      .eq('idusuario', usuario[0].id);
     todasPublicaciones.value = publicaciones.reverse()
     cantidadPublicaciones.value = publicaciones.length
   } catch (error) {
@@ -62,7 +73,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <button @click="arriba" id="arriba">Volver arriba</button>
+  <!-- <button @click="arriba" id="arriba">Volver arriba</button> -->
   <div class="perfil" :class="{ usandoMovil: usandoMovil }">
     <div id="info">
       <div id="info-top">
@@ -77,7 +88,8 @@ onMounted(() => {
         <div id="sobre-mi">
           <h2>{{ nombreCompleto }}</h2>
           <p>{{ sobreMi }}</p>
-          <button @click="cambiarVista('editProfile')">Editar Perfil</button>
+          <button @click="cambiarVista('editProfile')"><font-awesome-icon :icon="['fas', 'pen']"
+              class="icono-pen" /></button>
         </div>
       </div>
       <div id="info-bot">
@@ -98,20 +110,12 @@ onMounted(() => {
     <div id="contenido">
       <div id="botones">
         <button @click="cambiarVista('Publicaciones')">Publicaciones</button>
-        <button @click="cambiarVista('Tablas')">Tablas</button>
         <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
           <Publicacion :id="publicacion.idpublicacion" :ProfileView="true" />
         </template>
-      </div>
-      <div v-if="vista == 'Tablas'" id="tablas" class="vista">
-        <template v-for="n in 50" :key="n">
-          <Tabla />
-          tttttt
-        </template>
-
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
         aaaa
@@ -133,7 +137,6 @@ onMounted(() => {
 
 .perfil {
   margin-top: 80px;
-  background-color: rgb(179, 255, 0);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -142,9 +145,10 @@ onMounted(() => {
 }
 
 #info {
-  background-color: green;
+  background-color: var(--dark-blue);
   min-height: fit-content;
   width: 70%;
+  color: white;
 }
 
 #info-top {
@@ -198,6 +202,14 @@ onMounted(() => {
   position: absolute;
   right: 0;
   margin: 0;
+  background-color: transparent;
+  border: 0;
+  color: white;
+}
+
+#sobre-mi button .icono-pen {
+  width: 20px;
+  height: 20px;
 }
 
 #gymTag {
@@ -221,7 +233,7 @@ onMounted(() => {
 }
 
 #botones button {
-  width: 33.3333%;
+  width: 50%;
   padding: 10px;
 }
 

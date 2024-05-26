@@ -48,7 +48,6 @@ const ProductoNutriScorePoints = ref("");
 async function verApi() {
   const url =
     "https://world.openfoodfacts.org/api/v3/product/" + busqueda.value;
-
   try {
     const response = await fetch(url);
     const result = await response.text();
@@ -63,14 +62,10 @@ async function verApi() {
     ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
     ProductoFat_100.value = producto.product.nutriments["fat_100g"];
     ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
-    ProductoSaturedFat_100.value =
-      producto.product.nutriments["saturated-fat_100g"];
-    ProductoSaturedFatUnit.value =
-      producto.product.nutriments["saturated-fat_unit"];
-    ProductoCarbohydrates_100g.value =
-      producto.product.nutriments["carbohydrates_100g"];
-    ProductoCarbohydratesUnit.value =
-      producto.product.nutriments["carbohydrates_unit"];
+    ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
+    ProductoSaturedFatUnit.value = producto.product.nutriments["saturated-fat_unit"];
+    ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
+    ProductoCarbohydratesUnit.value = producto.product.nutriments["carbohydrates_unit"];
     ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
     ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
     ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
@@ -95,10 +90,10 @@ async function verApi() {
     ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
     ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
 
-    console.log(ProductoNegativePoints.value)
+    // console.log(ProductoNegativePoints.value)
     buscado.value = true;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 }
 function nombre(producto) {
@@ -200,7 +195,7 @@ const scanner = ref(null);
 onMounted(() => {
   scanner.value = new Html5QrcodeScanner("reader", {
     fps: 10,
-    qrbox: { width: 250, height: 250 },
+    qrbox: { width: 250, height: 180 },
     formatsToSupport: [
       Html5QrcodeSupportedFormats.CODE_128,
       Html5QrcodeSupportedFormats.EAN_13,
@@ -226,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Añade el nuevo div como hijo del elemento "reader"
         readerElement.appendChild(newDiv);
     } else {
-        console.error('Elemento con id "reader" no encontrado.');
+        // console.error('Elemento con id "reader" no encontrado.');
     }
 });
 onUnmounted(() => {
@@ -236,11 +231,7 @@ onUnmounted(() => {
 });
 
 function success(result) {
-  console.log("Barcode result:", result);
   busqueda.value = result.decodedText; // Automatically fills the input with the barcode result
-  document.getElementById(
-    "result"
-  ).innerHTML = `<h2>Success</h2><p>Scanned Barcode: ${result}</p>`;
   busqueda.value = result;
   verApi();
   if (scanner.value) {
@@ -250,11 +241,8 @@ function success(result) {
 }
 
 function error(err) {
-  console.log("Error scanning Barcode:", err);
-  document.getElementById(
-    "result"
-  ).innerHTML = `<h2>Error</h2><p>Unable to detect Barcode. Please ensure the Barcode is visible and try again.</p>`;
 }
+
 
 </script>
 
@@ -382,6 +370,10 @@ function error(err) {
   border: none
 }
 
+img[alt="info icon"] {
+  width: 32px !important; /* Cambiar el tamaño del ancho */
+  height: 32px !important; /* Cambiar el tamaño de la altura */
+}
 .ocultar-i {
   position: absolute;
   background-color: red;

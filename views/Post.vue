@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
 
@@ -20,6 +21,8 @@ const div_girar_imagen = ref(null);
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
+
+const router = useRouter();
 
 /*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
 function aviso(mensaje, Input) {
@@ -138,6 +141,7 @@ async function guardarPublicacion(data) {
     quitar_imagen();
     tematica.value = '';
     contenido.value = '';
+    
   }
 }
 
@@ -170,7 +174,7 @@ function triggerFileInput() {
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_publicar() {
-  window.location.href = "/";
+  router.push('/');
 }
 
 /*Función para quitar la previsualización de la imagen.*/

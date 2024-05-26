@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { supabase, logOut, userState, userActive } from '../clients/supabase';
 
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
@@ -14,6 +14,7 @@ const emailInput = ref(null);
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
 
+/*Función para iniciar sesión con Twitter.*/
 async function loginTwitter() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
@@ -23,6 +24,7 @@ async function loginTwitter() {
     }
 }
 
+/*Función para iniciar sesión con Google.*/
 async function loginGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -32,6 +34,7 @@ async function loginGoogle() {
     }
 }
 
+/*Función para crear una carpeta en la que se almacenarán las imágenes del usuario.*/
 async function crearCarpeta(data) {
     /*Ruta carpeta del usuario.*/
     const ruta = `users/user-${data.user.id.split('').reverse().join('')}/`;
@@ -63,6 +66,7 @@ async function crearCarpeta(data) {
     window.location.href = "/";
 }
 
+/*Función de inicio de sesión con correo y contraseña. */
 async function login() {
     try {
         /*Comprobación de que el email no esté vacío.*/
@@ -113,6 +117,7 @@ async function login() {
     }
 }
 
+/*Función para mostrar los mensajes de aviso al usuario.*/
 function mensaje(mensaje, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;

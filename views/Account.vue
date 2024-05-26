@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import predeterminada from '../assets/img/foto-perfil-predeterminada.jpg';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
@@ -25,6 +26,8 @@ const mostrarAviso = ref(false);
 
 const mostrarPregunta = ref(false);
 const esPredeterminada = ref(true);
+
+const router = useRouter();
 
 let id = ref('');
 
@@ -123,12 +126,15 @@ function avisoImagen(mensaje) {
 
 /*Función para actualizar la información del usuario.*/
 async function guardar() {
+  mensajeAviso.value = '';
+  mostrarAviso.value = false;
   let consulta = {};
   /*Comprobamos el gymtag.*/
-  if (gymtagActual !== gymtag.value && validarGymtag()) {
+  if (gymtagActual !== gymtag.value && await validarGymtag()) {
     consulta.gymtag = gymtag.value;
   } else if (gymtagActual === gymtag.value) {
   } else {
+    gymtag.value = gymtagActual;
     return false;
   }
 
@@ -137,6 +143,7 @@ async function guardar() {
     consulta.fechanacimiento = fecha_nacimiento.value;
   } else if (fecha_nacimientoActual === fecha_nacimiento.value) {
   } else {
+    fecha_nacimiento.value = fecha_nacimientoActual;
     return false;
   }
 
@@ -145,6 +152,7 @@ async function guardar() {
     consulta.nombre = nombre.value;
   } else if (nombreActual === nombre.value) {
   } else {
+    apellidos.value = nombreActual;
     return false;
   }
 
@@ -153,6 +161,7 @@ async function guardar() {
     consulta.apellidos = apellidos.value;
   } else if (apellidosActual === apellidos.value) {
   } else {
+    apellidos.value = apellidosActual;
     return false;
   }
 
@@ -215,6 +224,8 @@ async function guardar() {
     .eq('id', id)
   if (error) {
     mensaje('Ha ocurrido un error al actualizar tu información.');
+  }else{
+    mensaje('Tu información ha sido actualizada.');
   }
 }
 
@@ -238,7 +249,7 @@ function triggerDateInput() {
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_mi_cuenta() {
-  window.location.href = "/";
+  router.push('/');
 }
 
 /*Función para quitar la previsualización de la imagen.*/

@@ -1,35 +1,9 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase, userState, userActive } from '../clients/supabase';
+import { supabase } from '../clients/supabase';
 import { usandoMovil } from '@/main';
-
-
-//https://www.youtube.com/watch?v=efNX5x7O0cY
-
-async function createAccount() {
-    const { data, error } = await supabase.auth.signUp({
-        email: email.value,
-        password: password.value,
-        options: {
-            data: {
-                'gymtag': gymtag.value,
-                'fechanacimiento': fecha_nacimiento.value,
-                'fotoperfil': '/predeterminada.png',
-                'nombre': nombre.value,
-                'apellidos': apellidos.value,
-                'privacidad': 'publica',
-                'sobremi': ''
-            }
-        }
-    });
-    if (error) {
-        return null;
-    } else {
-        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
-        window.location.href = `/waiting-verification?email=${emailEncoded}`;
-    }
-}
+import { useRouter } from 'vue-router';
 
 const nombre = ref('');
 const apellidos = ref('');
@@ -55,6 +29,33 @@ const mensajeError = ref('');
 
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
+
+const router = useRouter();
+
+/*Función para crear la cuenta del usuario con la información ingresada.*/
+async function createAccount() {
+    const { data, error } = await supabase.auth.signUp({
+        email: email.value,
+        password: password.value,
+        options: {
+            data: {
+                'gymtag': gymtag.value,
+                'fechanacimiento': fecha_nacimiento.value,
+                'fotoperfil': '/predeterminada.png',
+                'nombre': nombre.value,
+                'apellidos': apellidos.value,
+                'privacidad': 'publica',
+                'sobremi': ''
+            }
+        }
+    });
+    if (error) {
+        return null;
+    } else {
+        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
+        window.location.href = `/waiting-verification?email=${emailEncoded}`;
+    }
+}
 
 //Establecemos 'pantallaGrande' como 'true' si la ventana es al menos de 1140px de ancho.
 const pantallaGrande = computed(() => {
@@ -252,7 +253,7 @@ async function creaCuenta() {
 }
 
 function verPoliticas() {
-    window.location.href = '/politicas-y-condiciones';
+    router.push('/policies');
 }
 </script>
 <template>

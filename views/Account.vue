@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import predeterminada from '../assets/img/foto-perfil-predeterminada.jpg';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
 
@@ -31,14 +30,30 @@ const router = useRouter();
 
 let id = ref('');
 
+const foto = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
+const fotoperfilActual = ref('');
+
 /*Estas variables almacenarán los valores actuales delos datos del usuario.*/
 let gymtagActual;
 let nombreActual;
 let apellidosActual;
 let fecha_nacimientoActual;
-let fotoperfilActual;
 
-//Comprobamos el nombre ingresado.
+/*Obtenemos la fecha y la hora*/
+function obtenerFechaYHoraActual() {
+  const ahora = new Date();
+  const año = ahora.getFullYear();
+  const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+  const día = String(ahora.getDate()).padStart(2, '0');
+  const horas = String(ahora.getHours()).padStart(2, '0');
+  const minutos = String(ahora.getMinutes()).padStart(2, '0');
+  const segundos = String(ahora.getSeconds()).padStart(2, '0');
+
+  return `${año}-${mes}-${día}_${horas}:${minutos}:${segundos}`;
+};
+
+
+/*Comprobamos el nombre ingresado.*/
 function validarNombre() {
   const nombreT = nombre.value.trim();
   if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,14}$/i.test(nombreT)) {
@@ -48,7 +63,7 @@ function validarNombre() {
   return false;
 }
 
-//Comprobamos los apellidos ingresados.
+/*Comprobamos los apellidos ingresados.*/
 function validarApellidos() {
   const apellidosT = apellidos.value.trim();
   if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,24}$/i.test(apellidosT)) {
@@ -62,17 +77,17 @@ function validarApellidos() {
 async function validarGymtag() {
   const gymtagMin = gymtag.value.toLowerCase();
   gymtag.value = gymtagMin;
-  //Comprobamos que el tamaño del GymTag sea el deseado.
+  /*Comprobamos que el tamaño del GymTag sea el deseado.*/
   if (gymtagMin.length < 3 || gymtagMin.length > 14) {
     mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.');
     return false;
   }
-  //Comprobamos que los caracteres ingresados sean válidos.
+  /*Comprobamos que los caracteres ingresados sean válidos.*/
   if (!/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
     mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.');
     return false;
   }
-  //Comprobamos si el GymTag está disponible.
+  /*Comprobamos si el GymTag está disponible.*/
   try {
     const { data: usuarios, error } = await supabase
       .from('usuarios')
@@ -80,12 +95,12 @@ async function validarGymtag() {
       .eq('gymtag', gymtagMin);
 
     if (error) throw error;
-    //El gymtag estará en uso si usuarios contiene algún elemento.
+    /*El gymtag estará en uso si usuarios contiene algún elemento.*/
     if (usuarios.length > 0) {
       mensaje('El GymTag ingresado ya está en uso.');
       return false;
     }
-    //GymTag disponible.
+    /*GymTag disponible.*/
     return true;
   } catch (error) {
     mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.');
@@ -93,7 +108,7 @@ async function validarGymtag() {
   }
 }
 
-//Comprobamos si el usuario es mayor de 14 años.
+/*Comprobamos si el usuario es mayor de 14 años.*/
 function validarEdad() {
   var fechaActual = new Date();
   var annoActual = fechaActual.getFullYear();
@@ -167,37 +182,41 @@ async function guardar() {
 
   /*Encriptamos el id del usuario para comprobar su carpeta.*/
   const encId = await hashString(id);
+  const nombreFoto = await hashString(id + obtenerFechaYHoraActual());
   /*Creamos la carpeta de la imagen de perfil.*/
-  const ruta = 'users/user-' + encId + '/fotoperfil';
-
-  //https://gymbroszone.com/src/assets/img/foto-perfil-predeterminada.jpg
+  const ruta = 'users/user-' + encId + '/' + nombreFoto;
   /*Si el usuario borra su foto de perfil.*/
-  if (imagenPreview.value.src === 'http://localhost:5173/src/assets/img/foto-perfil-predeterminada.jpg' && fotoperfilActual !== '/predeterminada.png') {
+  if (foto.value === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg' && fotoperfilActual.value !== '/predeterminada.png') {
     /*Borramos la foto de perfil.*/
     const { data: dataBorrado, error: errorBorrado } = await supabase.storage
       .from('files')
-      .remove([ruta]);
+      .remove([fotoperfilActual.value]);
     /*Avisamos al usuario en caso de error.*/
     if (errorBorrado) {
       mensaje('Ha ocurrido un error al actualizar tu foto de perfil.');
       return false;
     }
     consulta.fotoperfil = '/predeterminada.png';
-    fotoperfilActual = '/predeterminada.png';
-    //https://gymbroszone.com/src/assets/img/foto-perfil-predeterminada.jpg
-    imagenPreview.value.src = 'http://localhost:5173/src/assets/img/foto-perfil-predeterminada.jpg';
+    fotoperfilActual.value = '/predeterminada.png';
+    foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     /*No ha cambiado su foto de perfil anterior.*/
-  } else if (imagenPreview.value.src === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual) {
+  } else if (foto.value === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual.value) {
     /*No ha quitado la foto de perfil predeterminada.*/
-    //https://gymbroszone.com/src/assets/img/foto-perfil-predeterminada.jpg
-  } else if (imagenPreview.value.src === 'http://localhost:5173/src/assets/img/foto-perfil-predeterminada.jpg' && fotoperfilActual === '/predeterminada.png') {
+  } else if (foto.value === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg' && fotoperfilActual.value === '/predeterminada.png') {
   } else {
     /*Cambia su foto antigua de perfil por una nueva o añade una nueva quitando así la predeterminada.*/
-    if (fotoperfilActual !== '/predeterminada.png') {
+    if (fotoperfilActual.value !== '/predeterminada.png') {
+      let borrar = '';
+      const urlBase = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/';
+      if (fotoperfilActual.value.startsWith(urlBase)) {
+        borrar = fotoperfilActual.value.replace(urlBase, '');
+      }else{
+        borrar = fotoperfilActual.value
+      }
       /*Si tenía una foto de perfil, la eliminamos para poder añadir la nueva.*/
       const { data: dataBorrado, error: errorBorrado } = await supabase.storage
         .from('files')
-        .remove([ruta]);
+        .remove([borrar]);
       /*Avisamos al usuario en caso de error.*/
       if (errorBorrado) {
         mensaje('Ha ocurrido un error al actualizar tu foto de perfil.');
@@ -214,7 +233,7 @@ async function guardar() {
       mensaje('Ha ocurrido un error al actualizar tu foto de perfil.');
       return false;
     }
-    fotoperfilActual = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + ruta;
+    fotoperfilActual.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + ruta;
     consulta.fotoperfil = ruta;
   }
   /*Actualizamos la información del usuario.*/
@@ -224,7 +243,7 @@ async function guardar() {
     .eq('id', id)
   if (error) {
     mensaje('Ha ocurrido un error al actualizar tu información.');
-  }else{
+  } else {
     mensaje('Tu información ha sido actualizada.');
   }
 }
@@ -256,7 +275,7 @@ function cerrar_mi_cuenta() {
 function quitar_imagen() {
   hayImagen.value = false;
   esPredeterminada.value = true;
-  imagenPreview.value.src = predeterminada;
+  foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
 }
 
 /*Función para resetear el input de la imagen.*/
@@ -299,7 +318,7 @@ function mostrarImagen(file) {
   hayImagen.value = true;
   const reader = new FileReader();
   reader.onload = (e) => {
-    imagenPreview.value.src = e.target.result;
+    foto.value = e.target.result;
     esPredeterminada.value = false;
   };
   reader.readAsDataURL(file);
@@ -315,7 +334,7 @@ onMounted(async () => {
   if (error) {
     /*Si ocurre un error avisamos al usuario y colocamos en la previsualización de la foto de perfil la imagen predeterminada.*/
     mensaje('Hubo un error al cargar tu información.');
-    imagenPreview.value.src = predeterminada;
+    foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     esPredeterminada.value = true;
   } else {
     /*Si no hay error, guardamos los datos en variables para luego operar con ellos.*/
@@ -323,7 +342,7 @@ onMounted(async () => {
     fecha_nacimientoActual = data[0].fechanacimiento;
     nombreActual = data[0].nombre;
     apellidosActual = data[0].apellidos;
-    fotoperfilActual = data[0].fotoperfil;
+    fotoperfilActual.value = data[0].fotoperfil;
 
     /*Colocamos los datos en los inputs.*/
     gymtag.value = data[0].gymtag;
@@ -332,12 +351,12 @@ onMounted(async () => {
     apellidos.value = data[0].apellidos;
 
     /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
-    if (fotoperfilActual === '/predeterminada.png' || fotoperfilActual === null || fotoperfilActual === '') {
-      imagenPreview.value.src = predeterminada;
+    if (fotoperfilActual.value === '/predeterminada.png' || fotoperfilActual.value === null || fotoperfilActual.value === '') {
+      foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
       esPredeterminada.value = true;
     } else {
       /*De lo contrario mostramos la foto de perfil actual del usuario.*/
-      imagenPreview.value.src = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual;
+      foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual.value;
       esPredeterminada.value = false;
     }
   }
@@ -388,7 +407,7 @@ function cancelar() {
       <div class="contenido_publicar">
         <div class="div_imagen">
           <div class="prev_imagen" @click="triggerFileInput" ref="fondo_imagen">
-            <img id="imagen" ref="imagenPreview" src="" />
+            <img id="imagen" ref="imagenPreview" :src="foto" />
           </div>
           <div class="botones_imagen">
             <div class="contenedor_boton contendor_boton1">
@@ -1110,7 +1129,7 @@ svg.quitar_imagen {
     margin-bottom: 0 !important;
   }
 
-  .aviso{
+  .aviso {
     margin-top: 25px;
   }
 }
@@ -1170,16 +1189,16 @@ svg.quitar_imagen {
   .aviso_texto {
     width: 85%;
   }
-  
+
   .contendor_boton1 {
     margin-right: 10px;
     width: 230px;
   }
-  
+
   .quitar {
     padding-top: 2px;
   }
-  
+
   svg.quitar_imagen {
     width: 26px !important;
     height: 26px !important;
@@ -1188,14 +1207,14 @@ svg.quitar_imagen {
   .editar_datos>div.fila1 {
     margin-top: 25px;
   }
-  
+
   .fila_izquierda,
   .fila_derecha {
     display: flex;
     justify-content: center;
     width: 100%;
   }
-  
+
   .contenedor_input {
     margin-bottom: 50px;
     min-width: 270px;
@@ -1206,12 +1225,12 @@ svg.quitar_imagen {
     font-size: 20px;
     transform: translateY(-32px) translateX(2px)
   }
-  
+
   .input {
     height: 37px;
     font-size: 17px;
   }
-  
+
   .tapar {
     height: 30px;
     width: 33px;

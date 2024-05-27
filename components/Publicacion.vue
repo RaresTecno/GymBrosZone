@@ -126,7 +126,7 @@ const cerrar = () => {
         <div class="cuerpo">
           <div class="encabezado"></div>
 
-          <div class="descripcion">a</div>
+          <div class="descripcion"></div>
         </div>
       </div>
     </div>

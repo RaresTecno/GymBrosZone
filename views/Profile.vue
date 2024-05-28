@@ -133,11 +133,13 @@ function cerrar() {
 }
 // const texto = ref()
 function obtenerDatos() {
-    console.log(sobreMi.value)
+  console.log(sobreMi.value)
+  prueba()
 }
 
 const maxLines = 5;
 const maxCharsPerLine = 40;
+const maxTotalChars = 200;
 
 function checkInput() {
   let lines = sobreMi.value.split('\n');
@@ -148,21 +150,20 @@ function checkInput() {
   }
 
   // Limita los caracteres por línea
-  lines = lines.map(line => {
-    if (line.length > maxCharsPerLine) {
-      return line.slice(0, maxCharsPerLine);
-    }
-    return line;
-  });
+  // lines = lines.map(line => {
+  //   if (line.length > maxCharsPerLine) {
+  //     return line.slice(0, maxCharsPerLine);
+  //   }
+  //   return line;
+  // });
 
-  // Actualiza el valor de sobreMi
-  sobreMi.value = lines.join('\n');
-}
-const mostrarBoton = ref();
-const mostrarCompleto = ref(false);
-
-function mostrarMas() {
-  mostrarCompleto.value = !mostrarCompleto.value;
+  // Concatenar las líneas y limitar el total de caracteres
+  const text = lines.join('\n');
+  if (text.length > maxTotalChars) {
+    sobreMi.value = text.slice(0, maxTotalChars);
+  } else {
+    sobreMi.value = text;
+  }
 }
 </script>
 
@@ -183,10 +184,9 @@ function mostrarMas() {
         </div>
         <div id="sobre-mi">
           <h2>{{ nombreCompleto }}</h2>
-          <p :class="{ 'texto-recortado': !mostrarCompleto }">{{ sobreMi }}</p>
-          <button v-if="perfilPropio" @click="mostrarMas">Ver mas...</button>
-          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()"><font-awesome-icon :icon="['fas', 'pen']"
-              class="icono-pen" /></button>
+          <p>{{ sobreMi }}</p>
+          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()"><font-awesome-icon
+              :icon="['fas', 'pen']" class="icono-pen" /></button>
         </div>
       </div>
       <div id="info-bot">
@@ -199,14 +199,14 @@ function mostrarMas() {
           {{ numSeguidos }}
         </div>
         <div id="publicaciones">
-          <h2>Publicaciones</h2>
+          <h2>Posts</h2>
           {{ cantidadPublicaciones }}
         </div>
       </div>
     </div>
     <div id="contenido">
       <div id="botones">
-        <button @click="cambiarVista('Publicaciones')">Publicaciones</button>
+        <button @click="cambiarVista('Publicaciones')">Posts</button>
         <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
@@ -224,7 +224,7 @@ function mostrarMas() {
       <div @click="cerrar()" class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" /></div>
       <div>
         <textarea v-model="sobreMi" @input="checkInput"></textarea>
-    <button @click="obtenerDatos">Obtener Datos</button>
+        <button @click="obtenerDatos">Obtener Datos</button>
       </div>
     </div>
   </div>
@@ -250,7 +250,8 @@ function mostrarMas() {
   background-color: var(--dark-blue);
   min-height: fit-content;
   width: 70%;
-  color: white;
+  color: var(--light-blue-text);
+  font-size: clamp(8px, 4vw, 24px)
 }
 
 #info-top {
@@ -275,8 +276,8 @@ function mostrarMas() {
 
 #foto {
   background-color: rgb(0, 0, 0);
-  min-width: 50px;
-  min-height: 50px;
+  min-width: 150px;
+  min-height: 150px;
   width: 20vw;
   height: 20vw;
   max-width: 250px;
@@ -297,6 +298,7 @@ function mostrarMas() {
 #sobre-mi {
   position: relative;
   margin-top: 25px;
+  margin-right: 10px;
   width: 60%;
   max-width: 500px;
   height: fit-content;
@@ -308,19 +310,21 @@ function mostrarMas() {
   margin-bottom: 20px;
   word-wrap: break-word;
   /* Para navegadores antiguos */
-  overflow-wrap: break-word;
+  /* overflow-wrap: break-word; */
   /* max-height: calc(1.2em * 7); */
   /* Aproximadamente 7 líneas */
-  overflow: hidden;
+  /* overflow: hidden; */
   white-space: pre-line;
 }
-.texto-recortado {
+
+/* .texto-recortado {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 5; /* Número de líneas a mostrar antes de recortar */
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
-}
+} */
+
 #sobre-mi .btn-edit {
   position: absolute;
   right: 0;
@@ -352,12 +356,15 @@ function mostrarMas() {
 
 #botones {
   width: 100%;
-  position: sticky;
 }
 
 #botones button {
   width: 50%;
   padding: 10px;
+  font-weight: bold;
+  color: var(--dark-blue);
+  background-color: var(--light-blue-text);
+  border: 1px solid black;
 }
 
 .vista {
@@ -373,7 +380,8 @@ function mostrarMas() {
 .vista #publicacion {
   padding: 0;
 }
-.edit{
+
+.edit {
   position: absolute;
   top: 0;
   left: 0;
@@ -385,12 +393,14 @@ function mostrarMas() {
   align-items: center;
   justify-content: center;
 }
-.edit-sobreMi{
+
+.edit-sobreMi {
   z-index: 501;
   margin-top: 200px;
   width: 200px;
   background-color: aqua
 }
+
 @media (max-width: 875px) {
   .perfil {
     margin: 60px 0 0 0;
@@ -440,6 +450,13 @@ function mostrarMas() {
     border-radius: 0;
     margin: 2px;
 
+  }
+}
+
+@media (max-width: 450px) {
+  #foto {
+    min-width: 100px;
+    min-height: 100px;
   }
 }
 

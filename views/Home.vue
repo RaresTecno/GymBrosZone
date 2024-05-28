@@ -16,7 +16,7 @@ async function mostrarp() {
     todasPublicaciones.value = publicaciones.reverse()
 
   } catch (error) {
-
+    console.log(error)
   }
 }
 mostrarp()
@@ -69,8 +69,8 @@ disponible.value = true;
     </div>
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
-        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
-          <Publicacion :id="publicacion.idpublicacion" :ProfileView="false" />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion">
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
         </template>
       </div>
     </div>

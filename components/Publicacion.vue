@@ -2,52 +2,51 @@
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
 import { supabase } from "@/clients/supabase";
-
+import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
 const props = defineProps({
-  id: {
-    type: String,
+  publicacionUnica: {
+    type: Object,
     required: true,
   },
-  ProfileView:{
+  ProfileView: {
     type: Boolean,
     default: false
   }
 });
-const gymTag = ref();
-const ruta = ref();
+
+const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
+const tematica = ref(props.publicacionUnica.tematica);
+const descripcion = ref(props.publicacionUnica.contenido);
 const fotoPerfil = ref();
-const tematica = ref();
-const descripcion = ref();
+const gymTag = ref();
 const isCover = ref(true);
 
-const isProfile =  ref(props.ProfileView)
+const combrobarImagen = () =>{
+  ruta.value = fotoPredeterminada;
+}
+const windowWidth = ref(window.innerWidth);
+if (props.publicacionUnica.resolucion == "cover") {
+
+  isCover.value = true;
+} else {
+  if (windowWidth < 1100) {
+    isCover.value = false;
+
+  }
+}
+const isProfile = ref(props.ProfileView)
 
 async function cargarPublicacion() {
   try {
-    const { data: publicacion, error } = await supabase
-      .from('publicaciones')
-      .select("*")
-      .eq('idpublicacion', props.id);
 
     const { data: usuario, error2 } = await supabase
       .from('usuarios')
       .select("*")
-      .eq('id', publicacion[0].idusuario);
+      .eq('id', props.publicacionUnica.idusuario);
 
     gymTag.value = usuario[0].gymtag;
     fotoPerfil.value = usuario[0].fotoperfil;
-    ruta.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + publicacion[0].ruta;
-    tematica.value = publicacion[0].tematica
-    if (publicacion[0].resolucion == "cover") {
 
-      isCover.value = true;
-    } else {
-      if (windowWidth < 1100) {
-        isCover.value = false;
-
-      }
-
-    }
 
   } catch (error) {
 
@@ -56,7 +55,6 @@ async function cargarPublicacion() {
 cargarPublicacion()
 
 const mostrarFinal = ref(false);
-const windowWidth = ref(window.innerWidth);
 
 function updateWidth() {
   windowWidth.value = window.innerWidth;
@@ -100,7 +98,7 @@ const cerrar = () => {
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
-    <div class="header-publicacion" v-if="(windowWidth < 875 &&  !isProfile)">
+    <div class="header-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
       <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
           <img :src="fotoPerfil" alt="">
@@ -112,9 +110,9 @@ const cerrar = () => {
       </div>
     </div>
     <div @click="mostrar" class="inicial" id="forzar-inicial">
-      <img :src="ruta" :class="true ? 'cover' : 'normal'" />
+      <img :src="ruta" @error="combrobarImagen" :class="true ? 'cover' : 'normal'" />
     </div>
-    <div class="footer-publicacion" v-if="(windowWidth < 875 && !isProfile)">
+    <div class="footer-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
       <h2 class="tematica">Tematica: {{ tematica }}</h2>
     </div>
     <div class="final" v-if="mostrarFinal">
@@ -135,7 +133,7 @@ const cerrar = () => {
 
 <style scoped>
 .publicacion {
-  background-color: var(--dark-blue);
+  background-color: var(--black);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -276,11 +274,6 @@ const cerrar = () => {
     margin: 5px;
     overflow: hidden;
   }
-
-  .inicial {
-    height: fit-content;
-  }
-
 }
 
 @media (max-width: 625px) {

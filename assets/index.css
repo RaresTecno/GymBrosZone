@@ -6,7 +6,7 @@
 
 :root {
     --bg-color: #dbe4f6;
-    --dark-blue: #18440b;
+    --dark-blue: #0b1e44;
     --very-dark-blue: #010e25;
     --black: black;
     --light-blue-text: #eef2fa;
@@ -22,17 +22,21 @@
 body {
     background-color: var(--bg-color);
 }
-html::-webkit-scrollbar { 
+
+html::-webkit-scrollbar {
     display: none;
 }
-#app{
+
+#app {
     overflow-x: hidden;
     overflow-y: hidden;
 
 }
-#app::-webkit-scrollbar { 
+
+#app::-webkit-scrollbar {
     display: none;
 }
+
 .RouterLink {
     text-decoration: none;
 }

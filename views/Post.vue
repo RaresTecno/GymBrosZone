@@ -255,9 +255,6 @@ function mostrarImagen(file) {
   reader.readAsDataURL(file);
 }
 </script>
-
-
-
 <template>
   <div class="todo_publicar">
     <div class="publicar_container">
@@ -341,7 +338,6 @@ function mostrarImagen(file) {
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>

@@ -13,7 +13,7 @@ async function mostrarp() {
       .from('publicaciones')
       .select('*');
 
-    todasPublicaciones.value = publicaciones.reverse()
+    todasPublicaciones.value = publicaciones.reverse();
 
   } catch (error) {
 

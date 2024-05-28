@@ -1,34 +1,9 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase, userState, userActive } from '../clients/supabase';
+import { supabase } from '../clients/supabase';
 import { usandoMovil } from '@/main';
-
-
-//https://www.youtube.com/watch?v=efNX5x7O0cY
-
-async function createAccount() {
-    const { data, error } = await supabase.auth.signUp({
-        email: email.value,
-        password: password.value,
-        options: {
-            data: {
-                'gymtag': gymtag.value,
-                'fechanacimiento': fecha_nacimiento.value,
-                'fotoperfil': '/predeterminada.png',
-                'nombre': nombre.value,
-                'apellidos': apellidos.value,
-                'privacidad': 'publica'
-            }
-        }
-    });
-    if (error) {
-        return null;
-    } else {
-        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
-        window.location.href = `/waiting-verification?email=${emailEncoded}`;
-    }
-}
+import { useRouter } from 'vue-router';
 
 const nombre = ref('');
 const apellidos = ref('');
@@ -54,6 +29,33 @@ const mensajeError = ref('');
 
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
+
+const router = useRouter();
+
+/*Función para crear la cuenta del usuario con la información ingresada.*/
+async function createAccount() {
+    const { data, error } = await supabase.auth.signUp({
+        email: email.value,
+        password: password.value,
+        options: {
+            data: {
+                'gymtag': gymtag.value,
+                'fechanacimiento': fecha_nacimiento.value,
+                'fotoperfil': '/predeterminada.png',
+                'nombre': nombre.value,
+                'apellidos': apellidos.value,
+                'privacidad': 'publica',
+                'sobremi': ''
+            }
+        }
+    });
+    if (error) {
+        return null;
+    } else {
+        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
+        window.location.href = `/waiting-verification?email=${emailEncoded}`;
+    }
+}
 
 //Establecemos 'pantallaGrande' como 'true' si la ventana es al menos de 1140px de ancho.
 const pantallaGrande = computed(() => {
@@ -94,6 +96,11 @@ function mensaje(mensaje, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
     Input.value.focus();
+}
+
+/*Para que cuando se haga clic en el div que tapa el icono del calendario, se haga focus en el input de la fecha de nacimiento.*/
+function triggerDateInput(){
+    fecha_nacimientoInput.value.focus();
 }
 
 //Comprobamos el nombre ingresado.
@@ -202,10 +209,14 @@ function validarEdad() {
     const anno = parseInt(fecha_nacimiento.value.split("-")[0], 10);
     if (/^(\d{4})-(\d{2})-(\d{2})$/.test(fecha_nacimiento.value) && (anno >= 1900 && anno <= (annoActual - 14))) {
         return true;
-    } else {
+    } else if(anno <= 1900){
+        //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
+        mensaje('La edad ingresada no es válida.', fecha_nacimientoInput);
+    }else if(anno >= (annoActual - 14)){
         //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
         mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
     }
+    return false;
 }
 
 //Comprobamos que el usuario haya aceptado las políticas y condiciones de GymBros Zone.
@@ -242,7 +253,7 @@ async function creaCuenta() {
 }
 
 function verPoliticas() {
-    window.location.href = '/politicas-y-condiciones';
+    router.push('/policies');
 }
 </script>
 <template>
@@ -331,7 +342,7 @@ function verPoliticas() {
                         <input type="date" id="fecha_nacimiento" class="input" required autocomplete="off"
                             v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
                         <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label>
-                        <div class="contenedor_calendario">
+                        <div class="contenedor_calendario" @click="triggerDateInput">
                             <font-awesome-icon v-if="usandoMovil" :icon="['fas', 'calendar']" class="calendario" />
                         </div>
                     </div>
@@ -573,7 +584,7 @@ function verPoliticas() {
     font-size: 30px;
     padding: 7.5px 0;
     margin-left: -35px;
-    cursor: default;
+    cursor: pointer;
     position: relative;
 }
 
@@ -869,7 +880,6 @@ function verPoliticas() {
         font-size: 30px;
         padding: 7.5px 0;
         margin-left: -35px;
-        /* pointer-events: none; */
     }
 
     .calendario {
@@ -968,7 +978,6 @@ function verPoliticas() {
 
     .contenedor_calendario {
         pointer-events: none;
-
     }
 
     .calendario {

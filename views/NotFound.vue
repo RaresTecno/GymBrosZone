@@ -1,10 +1,11 @@
 <script setup>
 import { disponible } from '../main'
+import { userActive } from "../clients/supabase";
 disponible.value = false;
 </script>
 
 <template>
-    <div class="todo_no_encontrado">
+    <div :class="['todo_no_encontrado', { logued: userActive }]">
         <div class="no_encontrado">
             <div class="titulo_no_encontrado">
                 <h1>Upss... Página no encontrada</h1>
@@ -129,6 +130,10 @@ disponible.value = false;
     .todo_no_encontrado {
         margin-top: 94px;
     }
+
+    .todo_no_encontrado.logued {
+        margin-top: 65px;
+    }
 }
 
 @media (max-width: 627px) {
@@ -160,10 +165,14 @@ disponible.value = false;
     .todo_no_encontrado {
         margin-top: 172px;
     }
+
+    .todo_no_encontrado.logued {
+        margin-top: 65px;
+    }
 }
 
 @media (max-width: 410px) {
-    .no_encontrado{
+    .no_encontrado {
         height: 210px;
     }
 
@@ -192,32 +201,32 @@ disponible.value = false;
 }
 
 @media (max-width: 315px) {
-    .titulo_no_encontrado{
+    .titulo_no_encontrado {
         padding-left: 0;
     }
 
-    h1{
+    h1 {
         text-align: center;
     }
 
-    .mensaje{
+    .mensaje {
         text-align: center;
     }
 
-    .pulsa{
+    .pulsa {
         text-align: center;
     }
 
-    .no_encontrado{
+    .no_encontrado {
         height: 260px;
     }
-    
+
     .mancuerna_rota_abajo {
         width: 100%;
         display: flex;
         justify-content: center;
     }
-    
+
     .mancuerna_rota {
         display: block;
         width: 131.679px;
@@ -229,7 +238,7 @@ disponible.value = false;
 }
 
 @media (max-width: 282px) {
-    .no_encontrado{
+    .no_encontrado {
         height: 280px;
     }
 }

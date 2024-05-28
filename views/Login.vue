@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { supabase, logOut, userState, userActive } from '../clients/supabase';
 
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
@@ -14,15 +14,7 @@ const emailInput = ref(null);
 const contraVisible = ref(false);
 const mostrarMensaje = ref(false);
 
-async function loginFacebook() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-    })
-    if (error) {
-        mensaje('Hubo un error al verificar las credenciales. Por favor, inténtalo de nuevo.', null);
-    }
-}
-
+/*Función para iniciar sesión con Twitter.*/
 async function loginTwitter() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
@@ -32,6 +24,7 @@ async function loginTwitter() {
     }
 }
 
+/*Función para iniciar sesión con Google.*/
 async function loginGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -41,6 +34,7 @@ async function loginGoogle() {
     }
 }
 
+/*Función para crear una carpeta en la que se almacenarán las imágenes del usuario.*/
 async function crearCarpeta(data) {
     /*Ruta carpeta del usuario.*/
     const ruta = `users/user-${data.user.id.split('').reverse().join('')}/`;
@@ -72,6 +66,7 @@ async function crearCarpeta(data) {
     window.location.href = "/";
 }
 
+/*Función de inicio de sesión con correo y contraseña. */
 async function login() {
     try {
         /*Comprobación de que el email no esté vacío.*/
@@ -122,6 +117,7 @@ async function login() {
     }
 }
 
+/*Función para mostrar los mensajes de aviso al usuario.*/
 function mensaje(mensaje, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
@@ -167,7 +163,6 @@ function mensaje(mensaje, Input) {
             </div>
             <div class="inicio_sesion">
                 <div class="inicio_sesion_contenido">
-                    <div class="facebook" @click="loginFacebook"><font-awesome-icon :icon="['fab', 'square-facebook']" style="color: #eef2fa;" class="icono_iniciar" /></div>
                     <div class="twitter" @click="loginTwitter"><font-awesome-icon :icon="['fab', 'square-x-twitter']" style="color: #eef2fa;" class="icono_iniciar" /></div>
                     <div class="google" @click="loginGoogle"><font-awesome-icon :icon="['fab', 'google']" class="icono_google icono_iniciar" /></div>
                 </div>
@@ -321,7 +316,7 @@ button a {
 
 .iniciar {
     margin-top: 10px;
-    margin-bottom: 27px;
+    margin-bottom: 20px;
     height: 50px;
     width: 100%;
     display: flex;
@@ -356,7 +351,7 @@ button a {
 }
 
 .inicio_sesion {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     height: 70px;
     width: 100%;
     display: flex;
@@ -365,8 +360,8 @@ button a {
 }
 
 .inicio_sesion_contenido {
-    width: 40%;
-    min-width: 330px;
+    width: 27%;
+    min-width: 220px;
     height: 100%;
     border-radius: 2px;
     display: flex;
@@ -444,7 +439,7 @@ button a {
 
 .mensaje {
     font-size: 20px;
-    min-height: 22px;
+    /* min-height: 22px; */
     height: fit-content;
     visibility: hidden;
     display: flex;
@@ -475,7 +470,7 @@ button a {
     }
 
     .iniciar {
-        margin-bottom: 20px;
+        margin-bottom: 0px;
     }
 
     .gymtag_o_email .input,
@@ -529,8 +524,13 @@ button a {
 
     .iniciar,
     .crear {
-        height: 100px;
+        height: 80px;
         padding-top: 10px;
+    }
+
+    .crear{
+        margin-bottom: 0;
+        margin-top: 15px;
     }
 
     .crear_texto {
@@ -552,7 +552,6 @@ button a {
 
     .mensaje {
         font-size: 20px;
-        min-height: 22px;
         height: fit-content;
         visibility: hidden;
         display: flex;
@@ -608,15 +607,10 @@ button a {
     }
 
     .iniciar {
-        margin-bottom: 15px;
+        margin-bottom: 25px;
         height: fit-content;
         height: 55px;
         min-width: 0;
-    }
-
-    .inicio_sesion_contenido {
-        width: 80%;
-        border-width: 0px;
     }
 
     .iniciar_texto button {
@@ -648,9 +642,10 @@ button a {
     }
 
     .inicio_sesion_contenido {
-        width: 80%;
+        width: 57%;
         font-size: 50px;
         min-width: 0;
+        border-width: 0px;
     }
 
     .icono_google {
@@ -672,7 +667,7 @@ button a {
 
 @media(max-width: 378px) {
     .inicio_sesion_contenido {
-        width: 80%;
+        width: 70%;
         font-size: 40px;
         min-width: 0;
     }
@@ -687,6 +682,13 @@ button a {
 
     .crear_texto button {
         height: fit-content
+    }
+}
+
+@media(max-width: 333px){
+    .iniciar,
+    .crear {
+        height: 80px;
     }
 }
 </style>

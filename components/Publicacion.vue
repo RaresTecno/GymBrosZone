@@ -1,8 +1,9 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { supabase } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
+
 const props = defineProps({
   publicacionUnica: {
     type: Object,
@@ -14,6 +15,7 @@ const props = defineProps({
   }
 });
 
+
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
@@ -21,80 +23,71 @@ const fotoPerfil = ref();
 const gymTag = ref();
 const isCover = ref(true);
 
-const combrobarImagen = () =>{
+const mostrarFinal = ref(false);
+const foto = ref('');
+const windowWidth = ref(window.innerWidth);
+const isProfile = ref(props.ProfileView);
+
+const combrobarImagen = () => {
   ruta.value = fotoPredeterminada;
 }
-const windowWidth = ref(window.innerWidth);
-if (props.publicacionUnica.resolucion == "cover") {
 
+if (props.publicacionUnica.resolucion == "cover") {
   isCover.value = true;
 } else {
   if (windowWidth < 1100) {
     isCover.value = false;
-
   }
 }
-const isProfile = ref(props.ProfileView)
+
 
 async function cargarPublicacion() {
-  try {
+  const { data: usuario, error: errorUsuario } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('id', props.publicacionUnica.idusuario);
+  if (errorUsuario) {
 
-    const { data: usuario, error2 } = await supabase
-      .from('usuarios')
-      .select("*")
-      .eq('id', props.publicacionUnica.idusuario);
-
+  } else {
     gymTag.value = usuario[0].gymtag;
     fotoPerfil.value = usuario[0].fotoperfil;
-
-
-  } catch (error) {
-
   }
 }
-cargarPublicacion()
 
-const mostrarFinal = ref(false);
+cargarPublicacion();
 
 function updateWidth() {
   windowWidth.value = window.innerWidth;
+  if (windowWidth.value <= 875) {
+    document.body.style.overflow = "visible";
+    mostrarFinal.value = false;
+    foto.value.style.cursor = 'default';
+  }
+
+  if (windowWidth.value > 875) {
+    foto.value.style.cursor = 'pointer';
+  }
 }
+
 onMounted(() => {
   window.addEventListener("resize", updateWidth);
 });
-const mostrar = () => {
-  document.body.style.overflow = "hidden";
-  mostrarFinal.value = true;
+
+function mostrar() {
+  if (windowWidth.value > 875) {
+    document.body.style.overflow = "hidden";
+    mostrarFinal.value = true;
+  }
 };
-const cerrar = () => {
+
+function cerrar() {
   document.body.style.overflow = "visible";
   mostrarFinal.value = false;
 };
 
-// const foto = supabase.storage
-//   .from("archivos-usuarios")
-//   .getPublicUrl("imagen.jpg");
-
-// // :style="{ backgroundImage: 'url(' + ruta + ')' }"
-
-// /* const publicaciones = ref([]); */
-
-// // Carga las publicaciones desde el storage de Supabase
-// const cargarPublicaciones = async () => {
-//   const fotos = await supabase.storage.from("archivos-usuarios").getPublicUrl("imagen.jpg");
-//   // Array de objetos de publicaciones (no existe aún)
-//   const publicacionesDesdeBD = [
-//     { ruta: fotos[0], gymTag: "Rares", descripcion: "Lorem ipsum dolor sit amet" },
-//     { ruta: fotos[1], gymTag: "Ejemplo", descripcion: "Consectetur adipiscing elit" },
-//   ];
-//   // Mezcla las publicaciones
-//   /* publicaciones.value = shuffle(publicacionesDesdeBD); */
-// };
-
-// onMounted(() => {
-//   // Llama a la función para cargar las publicaciones al montar el componente
-//   cargarPublicaciones(); 
-// });
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWidth);
+});
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
@@ -110,21 +103,21 @@ const cerrar = () => {
       </div>
     </div>
     <div @click="mostrar" class="inicial" id="forzar-inicial">
-      <img :src="ruta" @error="combrobarImagen" :class="true ? 'cover' : 'normal'" />
+      <img :src="ruta" @error="combrobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto" />
+      <!-- <img :src="ruta" @error="combrobarImagen" :class="true ? 'cover' : 'normal'" /> -->
     </div>
     <div class="footer-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
-      <h2 class="tematica">Tematica: {{ tematica }}</h2>
+      <h2 class="tematica">{{ tematica }}</h2>
     </div>
-    <div class="final" v-if="mostrarFinal">
-      <div class="contenido">
-        <div @click="cerrar" class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" /></div>
+    <div class="final" v-if="mostrarFinal" @click="cerrar">
+      <div class="contenido" @click.stop>
         <div class="imagen">
           <img :src="ruta" />
         </div>
         <div class="cuerpo">
+          <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" /></div>
           <div class="encabezado"></div>
-
-          <div class="descripcion"></div>
+          <div class="descripcion">a</div>
         </div>
       </div>
     </div>
@@ -145,6 +138,8 @@ const cerrar = () => {
   border: 1px solid black;
   /* overflow-clip-margin: content-box;
   overflow: clip; */
+  overflow: hidden;
+  /* cursor: url('../assets/img/corazonp.png'), auto; */
 }
 
 .header-publicacion {
@@ -202,7 +197,6 @@ const cerrar = () => {
 
 .inicial {
   display: flex;
-  /* background: rgb(255, 7, 7); */
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -214,7 +208,6 @@ const cerrar = () => {
   height: 100%;
   width: 100%;
   object-fit: cover;
-
 }
 
 .normal {
@@ -224,34 +217,45 @@ const cerrar = () => {
 
 .final {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(96, 96, 96, 0.507);
-  z-index: 200;
+  z-index: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .contenido {
-  background-color: rgb(255, 255, 255);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
+  background-color: black;
+  border-radius: 4px;
+  border: var(--black) 2px solid;
+  overflow: hidden;
+  position: relative;
 }
 
 .cerrar {
-  position: absolute;
-  top: 5px;
-  left: 5px;
+  /* background-color: grey; */
+  display: flex;
+  justify-content: end;
+}
+
+.fa-xmark {
+  cursor: pointer;
+  /* background-color: yellow; */
+  height: 25px;
+  margin: 4px 7px 0 0;
+  color: var(--light-blue-text);
 }
 
 .imagen {
   background-color: burlywood;
-  width: 500px;
-  height: 500px;
+  width: 600px;
+  height: 600px;
+  border-right: var(--black) 1px solid;
 }
 
 .imagen img {
@@ -261,8 +265,30 @@ const cerrar = () => {
 }
 
 .cuerpo {
-  background: rgb(248, 59, 59);
-  width: 400px;
+  background: var(--dark-blue);
+  width: 500px;
+}
+
+@media (max-width: 1200px) {
+  .imagen {
+    width: 500px;
+    height: 500px;
+  }
+
+  .cuerpo {
+    width: 400px;
+  }
+}
+
+@media (max-width: 985px) {
+  .imagen {
+    width: 450px;
+    height: 450px;
+  }
+
+  .cuerpo {
+    width: 350px;
+  }
 }
 
 @media (max-width: 875px) {
@@ -274,13 +300,16 @@ const cerrar = () => {
     margin: 5px;
     overflow: hidden;
   }
+
+  .final {
+    display: none;
+  }
 }
 
 @media (max-width: 625px) {
   .publicacion {
     border-radius: 0;
     margin: 2px;
-
   }
 }
 </style>

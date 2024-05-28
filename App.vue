@@ -33,8 +33,8 @@ onMounted(async () => {
     if (user) {
       await revisarCarpeta(user);
       await revisarGymtag(user);
+      await revisarFotoPerfil(user);
     }
-    
   }
 });
 
@@ -78,7 +78,7 @@ async function revisarCarpeta(user) {
 }
 
 async function revisarGymtag(user) {
-  /*comprobamos si el usuario que se ha logueado tiene gymtag.*/
+  /*Comprobamos si el usuario que se ha logueado tiene gymtag.*/
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select('gymtag')
@@ -126,7 +126,31 @@ async function revisarGymtag(user) {
   }
 }
 
-
+/*Si no tiene ruta de foto de perfil, le añadimos /predeterminada.png como ruta.*/
+async function revisarFotoPerfil(user) {
+  /*Comprobamos si el usuario que se ha logueado tiene una ruta en foto perfil.*/
+  const { data: fotoperfil, error } = await supabase
+    .from('usuarios')
+    .select('fotoperfil')
+    .eq('id', user.id);
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (error) {
+    logOut();
+    return false;
+  }
+  /*Si no tiene ruta de foto de perfil le establecemos la ruta como /predeterminada.png.*/
+  if (fotoperfil && (fotoperfil[0].fotoperfil === null || fotoperfil[0].fotoperfil === '')) {
+    const { error: updateError } = await supabase
+      .from('usuarios')
+      .update({ fotoperfil: '/predeterminada.png' })
+      .eq('id', user.id);
+    /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+    if (updateError) {
+      logOut();
+      return false;
+    }
+  }
+}
 </script>
 
 <template>

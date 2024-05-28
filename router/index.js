@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { userActive } from '../clients/supabase'
 
-// import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -27,6 +25,11 @@ const router = createRouter({
       name: "register",
       component: () => import("@/views/Register.vue"),
       meta: { requiresAuth: false }
+    },
+    {
+      path: "/policies",
+      name: "policies",
+      component: () => import("@/views/Policies.vue"),
     },
     {
       path: "/account",
@@ -66,24 +69,14 @@ const router = createRouter({
       component: () => import("@/views/Post.vue"),
       meta: { requiresAuth: true }
     },
-    {
-      path: '/privacy',
-      name: 'privacy',
-      component: () => import("@/views/PrivacyPolicy.vue"),
-    },
-    // Ruta comodín para manejar rutas no encontradas
+    /*Ruta comodín para manejar rutas no encontradas*/
     {
       path: "/:catchAll(.*)",
       redirect: "/NotFound",
     },
-    // {
-    //   path: '/politicas_y_condiciones',
-    //   name: 'politicas_y_condiciones',
-    //   component: Politicas_y_condiciones
-    // }
   ],
 });
-
+/*Antes de redirrigir a una ruta, comprobamos si el usuario puede acceder a dicha ruta y si existe.*/
 router.beforeEach(async (to, from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const userToken = userActive.value;

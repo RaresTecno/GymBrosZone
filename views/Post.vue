@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
 
@@ -20,6 +21,8 @@ const div_girar_imagen = ref(null);
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
+
+const router = useRouter();
 
 /*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
 function aviso(mensaje, Input) {
@@ -68,8 +71,8 @@ async function insertarImagen() {
   let contador = 1;
   let nombrePublicacion;
   let ruta;
-  let id = await obtenerId();
-  let encId = await hashString(id);
+  const id = await obtenerId();
+  const encId = await hashString(id);
 
   /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
   do {
@@ -138,6 +141,7 @@ async function guardarPublicacion(data) {
     quitar_imagen();
     tematica.value = '';
     contenido.value = '';
+    
   }
 }
 
@@ -170,7 +174,7 @@ function triggerFileInput() {
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_publicar() {
-  window.location.href = "/";
+  router.push('/');
 }
 
 /*Función para quitar la previsualización de la imagen.*/
@@ -251,9 +255,6 @@ function mostrarImagen(file) {
   reader.readAsDataURL(file);
 }
 </script>
-
-
-
 <template>
   <div class="todo_publicar">
     <div class="publicar_container">
@@ -300,7 +301,7 @@ function mostrarImagen(file) {
             <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
             <div class="anadir">
               <div class="anadir_texto">
-                <button>
+                <button @click="triggerFileInput">
                   Seleccionar imagen
                 </button>
               </div>
@@ -337,7 +338,6 @@ function mostrarImagen(file) {
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -355,7 +355,7 @@ function mostrarImagen(file) {
 
 .publicar_container {
   width: 80%;
-  margin-top: 140px;
+  margin-top: 120px;
   height: 520px;
   background-color: var(--dark-blue);
   max-width: 1026px;
@@ -490,9 +490,6 @@ svg.girar_imagen {
 }
 
 #imagen {
-  /* width: 100%;
-  height: 100%;
-  object-fit: cover; */
   max-width: 100%;
   max-height: 100%;
 }
@@ -505,11 +502,6 @@ svg.girar_imagen {
 .div_contenido {
   width: calc(55% + 2px);
   height: 100%;
-}
-
-.publicar {
-  height: fit-content;
-  width: 100%;
 }
 
 .publicar {
@@ -538,7 +530,7 @@ svg.girar_imagen {
   width: 200px;
   border-radius: 2px;
   position: relative;
-  top: 18.5px;
+  top: -1800.5px;
   cursor: pointer;
 }
 
@@ -550,7 +542,6 @@ svg.girar_imagen {
   align-items: center;
   position: relative;
   top: -18.5px;
-  pointer-events: none;
 }
 
 .anadir_texto {
@@ -571,7 +562,6 @@ svg.girar_imagen {
   border-radius: 2px;
   font-size: 18px;
   transition: background-color 0.5s, border 0.5s, color 0.5s;
-  pointer-events: none;
 }
 
 .anadir_texto button:hover,
@@ -987,7 +977,6 @@ svg.girar_imagen {
   }
 
   .aviso_texto {
-    font-size: 15px;
     width: 90%;
   }
 

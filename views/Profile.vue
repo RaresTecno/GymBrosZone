@@ -106,11 +106,20 @@ onMounted(() => {
 
 
 async function seguir() {
-  const { error: insertError } = await supabase
+  const { data: seguidores, errorSeguidores } = await supabase
     .from('seguidores')
-    .insert([{ idseguidor: userId.value, idseguido: profileId.value }]);
-  siguiendo.value = true
-  mostrarp()
+    .select('*')
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', profileId.value);
+
+  if (seguidores.length == 0) {
+    const { error: insertError } = await supabase
+      .from('seguidores')
+      .insert([{ idseguidor: userId.value, idseguido: profileId.value }]);
+    siguiendo.value = true
+
+    mostrarp()
+  }
 
 }
 async function dejarSeguir() {

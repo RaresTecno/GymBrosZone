@@ -1,13 +1,21 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
-import { userActive } from "../clients/supabase";
+import { userId, supabase } from "../clients/supabase";
 
+const gymTag = ref()
+async function cargarUsuario() {
+  const { data: usuario, error } = await supabase
+    .from('usuarios')
+    .select("*")
+    .eq('id', userId.value);
+  gymTag.value = usuario[0].gymtag;
+}
+cargarUsuario();
 const posicionAnt = ref(0);
 const altura = ref(80);
 const windowWidth = ref(window.innerWidth);
 
-console.log('lateral:'+ userActive.value);
 const posicionActual = window.scrollY;
 
 //hacerlo tambien primero con el width
@@ -89,6 +97,12 @@ onMounted(() => {
   window.addEventListener("scroll", reposicionarBarra);
   window.addEventListener("resize", updateWidth);
 });
+
+function reloadPage(event) {
+  event.preventDefault();
+  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
+  window.location.href = url;
+}
 </script>
 
 <template>
@@ -100,8 +114,8 @@ onMounted(() => {
           <h2>Home</h2>
         </RouterLink>
       </div>
-      <div>
-        <RouterLink to="/profile" class="RouterLink">
+      <div v-if="gymTag">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon usuario" :icon="['fas', 'user']" /></div>
           <h2>Perfil</h2>
         </RouterLink>

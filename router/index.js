@@ -50,9 +50,10 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
-      path: "/profile",
+      path: "/profile/:gymtag",
       name: "profile",
       component: () => import("@/views/Profile.vue"),
+      props: true,
       meta: { requiresAuth: true },
       children: [
         {

@@ -7,7 +7,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export const userActive = ref(false);
-
+export const userId = ref();
 // console.log(supabase.auth.user())
 
 /*Función para obtener el id del usuario.*/
@@ -18,17 +18,17 @@ export async function obtenerId() {
     logOut();
     return false;
   }
+  userId.value = user.id;
+  console.log(userId.value)
   return user.id;
 }
 
 export async function userState(){
     const currentUser = await supabase.auth.getSession();
-    // console.log(currentUser)
     if (currentUser.data.session == null) {
-        console.log("null")
         userActive.value = false;
     }else{
-        console.log("No null")
+        await obtenerId();
         userActive.value = true;
     }
 }

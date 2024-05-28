@@ -370,10 +370,10 @@ function error(err) {
   border: none
 }
 
-img[alt="info icon"] {
-  width: 32px !important; /* Cambiar el tamaño del ancho */
-  height: 32px !important; /* Cambiar el tamaño de la altura */
-}
+/* img[alt="info icon"] {
+  width: 32px !important;  Cambiar el tamaño del ancho 
+  height: 32px !important; Cambiar el tamaño de la altura 
+} */
 .ocultar-i {
   position: absolute;
   background-color: red;

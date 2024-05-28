@@ -16,10 +16,10 @@ async function mostrarp() {
     todasPublicaciones.value = publicaciones.reverse();
 
   } catch (error) {
-
+    console.log(error);
   }
 }
-mostrarp()
+mostrarp();
 
 
 
@@ -29,49 +29,48 @@ disponible.value = true;
 
 <template>
   <main>
-    <template v-if="!userActive">
-      <div class="portada">
-        <img src="../assets/img/logo.png" alt="logo" class="logo" />
-        <h1 class="title">GymBros Zone</h1>
-      </div>
-      <div class="container_log-or-reg">
-        <div class="login_or_register">
-          <p>
-            <i><b>Inicia Sesión</b></i> o <i><b>Regístrate</b></i> para acceder
-            a GymBros Zone
-          </p>
-        </div>
-      </div>
-      <button class="button-login_register">
-        <RouterLink to="/login"><a href=""><i>Login</i></a></RouterLink>
-      </button>
-      <button class="button-login_register">
-        <RouterLink to="/register"><a href=""><i>Registro</i></a></RouterLink>
-      </button>
-      <div class="container_services">
-        <!--  v-if="no-logged" -->
-        <div class="services">
-          <p>¿Qué ofrecemos?</p>
-          <br />
-          <div>
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ea
-            recusandae obcaecati quod alias esse aperiam aut necessitatibus odit
-            eaque. Et sed ut harum perferendis nobis! Amet harum labore debitis
-            fugit. Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-            Excepturi nam eveniet cum, quis quo laboriosam, sint est ratione
-            velit minus consectetur impedit corrupti eum explicabo optio non
-            numquam sunt mollitia! Lorem ipsum dolor sit amet consectetur
-            adipisicing elit. Cum temporibus inventore animi in nihil eius
-            voluptates dolore maxime cumque facere doloribus, ex ab voluptatem
-            blanditiis, eos soluta odit. Facere, tempore.
+    <div v-if="!userActive" class="todo-section">
+      <div class="section-container">
+        <div class="section">
+          <img src="../assets/img/GymBrosLanding2.jpeg" alt="imagen 2" class="section-image straight" />
+          <div class="section-text">
+            <h2>Bienvenido a GymBros Zone</h2>
+            <p>
+              Inicia sesión o regístrate para acceder a GymBros Zone y disfrutar
+              de todos los beneficios que ofrecemos para tu entrenamiento.
+            </p>
+            <div class="buttons">
+              <RouterLink to="/login">
+                <button class="button-login_register">Login</button>
+              </RouterLink>
+              <RouterLink to="/register">
+                <button class="button-login_register">Registro</button>
+              </RouterLink>
+            </div>
           </div>
         </div>
+        <div class="section">
+          <div class="section-text">
+            <h2>¿Qué ofrecemos?</h2>
+            <p>
+              GymBros Zone es una red social diseñada específicamente para entusiastas del fitness y la nutrición.
+              Conecta con otros usuarios de gimnasio, comparte fotos e historias de tu progreso, crea publicaciones,
+              establece objetivos o marcas y descubre nuevas dietas y rutinas de ejercicios. La plataforma incluye
+              características únicas como la capacidad de escanear alimentos mediante códigos de barras para obtener
+              información nutricional instantánea.
+            </p>
+            <RouterLink to="/privacy">
+              <div class="privacy-link">Política de Privacidad</div>
+            </RouterLink>
+          </div>
+          <img src="../assets/img/GymBrosLanding1.jpeg" alt="imagen 1" class="section-image reverse" />
+        </div>
       </div>
-    </template>
+    </div>
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
-        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
-          <Publicacion :id="publicacion.idpublicacion" />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion">
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
         </template>
       </div>
     </div>
@@ -79,8 +78,114 @@ disponible.value = true;
 </template>
 
 <style scoped>
-main {
-  margin: 80px auto 0;
+.todo-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6%;
+  margin-bottom: 1%;
+}
+
+.section-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-radius: 25px;
+  background: linear-gradient(145deg, var(--blue), var(--alt-black));
+  box-shadow: 3px 3px 3px var(--alt-black);
+  width: 70%;
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.85%;
+  margin-bottom: 20px;
+  width: 90%;
+  color: aliceblue;
+  border-radius: 25px;
+  background: linear-gradient(145deg, var(--blue), var(--alt-black));
+  box-shadow: 1px 1px 6px var(--alt-black), -1px -1px 4px var(--alt-black);
+  flex-direction: row-reverse;
+}
+
+.section-image {
+  width: 290px;
+  height: auto;
+  margin-top: 2%;
+  margin-bottom: 2%;
+  border-radius: 25px;
+  background: linear-gradient(145deg, var(--blue), var(--alt-black));
+  box-shadow: 1px 1px 6px var(--alt-black), -1px -1px 4px var(--alt-black);
+}
+
+.section .section-image .straight {
+  margin-left: 10%;
+}
+
+.section .section-image .reverse {
+  margin-right: 10%;
+}
+
+.section-text {
+  max-width: 400px;
+  text-align: center;
+  margin: 5%;
+}
+
+.section-text h2 {
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.section-text p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.buttons {
+  margin-top: 40px;
+}
+
+.button-login_register {
+  display: inline-block;
+  cursor: pointer;
+  outline: none;
+  border: 0;
+  padding: 10px 20px;
+  margin: 3%;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+  background: var(--blue);
+  border: 2px solid var(--alt-black);
+  border-radius: 0.75em;
+  transition: background 150ms cubic-bezier(0, 0, 0.58, 1),
+    transform 150ms cubic-bezier(0, 0, 0.58, 1);
+}
+
+.button-login_register:hover {
+  background: aliceblue;
+  color: black;
+}
+
+.privacy-link {
+  margin-top: 5%;
+  color: var(--blue);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.privacy-link:hover {
+  color: aliceblue;
+}
+
+.privacy-link:visited {
+  color: var(--alt-black);
 }
 
 .publicaciones {
@@ -89,194 +194,95 @@ main {
   align-items: center;
   margin-left: 60px;
   margin-bottom: 100px;
-  padding-top: 50px;
+  padding-top: 80px;
 }
-
 .vista {
+  /* margin-top: 10px; */
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  justify-items: center;
-  /* Centra el contenido horizontalmente */
-  justify-content: center;
   /* Centra el contenido verticalmente */
 }
 
-.portada {
-  background-color: var(--alt-black);
-  text-align: center;
-  width: 100%;
-  height: 130px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-bottom: 3px solid #292823bf;
-  box-shadow: 0 2px 5px var(--alt-black);
-  border: 3px solid black;
+@media (min-width: 1800px) {
+  .section-tex {
+    margin-left: -10%;
+  }
 }
 
-.logo {
-  margin-right: 20px;
-  width: 8.5%;
+@media (max-width: 1800px) {
+  .todo-section {
+    margin-top: 7%;
+  }
 }
 
-.title {
-  color: aliceblue;
-  font-size: 35px;
-  font-family: "BioRhyme", serif;
-  font-weight: bold;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "width" 100;
-}
-
-.login_or_register,
-.services {
-  color: aliceblue;
-  text-align: center;
-  align-items: center;
-  font-size: 15px;
-  font-family: "BioRhyme", serif;
-  font-weight: bold;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: "width" 100;
-  padding: 5px;
-  border-radius: 2px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.container_log-or-reg,
-.container_services {
-  display: flex;
-  justify-content: center;
-  border-radius: 4px;
-  margin: 10px auto;
-  margin-top: 2%;
-  padding: 20px 30px;
-  background-color: var(--dark-blue);
-  box-shadow: 0 2px 5px var(--alt-black);
-  border: 3px solid black;
-  width: 85%;
-}
-
-a {
-  padding: 27px;
-  text-decoration: none;
-  color: aliceblue;
-}
-
-a:hover {
-  color: black;
-}
-
-button {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  outline: none;
-  border: 0;
-  vertical-align: middle;
-  text-decoration: none;
-  font-family: inherit;
-  font-size: 15px;
-  margin: 2.5%;
-  margin-bottom: 5%;
-}
-
-button.button-login_register,
-button.post {
-  font-weight: 600;
-  color: black;
-  text-transform: uppercase;
-  padding: 1em 0.2em;
-  background: var(--blue);
-  border: 2px solid var(--alt-black);
-  border-radius: 0.75em;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-  -webkit-transition: background 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
-  transition: transform 150ms cubic-bezier(0, 0, 0.58, 1),
-    background 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
-}
-
-button.button-login_register::before,
-button.post::before {
-  position: absolute;
-  content: "";
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--dark-blue);
-  border-radius: inherit;
-  -webkit-box-shadow: 0 0 0 2px var(--blue), 0 0.625em 0 0 var(--dark-blue);
-  box-shadow: 0 0 0 2px rgb(63, 63, 65), 0 0.625em 0 0;
-  -webkit-transform: translate3d(0, 0.75em, -1em);
-  transform: translate3d(0, 0.75em, -1em);
-  transition: transform 150ms cubic-bezier(0, 0, 0.58, 1),
-    box-shadow 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1),
-    -webkit-box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
-}
-
-.button-login_register:hover,
-button.post:hover {
-  color: black;
-  background: aliceblue;
-  -webkit-transform: translate(0, 0.25em);
-  transform: translate(0, 0.25em);
-}
-
-.button-login_register:hover::before,
-button.post:hover::before {
-  -webkit-box-shadow: 0 0 0 2px var(--alt-black), 0 0.5em 0 0 black;
-  box-shadow: 0 0 0 2px grey, 0 0.5em 0 0 whitesmoke;
-  -webkit-transform: translate3d(0, 0.5em, -1em);
-  transform: translate3d(0, 0.5em, -1em);
-}
-
-button.button-login_register:active,
-button.post:active {
-  background: whitesmoke;
-  -webkit-transform: translate(0em, 0.75em);
-  transform: translate(0em, 0.75em);
-}
-
-button.button-login_register:active::before,
-button.post::before {
-  -webkit-box-shadow: 0 0 0 2px grey, 0 0 rgb(95, 88, 88);
-  box-shadow: 0 0 0 2px rgb(65, 58, 58), 0 0 rgb(192, 178, 178);
-  -webkit-transform: translate3d(0, 0, -1em);
-  transform: translate3d(0, 0, -1em);
-}
-
-button a {
-  color: white;
-}
-
-button:hover a {
-  color: black;
+@media (max-width: 1440px) {
+  .todo-section {
+    margin-top: 8%;
+  }
 }
 
 @media (max-width: 1100px) {
-  .vista {
-    display: flex;
-    flex-direction: column;
+  
+  .vista{
     width: 100%;
-    align-items: center;
+  }
+  
+  .buttons {
+    margin: 2%;
   }
 }
 
 @media (max-width: 875px) {
+  main {
+    margin-top: 60px;
+  }
+  .todo-section {
+    margin-top: 17%;
+  }
+
+  .section {
+    flex-direction: column;
+  }
+
+  .section-image {
+    width: 250px;
+    margin: 0 10px;
+  }
+
+  .section-tex {
+    margin: 15%;
+    overflow: auto;
+  }
+
+  .section-text h2 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+  .publicaciones {
+    margin-left: 0;
+    padding-top: 0;
+  }
+
+  .vista {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    align-items: center;
+  }
+}
+
+@media (max-width: 625px) {
+  main {
+    margin-top: 35px;
+  }
+
+  .section-text p {
+    margin: 0;
+    font-size: 14px;
+  }
 
   .publicaciones {
     margin-left: 0;
@@ -284,10 +290,35 @@ button:hover a {
   }
 
   .vista {
-    margin: 0px;
-
     width: 100%;
-    grid-template-columns: repeat(1, 1fr);
+    margin: 0px;
+  }
+}
+
+@media (max-width: 600px) {
+  .todo-section {
+    margin-top: 40%;
+    width: 100%;
+  }
+
+  .section {
+    width: 100%;
+    margin: 5%;
+    border-radius: 25px;
+    background: linear-gradient(145deg, var(--blue), var(--alt-black));
+    box-shadow: 1px 1px 6px var(--alt-black), -1px -1px 4px var(--alt-black);
+  }
+
+  .section-image {
+    width: 250px;
+  }
+
+  .section-text {
+    width: 250px;
+  }
+
+  .buttons {
+    margin-top: 5px;
   }
 }
 </style>

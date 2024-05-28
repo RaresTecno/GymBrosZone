@@ -210,8 +210,8 @@ function checkInput() {
         <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
-        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
-          <Publicacion :id="publicacion.idpublicacion" :ProfileView="true" />
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion">
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">

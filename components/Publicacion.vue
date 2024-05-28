@@ -100,7 +100,7 @@ const cerrar = () => {
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
-    <div class="header-publicacion" v-if="(windowWidth < 1100 &&  !isProfile)">
+    <div class="header-publicacion" v-if="(windowWidth < 875 &&  !isProfile)">
       <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
           <img :src="fotoPerfil" alt="">
@@ -114,7 +114,7 @@ const cerrar = () => {
     <div @click="mostrar" class="inicial" id="forzar-inicial">
       <img :src="ruta" :class="true ? 'cover' : 'normal'" />
     </div>
-    <div class="footer-publicacion" v-if="(windowWidth < 1100 && !isProfile)">
+    <div class="footer-publicacion" v-if="(windowWidth < 875 && !isProfile)">
       <h2 class="tematica">Tematica: {{ tematica }}</h2>
     </div>
     <div class="final" v-if="mostrarFinal">
@@ -267,7 +267,7 @@ const cerrar = () => {
   width: 400px;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 875px) {
   .publicacion {
     height: fit-content;
     aspect-ratio: 0;
@@ -278,7 +278,7 @@ const cerrar = () => {
   }
 
   .inicial {
-    /* height: fit-content; */
+    height: fit-content;
   }
 
 }

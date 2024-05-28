@@ -194,11 +194,10 @@ disponible.value = true;
   align-items: center;
   margin-left: 60px;
   margin-bottom: 100px;
-  padding-top: 50px;
+  padding-top: 80px;
 }
-
 .vista {
-  margin-top: 35px;
+  /* margin-top: 10px; */
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -224,29 +223,20 @@ disponible.value = true;
 }
 
 @media (max-width: 1100px) {
-  main {
-    margin-top: 60px;
+  
+  .vista{
+    width: 100%;
   }
-
-  .publicaciones {
-    margin-left: 0;
-    padding-top: 0;
-  }
-
-  .vista {
-    margin-top: 25px;
-    display: flex;
-    flex-direction: column;
-    width: 80%;
-    align-items: center;
-  }
-
+  
   .buttons {
     margin: 2%;
   }
 }
 
 @media (max-width: 875px) {
+  main {
+    margin-top: 60px;
+  }
   .todo-section {
     margin-top: 17%;
   }
@@ -270,9 +260,17 @@ disponible.value = true;
     margin-bottom: 10px;
     font-size: 18px;
   }
-  .vista{
-    margin-top: 5px;
+  .publicaciones {
+    margin-left: 0;
+    padding-top: 0;
+  }
 
+  .vista {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    align-items: center;
   }
 }
 

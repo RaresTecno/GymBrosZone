@@ -44,8 +44,9 @@ async function mostrarp() {
 
   }
   gymTag.value = usuario[0].gymtag
-
-  nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos
+  const nombre = usuario[0].nombre !== null ? usuario[0].nombre : "";
+  const apellido = usuario[0].apellidos !== null ? usuario[0].apellidos : "";
+  nombreCompleto.value = nombre + " " + apellido
   profileId.value = usuario[0].id;
 
   const { data: publicaciones, errorPublicaciones } = await supabase
@@ -181,35 +182,39 @@ function checkInput() {
   <div class="perfil" :class="{ usandoMovil: usandoMovil }">
     <div id="info">
       <div id="info-top">
-        <div id="foto-gymTag">
-          <div id="foto">
-            <img :src="fotoPerfil" id="imagen" />
+        <div class="foto">
+          <img :src="fotoPerfil" class="imagen" />
+        </div>
+        <div class="informacion">
+          
+          <h2 class="gymTag">@{{ gymTag }}</h2>
+          <div class="info-basica">
+            <div id="seguidores">
+              <h2>Seguidores</h2>
+              {{ numSeguidores }}
+            </div>
+            <div id="seguidos">
+              <h2>Seguidos</h2>
+              {{ numSeguidos }}
+            </div>
+            <div id="publicaciones">
+              <h2>Posts</h2>
+              {{ cantidadPublicaciones }}
+            </div>
+            
           </div>
-          <h2 id="gymTag">
-            {{ gymTag }}
-          </h2>
           <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
           <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Dejar de seguir</button>
         </div>
-        <div id="sobre-mi">
-          <h2>{{ nombreCompleto }}</h2>
-          <p>{{ sobreMi }}</p>
-          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()"><font-awesome-icon
-              :icon="['fas', 'pen']" class="icono-pen" /></button>
-        </div>
+      </div>
+      <div class="div-nombre">
+        <h2 class="nombre">{{ nombreCompleto }}</h2>
       </div>
       <div id="info-bot">
-        <div id="seguidores">
-          <h2>Seguidores</h2>
-          {{ numSeguidores }}
-        </div>
-        <div id="seguidos">
-          <h2>Seguidos</h2>
-          {{ numSeguidos }}
-        </div>
-        <div id="publicaciones">
-          <h2>Posts</h2>
-          {{ cantidadPublicaciones }}
+        <div id="sobre-mi">
+          <p>{{ sobreMi }}</p>
+          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()">Editar Descripción<font-awesome-icon
+              :icon="['fas', 'pen']" class="icono-pen" /></button>
         </div>
       </div>
     </div>
@@ -266,24 +271,13 @@ function checkInput() {
 #info-top {
   display: flex;
   justify-content: center;
-  margin: 10px;
-}
-
-#foto-gymTag {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin: 10px;
-  width: 40%;
+  margin: 20px 0;
+  width: 100%;
+  gap: 5%
 }
 
-#foto-gymTag button {
-  margin-top: 10px;
-  padding: 3px;
-}
-
-#foto {
+.foto {
   background-color: rgb(0, 0, 0);
   min-width: 150px;
   min-height: 150px;
@@ -293,9 +287,10 @@ function checkInput() {
   max-height: 250px;
   border: 2px solid black;
   border-radius: 50%;
+  /* width: 30%; */
 }
 
-#imagen {
+.imagen {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -304,11 +299,37 @@ function checkInput() {
   border-radius: 50%;
 }
 
+.informacion {}
+
+.div-nombre {
+  margin-left: 4%;
+}
+
+.nombre {
+  font-size: clamp(8px, 4vw, 24px);
+}
+
+.info-basica {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(8px, 0.7em, 24px);
+  font-weight: bold;
+}
+
+.info-basica div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 7px;
+  
+}
+
 #sobre-mi {
   position: relative;
-  margin-top: 25px;
   margin-right: 10px;
-  width: 60%;
+  width: 90%;
   max-width: 500px;
   height: fit-content;
   padding-bottom: 20px;
@@ -316,14 +337,10 @@ function checkInput() {
 
 #sobre-mi p {
   margin-top: 10px;
-  margin-bottom: 20px;
   word-wrap: break-word;
-  /* Para navegadores antiguos */
-  /* overflow-wrap: break-word; */
-  /* max-height: calc(1.2em * 7); */
-  /* Aproximadamente 7 líneas */
-  /* overflow: hidden; */
+  text-align: left;
   white-space: pre-line;
+
 }
 
 /* .texto-recortado {
@@ -348,8 +365,9 @@ function checkInput() {
   height: 20px;
 }
 
-#gymTag {
+.gymTag {
   margin-top: 10px;
+  margin-left: 7px;
 }
 
 #info-bot {
@@ -426,7 +444,7 @@ function checkInput() {
 
 @media (max-width: 1100px) {
   #forzar-publicacion {
-    background-color: var(--dark-blue);
+    background-color: var(--black);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -463,7 +481,7 @@ function checkInput() {
 }
 
 @media (max-width: 450px) {
-  #foto {
+  .foto {
     min-width: 100px;
     min-height: 100px;
   }

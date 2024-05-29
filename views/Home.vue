@@ -2,26 +2,56 @@
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
-import { ref, reactive } from "vue"
-const todasPublicaciones = ref()
+import { ref, reactive , onMounted, onUnmounted} from "vue"
+// const todasPublicaciones = ref()
 const idPublicacion = ref()
 const cantidadPublicaciones = ref()
 
-async function mostrarp() {
+const todasPublicaciones = ref([]);
+let offset = 0;
+const limit = 9;
+let loading = false;
+
+const cargarPublicaciones = async () => {
+  if (loading) return;
+  loading = true;
+
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
-      .select('*');
+      .select('*')
+      .range(offset, offset + limit - 1);
 
-    todasPublicaciones.value = publicaciones.reverse();
+    if (error) {
+      console.error(error);
+      loading = false;
+      return;
+    }
 
+    // Añadir las nuevas publicaciones a las existentes
+    todasPublicaciones.value.push(...publicaciones.reverse());
+    offset += limit;
+    loading = false;
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    loading = false;
   }
-}
-mostrarp();
+};
 
+const handleScroll = () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    cargarPublicaciones();
+  }
+};
 
+onMounted(() => {
+  cargarPublicaciones();
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 
 
 disponible.value = true;
@@ -196,6 +226,7 @@ disponible.value = true;
   margin-bottom: 100px;
   padding-top: 80px;
 }
+
 .vista {
   /* margin-top: 10px; */
   width: 60%;
@@ -223,11 +254,11 @@ disponible.value = true;
 }
 
 @media (max-width: 1100px) {
-  
-  .vista{
+
+  .vista {
     width: 100%;
   }
-  
+
   .buttons {
     margin: 2%;
   }
@@ -237,6 +268,7 @@ disponible.value = true;
   main {
     margin-top: 60px;
   }
+
   .todo-section {
     margin-top: 17%;
   }
@@ -260,6 +292,7 @@ disponible.value = true;
     margin-bottom: 10px;
     font-size: 18px;
   }
+
   .publicaciones {
     margin-left: 0;
     padding-top: 0;

@@ -22,17 +22,21 @@
 body {
     background-color: var(--bg-color);
 }
-html::-webkit-scrollbar { 
+
+html::-webkit-scrollbar {
     display: none;
 }
-#app{
+
+#app {
     overflow-x: hidden;
     overflow-y: hidden;
 
 }
-#app::-webkit-scrollbar { 
+
+#app::-webkit-scrollbar {
     display: none;
 }
+
 .RouterLink {
     text-decoration: none;
 }

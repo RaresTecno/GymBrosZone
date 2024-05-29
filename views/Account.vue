@@ -25,6 +25,7 @@ const mostrarAviso = ref(false);
 
 const mostrarPregunta = ref(false);
 const esPredeterminada = ref(true);
+const account_container = ref();
 
 const router = useRouter();
 
@@ -210,7 +211,7 @@ async function guardar() {
       const urlBase = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/';
       if (fotoperfilActual.value.startsWith(urlBase)) {
         borrar = fotoperfilActual.value.replace(urlBase, '');
-      }else{
+      } else {
         borrar = fotoperfilActual.value
       }
       /*Si tenía una foto de perfil, la eliminamos para poder añadir la nueva.*/
@@ -268,7 +269,13 @@ function triggerDateInput() {
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_mi_cuenta() {
-  router.push('/');
+  if (account_container.value) {
+    account_container.value.classList.add('slide-down');
+  }
+  setTimeout(() => {
+    // router.push('/');
+    router.push({ name: 'profile', params: { gymtag: gymtag.value } });
+  }, 200);
 }
 
 /*Función para quitar la previsualización de la imagen.*/
@@ -387,14 +394,14 @@ function cancelar() {
   <div class="todo_account">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
       <div class="div_pregunta" @click.stop>
-        <div>¿Quieres eliminar tu foto de perfil?</div>
+        <div class="pregunta">¿Quieres eliminar tu foto de perfil?</div>
         <div class="botones_pregunta">
           <button @click="confirmar">Eliminar</button>
           <button @click="cancelar">Cancelar</button>
         </div>
       </div>
     </div>
-    <div class="account_container">
+    <div class="account_container" ref="account_container">
       <div class="titulo_account">
         <div class="cerrar_account">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" @click="cerrar_mi_cuenta">
@@ -515,6 +522,15 @@ function cancelar() {
   position: relative;
   display: flex;
   width: 70%;
+}
+
+.account_container {
+  transition: transform 0.25s ease-in-out, background-color 0.25s ease-in-out;
+}
+
+.slide-down {
+  transform: translateY(100%);
+  background-color: black;
 }
 
 .input {
@@ -1057,6 +1073,10 @@ svg.quitar_imagen {
   .contenedor_input {
     min-width: 245px;
   }
+
+  .div_pregunta {
+    margin-left: 0;
+  }
 }
 
 @media(max-width: 600px) {
@@ -1251,6 +1271,16 @@ svg.quitar_imagen {
     font-size: 16px;
     word-spacing: -2px;
   }
+
+  .div_pregunta {
+    padding: 17px 19px;
+    margin-left: 0;
+    height: 104px;
+  }
+
+  .pregunta{
+    text-align: center;
+  }
 }
 
 @media(max-width: 350px) {
@@ -1260,6 +1290,21 @@ svg.quitar_imagen {
 
   .div_quitar_imagen {
     padding-left: 20px;
+  }
+
+  .pregunta{
+    width: 70%;
+    margin-bottom: 20px
+  }
+
+  .div_pregunta{
+    height: 120px;
+    width: 75%;
+    min-width: 235px;
+  }
+
+  .botones_pregunta{
+    width: 100%;
   }
 }
 

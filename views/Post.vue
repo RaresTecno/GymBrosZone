@@ -18,6 +18,7 @@ const logo_foto = ref(null);
 const fondo_imagen = ref(null);
 const div_quitar_imagen = ref(null);
 const div_girar_imagen = ref(null);
+const publicar_container = ref();
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
@@ -141,7 +142,6 @@ async function guardarPublicacion(data) {
     quitar_imagen();
     tematica.value = '';
     contenido.value = '';
-    
   }
 }
 
@@ -174,7 +174,12 @@ function triggerFileInput() {
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_publicar() {
-  router.push('/');
+  if (publicar_container.value) {
+    publicar_container.value.classList.add('slide-down');
+  }
+  setTimeout(() => {
+    router.push('/');
+  }, 200);
 }
 
 /*Función para quitar la previsualización de la imagen.*/
@@ -256,8 +261,17 @@ function mostrarImagen(file) {
 }
 </script>
 <template>
-  <div class="todo_publicar">
-    <div class="publicar_container">
+  <div class="todo_publicar" >
+    <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
+      <div class="div_pregunta" @click.stop>
+        <div>¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
+        <div class="botones_pregunta">
+          <button @click="confirmar">Volver a publicar</button>
+          <button @click="confirmar">Ver publicaciones</button>
+        </div>
+      </div>
+    </div>
+    <div class="publicar_container" ref="publicar_container">
       <div class="titulo_publicar">
         <div class="tit_publicar">
           Publicar
@@ -353,15 +367,25 @@ function mostrarImagen(file) {
   padding-bottom: 150px;
 }
 
+
 .publicar_container {
   width: 80%;
-  margin-top: 120px;
+  margin-top: 100px;
   height: 520px;
   background-color: var(--dark-blue);
   max-width: 1026px;
   border: var(--black) 4px solid;
   border-radius: 6px;
   min-width: 761px;
+}
+
+.publicar_container {
+  transition: transform 0.25s ease-in-out, background-color 0.25s ease-in-out;
+}
+
+.slide-down {
+  transform: translateY(100%);
+  background-color: black;
 }
 
 .aviso {
@@ -398,6 +422,7 @@ function mostrarImagen(file) {
 }
 
 .cerrar_publicar {
+  display: none;
   cursor: pointer;
 }
 
@@ -749,6 +774,7 @@ svg.girar_imagen {
 
   .cerrar_publicar {
     margin-right: 4px;
+    display: flex;
   }
 
   .publicar_container {
@@ -760,6 +786,11 @@ svg.girar_imagen {
     border: none;
     border-radius: 0;
     min-width: 0;
+  }
+
+  .todo_publicar,
+  .publicar_container {
+    min-height: 98vh;
   }
 
   .contenido_publicar {
@@ -885,7 +916,8 @@ svg.girar_imagen {
   }
 
   .publicar {
-    margin-bottom: 5px;
+    /* margin-bottom: 5px; */
+    margin-bottom: 25px;
   }
 
   .textarea,
@@ -894,7 +926,7 @@ svg.girar_imagen {
   }
 
   .aviso {
-    transform: translateY(-120px);
+    transform: translateY(-135px);
   }
 
   .textarea {
@@ -903,12 +935,6 @@ svg.girar_imagen {
 }
 
 @media(max-width: 380px) {
-
-  .todo_publicar,
-  .publicar_container {
-    height: 920px;
-  }
-
   .prev_imagen {
     height: 250px;
     width: 250px;
@@ -947,7 +973,7 @@ svg.girar_imagen {
   }
 
   .aviso {
-    transform: translateY(-225px);
+    transform: translateY(-135px);
   }
 
   .aviso_texto {
@@ -961,19 +987,9 @@ svg.girar_imagen {
 }
 
 @media(max-width: 300px) {
-
-  .todo_publicar,
-  .publicar_container {
-    height: 1000px;
-  }
-
   .prev_imagen {
     height: 220px;
     width: 220px;
-  }
-
-  .aviso {
-    transform: translateY(-340px);
   }
 
   .aviso_texto {

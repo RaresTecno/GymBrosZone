@@ -144,18 +144,6 @@ function reloadPage(event) {
           <h2>Guardados</h2>
         </RouterLink>
       </div>
-      <!-- <div>
-        <RouterLink to="/tables" class="RouterLink">
-          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'table']" /></div>
-          <h2>Tablas</h2>
-        </RouterLink>
-      </div> -->
-      <!-- <div>
-        <RouterLink to="/messages" class="RouterLink">
-          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" /></div>
-          <h2>Mensajes</h2>
-        </RouterLink>
-      </div> -->
     </nav>
   </transition>
 </template>
@@ -179,7 +167,6 @@ nav {
 h2 {
   margin-left: 10px;
   width: 120px;
-  /* display: none; */
   transform: translateX(-190px);
   color: var(--dark-blue);
   transition: color 0.5s;

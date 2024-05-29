@@ -167,6 +167,7 @@ nav>div {
   height: 100%;
   border-radius: 50%;
   border: 1px solid var(--black);
+  object-fit: cover;
 }
 
 .account {
@@ -177,5 +178,10 @@ nav>div {
 
 .account svg path{
   fill: var(--light-blue-text);
+}
+
+.RouterLink{
+  height: 100%;
+  width: 100%;
 }
 </style>

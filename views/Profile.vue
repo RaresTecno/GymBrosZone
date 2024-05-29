@@ -7,18 +7,20 @@ import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
 import { supabase, userId } from "../clients/supabase";
 
+disponible.value = true;
+
 const props = defineProps({
   gymtag: {
     type: String
   }
 });
 
-const profileId = ref()
-const siguiendo = ref()
-const perfilPropio = ref()
-const editando = ref(false)
-const todasPublicaciones = ref()
-const cantidadPublicaciones = ref()
+const profileId = ref();
+const siguiendo = ref();
+const perfilPropio = ref();
+const editando = ref(false);
+const todasPublicaciones = ref();
+const cantidadPublicaciones = ref();
 const gymTag = ref();
 const nombreCompleto = ref();
 const sobreMi = ref();
@@ -30,71 +32,90 @@ const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/obje
 const router = useRouter();
 
 async function mostrarp() {
-
-  const { data: usuario, errorUsuario } = await supabase
+  const { data: usuario, error: errorUsuario } = await supabase
     .from('usuarios')
     .select("*")
     .eq('gymtag', props.gymtag);
+  if(errorUsuario){
+
+  }
 
   if (usuario.length == 0) {
     router.push('/NotFound');
   }
+
   if (usuario[0].fotoperfil != "/predeterminada.png") {
     fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + usuario[0].fotoperfil;
 
   }
-  gymTag.value = usuario[0].gymtag
 
-  nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos
+  gymTag.value = usuario[0].gymtag;
+  nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos;
   profileId.value = usuario[0].id;
 
-  const { data: publicaciones, errorPublicaciones } = await supabase
+  const { data: publicaciones, error: errorPublicaciones } = await supabase
     .from('publicaciones')
     .select('*')
     .eq('idusuario', usuario[0].id);
-  todasPublicaciones.value = publicaciones.reverse()
-  cantidadPublicaciones.value = publicaciones.length
+  if(errorPublicaciones){
 
-  if (profileId.value == userId.value) {
-    perfilPropio.value = true
-  } else {
-    perfilPropio.value = false
   }
 
-  const { data: seguidores, errorSeguidores } = await supabase
+  todasPublicaciones.value = publicaciones.reverse();
+  cantidadPublicaciones.value = publicaciones.length;
+
+  if (profileId.value == userId.value) {
+    perfilPropio.value = true;
+  } else {
+    perfilPropio.value = false;
+  }
+
+  const { data: seguidores, error: errorSeguidores } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguidor', userId.value)
     .eq('idseguido', profileId.value);
+  if(errorSeguidores){
+
+  }
 
   if (seguidores.length == 0) {
-    siguiendo.value = false
+    siguiendo.value = false;
   } else {
-    siguiendo.value = true
+    siguiendo.value = true;
   }
-  const { data: seguidoresPerfil, errorSeguidoresPerfil } = await supabase
+
+  const { data: seguidoresPerfil, error: errorSeguidoresPerfil } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguido', profileId.value);
-  numSeguidores.value = seguidoresPerfil.length
-  const { data: seguidosPerfil, errorSeguidosPerfil } = await supabase
+  if(errorSeguidoresPerfil){
+
+  }
+
+  numSeguidores.value = seguidoresPerfil.length;
+
+  const { data: seguidosPerfil, error: errorSeguidosPerfil } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguidor', profileId.value);
-  numSeguidos.value = seguidosPerfil.length
+  if(errorSeguidosPerfil){
 
+  }
+
+  numSeguidos.value = seguidosPerfil.length
 }
-mostrarp()
-disponible.value = true;
+mostrarp();
+
+
 
 function arriba() {
   window.scrollTo(0, 0);
 }
 
-
 const vista = ref(sessionStorage.getItem("vista") || "Publicaciones");
 function cambiarVista(tipo) {
-  editando.value = false
+  editando.value = false;
   vista.value = tipo;
   sessionStorage.setItem("vista", tipo); // Guardar la vista seleccionada en el almacenamiento local
 }
@@ -116,30 +137,32 @@ async function seguir() {
     const { error: insertError } = await supabase
       .from('seguidores')
       .insert([{ idseguidor: userId.value, idseguido: profileId.value }]);
-    siguiendo.value = true
+    siguiendo.value = true;
 
-    mostrarp()
+    mostrarp();
   }
-
 }
+
 async function dejarSeguir() {
   const { error: deleteError } = await supabase
     .from('seguidores')
     .delete()
     .eq('idseguidor', userId.value)
     .eq('idseguido', profileId.value);
-  siguiendo.value = false
-  mostrarp()
-
+  siguiendo.value = false;
+  mostrarp();
 }
+
 function editandoPerfil() {
   editando.value = true
   document.body.style.overflow = "hidden";
 }
+
 function cerrar() {
   editando.value = false
   document.body.style.overflow = "hidden";
 }
+
 // const texto = ref()
 function obtenerDatos() {
   console.log(sobreMi.value)

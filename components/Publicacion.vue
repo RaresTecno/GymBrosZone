@@ -1,8 +1,11 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted, onUnmounted } from "vue";
-import { supabase } from "@/clients/supabase";
+import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
+
+const perfilPropio = ref();
+const siguiendo = ref();
 
 const props = defineProps({
   publicacionUnica: {
@@ -15,6 +18,32 @@ const props = defineProps({
   }
 });
 
+async function seguir() {
+  const { data: seguidores, error: errorSeguidores } = await supabase
+    .from('seguidores')
+    .select('*')
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', props.publicacionUnica.idusuario);
+
+  if (seguidores.length == 0) {
+    const { data: inserted, error: insertError } = await supabase
+      .from('seguidores')
+      .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
+    siguiendo.value = true
+
+    // mostrarp();
+  }
+}
+
+async function dejarSeguir() {
+  const { error: deleteError } = await supabase
+    .from('seguidores')
+    .delete()
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', props.publicacionUnica.idusuario);
+  siguiendo.value = false;
+  // mostrarp();
+}
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const tematica = ref(props.publicacionUnica.tematica);
@@ -27,6 +56,8 @@ const mostrarFinal = ref(false);
 const foto = ref('');
 const windowWidth = ref(window.innerWidth);
 const isProfile = ref(props.ProfileView);
+
+const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 const combrobarImagen = () => {
   ruta.value = fotoPredeterminada;
@@ -51,6 +82,32 @@ async function cargarPublicacion() {
   } else {
     gymTag.value = usuario[0].gymtag;
     fotoPerfil.value = usuario[0].fotoperfil;
+    if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
+      fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    } else {
+      /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+      fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
+    }
+
+    if (props.publicacionUnica.idusuario === userId.value) {
+      perfilPropio.value = true;
+    } else {
+      perfilPropio.value = false;
+      const { data: seguidores, error: errorSeguidores } = await supabase
+        .from('seguidores')
+        .select('*')
+        .eq('idseguidor', userId.value)
+        .eq('idseguido', props.publicacionUnica.idusuario);
+      if (errorSeguidores) {
+
+      }
+
+      if (seguidores.length == 0) {
+        siguiendo.value = false;
+      } else {
+        siguiendo.value = true;
+      }
+    }
   }
 }
 
@@ -78,12 +135,17 @@ function mostrar() {
     document.body.style.overflow = "hidden";
     mostrarFinal.value = true;
   }
+  console.log(fotoPerfil.value);
 };
 
 function cerrar() {
   document.body.style.overflow = "visible";
   mostrarFinal.value = false;
 };
+
+function quitarOverflow() {
+  document.body.style.overflow = "visible";
+}
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth);
@@ -95,7 +157,7 @@ onUnmounted(() => {
       <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
           <img :src="fotoPerfil" alt="">
-          <h2 class="gymtag">{{ gymTag }}</h2>
+          <h2 class="gymtag">@{{ gymTag }}</h2>
         </RouterLink>
       </div>
       <div class="header-publicacion-der">
@@ -116,8 +178,24 @@ onUnmounted(() => {
         </div>
         <div class="cuerpo">
           <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" /></div>
-          <div class="encabezado"></div>
-          <div class="descripcion">a</div>
+          <div class="encabezado">
+            <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink"
+              @click="quitarOverflow">
+              <div class="foto_gymtag">
+                <div class="foto_encabezado">
+                  <img :src="fotoPerfilMostrada" alt="">
+                </div>
+                <div class="gymtag_encabezado">
+                  @{{ gymTag }}
+                </div>
+              </div>
+            </RouterLink>
+            <div class="botones_seguir">
+              <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
+              <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
+            </div>
+          </div>
+          <div class="descripcion"></div>
         </div>
       </div>
     </div>
@@ -125,6 +203,78 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.contenido {
+  cursor: default;
+}
+
+.encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: fit-content;
+  background-color: red;
+  margin-top: 10px;
+}
+
+.foto_gymtag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: grey;
+  margin-left: 20px;
+  font-size: 26px;
+  color: var(--light-blue-text);
+}
+
+.gymtag_encabezado {
+  max-width: 270px;
+  overflow: hidden;
+}
+
+.foto_encabezado {
+  height: 60px;
+  width: 60px;
+  overflow: hidden;
+  background-color: green;
+  margin-right: 10px;
+}
+
+.foto_encabezado img {
+  border-radius: 50%;
+  height: 100%;
+  width: 100%;
+  border: 1px solid black;
+  transition: border 0.3s;
+}
+
+.foto_encabezado img:hover,  .foto_encabezado img:active{
+  border: 1px solid rgb(109, 109, 109);
+}
+
+.botones_seguir {
+  padding-right: 22px;
+}
+
+.botones_seguir button {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
+  padding: 5px 8px;
+  width: 84.44px;
+}
+
+.botones_seguir:hover,
+.botones_seguir:active {
+  border-color: #eef2fa81;
+}
+
 .publicacion {
   background-color: var(--black);
   display: flex;
@@ -139,6 +289,7 @@ onUnmounted(() => {
   /* overflow-clip-margin: content-box;
   overflow: clip; */
   overflow: hidden;
+  cursor: pointer;
   /* cursor: url('../assets/img/corazonp.png'), auto; */
 }
 
@@ -180,10 +331,8 @@ onUnmounted(() => {
 
 .footer-publicacion {
   background-color: var(--dark-blue);
-
   display: flex;
   align-items: center;
-  /* border-radius: 0px 0px 7px 7px; */
 }
 
 .footer-publicacion .tematica {
@@ -252,7 +401,7 @@ onUnmounted(() => {
 }
 
 .imagen {
-  background-color: burlywood;
+  background-color: black;
   width: 600px;
   height: 600px;
   border-right: var(--black) 1px solid;
@@ -265,6 +414,7 @@ onUnmounted(() => {
 }
 
 .cuerpo {
+  position: relative;
   background: var(--dark-blue);
   width: 500px;
 }
@@ -278,6 +428,47 @@ onUnmounted(() => {
   .cuerpo {
     width: 400px;
   }
+
+  .foto_gymtag {
+    font-size: 24px;
+  }
+
+  .foto_gymtag {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: grey;
+    margin-left: 10px;
+    font-size: 26px;
+    color: var(--light-blue-text);
+  }
+
+  .foto_encabezado{
+    margin-right: 8px;
+  }
+
+  .botones_seguir button{
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+
+  .gymtag_encabezado {
+    max-width: 220px;
+  }
+
+  .botones_seguir {
+    padding-right: 10px;
+    padding-left: 5px;
+
+  }
+
+  /* .botones_seguir{
+    padding-right: 10px;
+  } */
+  /* .foto_encabezado {
+    height: 50px;
+    width: 50px;
+  } */
 }
 
 @media (max-width: 985px) {
@@ -287,8 +478,17 @@ onUnmounted(() => {
   }
 
   .cuerpo {
-    width: 350px;
+    width: 370px;
   }
+
+  .foto_gymtag {
+    font-size: 22px;
+  }
+
+  .foto_encabezado {
+    height: 50px;
+    width: 50px;
+  } 
 }
 
 @media (max-width: 875px) {

@@ -982,7 +982,7 @@ svg.quitar_imagen {
     border: none;
     border-radius: 0;
     min-width: 0;
-    padding-bottom: 80px;
+    min-height: 98vh;
   }
 
   .contenido_publicar {
@@ -1061,7 +1061,7 @@ svg.quitar_imagen {
 
 @media(max-width: 600px) {
   .account_container {
-    padding-bottom: 60px;
+    padding-bottom: 85px;
   }
 
   .div_imagen {
@@ -1163,11 +1163,6 @@ svg.quitar_imagen {
 }
 
 @media(max-width: 380px) {
-
-  .account_container {
-    padding-bottom: 60px;
-  }
-
   .div_contenido {
     min-width: 0;
   }
@@ -1298,6 +1293,7 @@ svg.quitar_imagen {
   }
 
   .account_container {
+    min-height: 98vh;
     padding-bottom: 105px;
   }
 }

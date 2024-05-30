@@ -327,6 +327,7 @@ const filtrarProductos = () => {
     <div class="search">
       <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
       <!-- <input type="search"> -->
+      <!-- v-model="busquedaAlimento" -->
       <input type="text" v-model="busqueda" />
       <button @click="verApi">Search Product</button><br>
       <font-awesome-icon :icon="['fas', 'magnifying-glass']" />

@@ -3,6 +3,8 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { disponible } from "../main";
+import { supabase } from "@/clients/supabase";
+import Publicacion from "@/components/Publicacion.vue";
 
 disponible.value = true;
 
@@ -256,32 +258,105 @@ function error(err) {
   ).innerHTML = `<h2>Error</h2><p>Unable to detect Barcode. Please ensure the Barcode is visible and try again.</p>`;
 }
 
+// Estado
+const publicacionesFiltradas = ref([]);
+const usuariosFiltrados = ref([]);
+const userActive = ref(true); // Supongo que siempre hay un usuario activo. Ajusta según tu lógica.
+const botonSeleccionado = ref("");
+
+// Función para obtener publicaciones filtradas
+const obtenerPublicacionesFiltradas = async () => {
+  try {
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select("*")
+      .or(`contenido.ilike.%${busqueda.value}%,tematica.ilike.%${busqueda.value}%`); // Busca en contenido y temática
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+    publicacionesFiltradas.value = publicaciones;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// Función para obtener usuarios filtrados
+const obtenerUsuariosFiltrados = async () => {
+  try {
+    const { data: usuarios, error } = await supabase
+      .from('usuarios')
+      .select("*")
+      .or(`nombre.ilike.%${busqueda.value}%,gymtag.ilike.%${busqueda.value}%`); // Busca en nombre y gymtag
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+    usuariosFiltrados.value = usuarios;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// Manejar clic en los botones de filtro
+const filtrarPublicaciones = () => {
+  botonSeleccionado.value = "publicaciones";
+  obtenerPublicacionesFiltradas();
+};
+
+const filtrarUsuarios = () => {
+  botonSeleccionado.value = "usuarios";
+  obtenerUsuariosFiltrados();
+};
+
+const filtrarProductos = () => {
+  botonSeleccionado.value = "productos";
+  
+};
 </script>
 
 <template>
   <div class="buscador">
     <div class="filtros">
-      <button class="filtro-usuarios">Gym Bros</button>
-      <button class="filtro-publicaciones">Publicaciones</button>
-      <button class="filtro-productos">Productos</button>
+      <button class="filtro-usuarios"  @click="filtrarUsuarios">Gym Bros</button>
+      <button class="filtro-publicaciones" @click="filtrarPublicaciones">Publicaciones</button>
+      <button class="filtro-productos" @click="filtrarProductos">Productos</button>
     </div>
     <div class="search">
       <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
       <!-- <input type="search"> -->
       <input type="text" v-model="busqueda" />
-      <button @click="verApi">Search Product</button>
+      <button @click="verApi">Search Product</button><br>
+      <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
+      <!-- <input type="search"> -->
+      <input type="text" v-model="busqueda"/>
+      <button @click="filtrarPublicaciones">General Search</button>
       <div class="cerrar">x</div>
     </div>
   </div>
-  <div id="reader">
-    
-    
+  <div id="reader"></div>
+
+  <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
+      <div class="vista">
+        <template v-for="publicacion in publicacionesFiltradas" :key="publicacion.id">
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
+        </template>
+      </div>
   </div>
-  
-  <div id="result">
-    
+  <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
+      <div class="vista">
+        <template v-for="usuario in usuariosFiltrados" :key="usuario.id">
+          <div class="usuario">
+            <h2>{{ usuario.nombre }}</h2>
+            <p>{{ usuario.gymtag }}</p>
+          </div>
+        </template>
+      </div>
   </div>
-  <div v-if="buscado" class="productos">
+  <div v-if="userActive && botonSeleccionado === 'productos'" class="productos">
+      <div v-if="buscado" class="productos">
     <div class="producto-arriba">
       <div class="producto-img">
         <img :src="ProductoFoto" alt="" class="img-producto" />
@@ -367,8 +442,10 @@ function error(err) {
         <h3>Puntuación total: {{ ProductoNutriScorePoints }}</h3>
       </div>
     </div>
-
   </div>
+  </div>
+
+  
 </template>
 
 <style scoped>
@@ -605,4 +682,5 @@ function error(err) {
     text-align: center;
   }
 }
+
 </style>

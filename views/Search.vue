@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { disponible } from "../main";
@@ -7,9 +7,15 @@ import { disponible } from "../main";
 disponible.value = true;
 
 const buscado = ref(false);
-const busqueda = ref("");
+const busquedaAlimento = ref("");
+const pagina = ref(1);
+const productos = ref([]);
+const totalPaginas = ref(1);
+const productosPorPagina = 12;
+const tiempoCarga = ref(null);
+
 const ProductoFoto = ref("");
-const ProductoNombre = ref("a");
+const ProductoNombre = ref("");
 const ProductoNutriScore = ref("");
 const ProductoNovaGroup = ref("");
 const ProductoEcoScore = ref("");
@@ -45,17 +51,33 @@ const ProductoSaturatedPoints = ref("");
 const ProductoSodiumPoints = ref("");
 const ProductoNutriScorePoints = ref("");
 
-async function verApi() {
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busqueda.value)}&page_size=1&json=true`;
+// watch([busquedaAlimento, pagina], buscarProductos);
+
+async function buscarProductos() {
+  // if (busquedaAlimento.value.trim() === '') {
+  //   productos.value = [];
+  //   totalPaginas.value = 1;
+  //   return;
+  // }
+  // https://es.openfoodfacts.org/cgi/search.pl?search_terms=&search_simple=1&action=process
+  // https://es.openfoodfacts.org/cgi/search.pl?action=process&sort_by=unique_scans_n&page_size=24?sort_by=popularity
+  //https://es.openfoodfacts.org/cgi/search.pl?search_terms=&search_simple=1&action=process
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value)}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true?sort_by=popularity`;
+  // const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value)}&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
   // const url2 =
-  // "https://world.openfoodfacts.org/api/v3/product/" + busqueda.value;
+  // "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value;
+  const startTime = performance.now();
   try {
     const response = await fetch(url);
-    const result = await response.text();
-    const producto = JSON.parse(result).products[0];
-    console.log(producto.nutriscore_grade)
-    ProductoNombre.value = nombre(producto);
-    ProductoFat_100.value = producto.nutriments["fat_100g"];
+
+    const result = await await response.json();
+    const resultado = result.products;
+    productos.value = resultado;
+    console.log(result)
+    console.log(productos.value)
+    totalPaginas.value = Math.ceil(result.count / productosPorPagina);
+    // productos.value = result.products;
+    // ProductoFat_100.value = producto.nutriments["fat_100g"];
     // ProductoFoto.value = imagen(producto);
     // ProductoNombre.value = nombre(producto);
     // ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
@@ -98,25 +120,64 @@ async function verApi() {
   } catch (error) {
     // console.log(error);
   }
+  const endTime = performance.now(); // Fin del tiempo
+  tiempoCarga.value = (endTime - startTime).toFixed(2); 
 }
 function nombre(producto) {
-  if (
-    producto.product_name_es != null &&
-    producto.product_name_es != ""
-  ) {
-    return producto.product_name_es;
-  } else if (
-    producto.product_name_en != null &&
-    producto.product_name_en != ""
-  ) {
-    return producto.product_name_en;
-  } else {
-    return producto.product_name;
+  const idiomas = [
+    'product_name_es',
+    'product_name_en',
+    'product_name',
+    'product_name_fr',
+    'product_name_ro',
+    'product_name_pl',
+    'product_name_ar',
+    'product_name_bn',
+    'product_name_bs',
+    'product_name_ca',
+    'product_name_cs',
+    'product_name_da',
+    'product_name_de',
+    'product_name_el',
+    'product_name_et',
+    'product_name_fa',
+    'product_name_fi',
+    'product_name_he',
+    'product_name_hi',
+    'product_name_hr',
+    'product_name_hu',
+    'product_name_id',
+    'product_name_it',
+    'product_name_ja',
+    'product_name_ko',
+    'product_name_lt',
+    'product_name_lv',
+    'product_name_mk',
+    'product_name_ms',
+    'product_name_nl',
+    'product_name_no',
+    'product_name_pt',
+    'product_name_ru',
+    'product_name_sk',
+    'product_name_sl',
+    'product_name_sr',
+    'product_name_sv',
+    'product_name_tr',
+    'product_name_uk',
+    'product_name_vi',
+    'product_name_zh',
+    'product_name_zh_tw'
+  ];
+  for (const idioma of idiomas) {
+    if (producto[idioma] && producto[idioma].trim() !== '') {
+      return producto[idioma];
+    }
   }
+  return ''; //Retorna una cadena vacía si no se encuentra ningún nombre de producto
 }
 function imagen(producto) {
-  if (producto.product.image_url != null) {
-    return producto.product.image_url;
+  if (producto.image_url != null) {
+    return producto.image_url;
   } else {
     return "https://world.openfoodfacts.org/images/icons/dist/packaging.svg";
   }
@@ -192,59 +253,77 @@ function urlNovaScore(valor) {
       return "https://static.openfoodfacts.org/images/attributes/dist/nova-group-unknown.svg";
   }
 }
-// Setup barcode scanner
-const scanner = ref(null);
 
-onMounted(() => {
-  scanner.value = new Html5QrcodeScanner("reader", {
-    fps: 10,
-    qrbox: { width: 250, height: 180 },
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.EAN_13,
-    ],
-  });
-  scanner.value.render(success, error);
-});
-document.addEventListener('DOMContentLoaded', function() {
-    // Encuentra el elemento con el id "reader"
-    var readerElement = document.getElementById("reader");
 
-    // Verifica si el elemento existe
-    if (readerElement) {
-        // Crea un nuevo div
-        var newDiv = document.createElement("div");
-
-        // Añade la clase 'ocultar-i' al nuevo div
-        newDiv.classList.add('ocultar-i');
-
-        // Opcional: Añadir contenido al nuevo div
-        newDiv.innerHTML = "<p>Este es un nuevo contenido</p>";
-
-        // Añade el nuevo div como hijo del elemento "reader"
-        readerElement.appendChild(newDiv);
-    } else {
-        // console.error('Elemento con id "reader" no encontrado.');
-    }
-});
-onUnmounted(() => {
-  if (scanner.value) {
-    scanner.value.clear();
+function paginaAnterior() {
+  if (pagina.value > 1) {
+    pagina.value--;
+    buscarProductos()
   }
-});
-
-function success(result) {
-  busqueda.value = result.decodedText; // Automatically fills the input with the barcode result
-  busqueda.value = result;
-  verApi();
-  if (scanner.value) {
-    scanner.value.clear();
-  }
-  document.getElementById("reader").remove();
 }
 
-function error(err) {
+function paginaSiguiente() {
+  if (pagina.value < totalPaginas.value) {
+    pagina.value++;
+    buscarProductos()
+  }
 }
+
+// // Setup barcode scanner
+// const scanner = ref(null);
+
+// onMounted(() => {
+//   scanner.value = new Html5QrcodeScanner("reader", {
+//     fps: 10,
+//     qrbox: { width: 250, height: 180 },
+//     formatsToSupport: [
+//       Html5QrcodeSupportedFormats.CODE_128,
+//       Html5QrcodeSupportedFormats.EAN_13,
+//     ],
+//   });
+//   scanner.value.render(success, error);
+// });
+// document.addEventListener('DOMContentLoaded', function () {
+//   // Encuentra el elemento con el id "reader"
+//   var readerElement = document.getElementById("reader");
+
+//   // Verifica si el elemento existe
+//   if (readerElement) {
+//     // Crea un nuevo div
+//     var newDiv = document.createElement("div");
+
+//     // Añade la clase 'ocultar-i' al nuevo div
+//     newDiv.classList.add('ocultar-i');
+
+//     // Opcional: Añadir contenido al nuevo div
+//     newDiv.innerHTML = "<p>Este es un nuevo contenido</p>";
+
+//     // Añade el nuevo div como hijo del elemento "reader"
+//     readerElement.appendChild(newDiv);
+//   } else {
+//     // console.error('Elemento con id "reader" no encontrado.');
+//   }
+// });
+// onUnmounted(() => {
+//   if (scanner.value) {
+//     scanner.value.clear();
+//   }
+// });
+
+
+//Codigo de barras
+// function success(result) {
+//   busquedaAlimento.value = result.decodedText; // Automatically fills the input with the barcode result
+//   busquedaAlimento.value = result;
+//   buscarProductos();
+//   if (scanner.value) {
+//     scanner.value.clear();
+//   }
+//   document.getElementById("reader").remove();
+// }
+
+// function error(err) {
+// }
 
 
 </script>
@@ -259,20 +338,35 @@ function error(err) {
     <div class="search">
       <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
       <!-- <input type="search"> -->
-      <input type="text" v-model="busqueda" />
-      <button @click="verApi">Search Product</button>
+      <input type="text" v-model="busquedaAlimento" />
+      <button @click="buscarProductos()">Search Product</button>
       <div class="cerrar">x</div>
     </div>
   </div>
   <div id="reader">
-    
-    
+
+
   </div>
-  
+
   <div id="result">
-    
+
   </div>
-  <div v-if="buscado" class="productos">
+  <div v-if="tiempoCarga !== null">
+      Tiempo de carga: {{ tiempoCarga }} ms
+    </div>
+  <div class="todos-productos">
+      <div v-for="producto in productos" :key="producto.code" class="product">
+        {{ nombre(producto) }}
+        <img :src="imagen(producto)" alt="" class="img-producto" />
+      </div>
+    </div>
+
+  <div class="pagination-controls">
+    <button @click="paginaAnterior" :disabled="pagina === 1">Previous</button>
+    <span>{{ pagina }} / {{ totalPaginas }}</span>
+    <button @click="paginaSiguiente" :disabled="pagina === totalPaginas">Next</button>
+  </div>
+  <!-- <div v-if="buscado" class="productos">
     <div class="producto-arriba">
       <div class="producto-img">
         <img :src="ProductoFoto" alt="" class="img-producto" />
@@ -359,7 +453,7 @@ function error(err) {
       </div>
     </div>
 
-  </div>
+  </div> -->
 </template>
 
 <style scoped>
@@ -397,7 +491,31 @@ function error(err) {
   width: 33.33%;
 }
 
-.productos {
+
+.todos-productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.product {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.pagination-controls {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* .productos {
   margin-left: 60px;
   display: flex;
   flex-direction: column;
@@ -599,5 +717,5 @@ function error(err) {
   .producto-general h2 {
     text-align: center;
   }
-}
+} */
 </style>

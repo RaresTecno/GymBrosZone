@@ -46,49 +46,52 @@ const ProductoSodiumPoints = ref("");
 const ProductoNutriScorePoints = ref("");
 
 async function verApi() {
-  const url =
-    "https://world.openfoodfacts.org/api/v3/product/" + busqueda.value;
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busqueda.value)}&page_size=1&json=true`;
+  // const url2 =
+  // "https://world.openfoodfacts.org/api/v3/product/" + busqueda.value;
   try {
     const response = await fetch(url);
     const result = await response.text();
-    const producto = JSON.parse(result);
-
-    ProductoFoto.value = imagen(producto);
+    const producto = JSON.parse(result).products[0];
+    console.log(producto.nutriscore_grade)
     ProductoNombre.value = nombre(producto);
-    ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
-    ProductoNovaGroup.value = urlNovaScore(producto.product.nova_group);
-    ProductoEcoScore.value = urlEcoScore(producto.product.ecoscore_grade);
-    ProductoKcal_100.value = producto.product.nutriments["energy-kcal_100g"];
-    ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
-    ProductoFat_100.value = producto.product.nutriments["fat_100g"];
-    ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
-    ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
-    ProductoSaturedFatUnit.value = producto.product.nutriments["saturated-fat_unit"];
-    ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
-    ProductoCarbohydratesUnit.value = producto.product.nutriments["carbohydrates_unit"];
-    ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
-    ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
-    ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
-    ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
-    ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
-    ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
-    ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
-    ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
-    ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
-    ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
-    ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
-    ProductoCantidad.value = producto.product.quantity;
+    ProductoFat_100.value = producto.nutriments["fat_100g"];
+    // ProductoFoto.value = imagen(producto);
+    // ProductoNombre.value = nombre(producto);
+    // ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
+    // ProductoNovaGroup.value = urlNovaScore(producto.product.nova_group);
+    // ProductoEcoScore.value = urlEcoScore(producto.product.ecoscore_grade);
+    // ProductoKcal_100.value = producto.product.nutriments["energy-kcal_100g"];
+    // ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
+    // ProductoFat_100.value = producto.product.nutriments["fat_100g"];
+    // ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
+    // ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
+    // ProductoSaturedFatUnit.value = producto.product.nutriments["saturated-fat_unit"];
+    // ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
+    // ProductoCarbohydratesUnit.value = producto.product.nutriments["carbohydrates_unit"];
+    // ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
+    // ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
+    // ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
+    // ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
+    // ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
+    // ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
+    // ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
+    // ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
+    // ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
+    // ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
+    // ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+    // ProductoCantidad.value = producto.product.quantity;
 
-    ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
-    ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
-    ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
-    ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
-    ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
-    ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
-    ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
-    ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
-    ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
-    ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
+    // ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
+    // ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
+    // ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
+    // ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
+    // ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
+    // ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
+    // ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
+    // ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
+    // ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
+    // ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
 
     // console.log(ProductoNegativePoints.value)
     buscado.value = true;
@@ -98,17 +101,17 @@ async function verApi() {
 }
 function nombre(producto) {
   if (
-    producto.product.product_name_es != null &&
-    producto.product.product_name_es != ""
+    producto.product_name_es != null &&
+    producto.product_name_es != ""
   ) {
-    return producto.product.product_name_es;
+    return producto.product_name_es;
   } else if (
-    producto.product.product_name_en != null &&
-    producto.product.product_name_en != ""
+    producto.product_name_en != null &&
+    producto.product_name_en != ""
   ) {
-    return producto.product.product_name_en;
+    return producto.product_name_en;
   } else {
-    return producto.product.product_name;
+    return producto.product_name;
   }
 }
 function imagen(producto) {

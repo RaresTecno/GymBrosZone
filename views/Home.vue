@@ -20,6 +20,7 @@ const cargarPublicaciones = async () => {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
       .select('*')
+      .order('fechapublicacion', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) {
@@ -29,7 +30,7 @@ const cargarPublicaciones = async () => {
     }
 
     // Añadir las nuevas publicaciones a las existentes
-    todasPublicaciones.value.push(...publicaciones.reverse());
+    todasPublicaciones.value.push(...publicaciones);
     offset += limit;
     loading = false;
   } catch (error) {

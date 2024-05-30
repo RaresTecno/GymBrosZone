@@ -186,22 +186,22 @@ function checkInput() {
           <img :src="fotoPerfil" class="imagen" />
         </div>
         <div class="informacion">
-          
+
           <h2 class="gymTag">@{{ gymTag }}</h2>
           <div class="info-basica">
             <div id="seguidores">
               <h2>Seguidores</h2>
-              {{ numSeguidores }}
+              <h3>{{ numSeguidores }}</h3>
             </div>
             <div id="seguidos">
               <h2>Seguidos</h2>
-              {{ numSeguidos }}
+              <h3>{{ numSeguidos }}</h3>
             </div>
             <div id="publicaciones">
               <h2>Posts</h2>
-              {{ cantidadPublicaciones }}
+              <h3>{{ cantidadPublicaciones }}</h3>
             </div>
-            
+
           </div>
           <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
           <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Dejar de seguir</button>
@@ -213,8 +213,8 @@ function checkInput() {
       <div id="info-bot">
         <div id="sobre-mi">
           <p>{{ sobreMi }}</p>
-          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()">Editar Descripción<font-awesome-icon
-              :icon="['fas', 'pen']" class="icono-pen" /></button>
+          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()">Editar
+            Descripción<font-awesome-icon :icon="['fas', 'pen']" class="icono-pen" /></button>
         </div>
       </div>
     </div>
@@ -229,7 +229,21 @@ function checkInput() {
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
-        aaaa
+        <form>
+          <input type="text" placeholder="Peso">
+          <input type="text" placeholder="Altura">
+          <select>
+            <option value="H">Hombre</option>
+            <option value="F">Mujer</option>
+            <option value="E">Enfermo Mental</option>
+          </select>
+          <input type="text" placeholder="Edad">
+          <select>
+            <option value="H">Hombre</option>
+            <option value="F">Mujer</option>
+            <option value="E">Enfermo Mental</option>
+          </select>
+        </form>
       </div>
     </div>
   </div>
@@ -263,7 +277,7 @@ function checkInput() {
 #info {
   background-color: var(--dark-blue);
   min-height: fit-content;
-  width: 70%;
+  width: 73%;
   color: var(--light-blue-text);
   font-size: clamp(8px, 4vw, 24px)
 }
@@ -306,15 +320,18 @@ function checkInput() {
 }
 
 .nombre {
-  font-size: clamp(8px, 4vw, 24px);
+  font-size: clamp(30px, 4vw, 24px);
+  text-align: center;
+
 }
 
 .info-basica {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(8px, 0.7em, 24px);
+  font-size: clamp(9px, 0.8em, 24px);
   font-weight: bold;
+  gap: 5%;
 }
 
 .info-basica div {
@@ -323,7 +340,7 @@ function checkInput() {
   align-items: center;
   justify-content: center;
   margin: 7px;
-  
+
 }
 
 #sobre-mi {
@@ -367,7 +384,9 @@ function checkInput() {
 
 .gymTag {
   margin-top: 10px;
-  margin-left: 7px;
+  margin-left: -10px;
+  font-size: clamp(8px, 1.6em, 40px);
+
 }
 
 #info-bot {
@@ -378,7 +397,7 @@ function checkInput() {
 }
 
 #contenido {
-  width: 70%;
+  width: 73%;
 }
 
 #botones {
@@ -442,6 +461,12 @@ function checkInput() {
   }
 }
 
+@media (min-width: 875px) and (max-width: 1100px) {
+  .foto {
+    width: 100px;
+    height: 100px;
+  }
+}
 @media (max-width: 1100px) {
   #forzar-publicacion {
     background-color: var(--black);
@@ -470,12 +495,26 @@ function checkInput() {
     width: 100%;
   }
 
+  .nombre {
+    font-size: clamp(22px, 4vw, 24px);
+    text-align: left;
+  }
 }
 
 @media (max-width: 625px) {
   .publicacion {
     border-radius: 0;
     margin: 2px;
+  }
+
+  #info-top {
+    gap: 0px;
+  }
+  .gymTag {
+    margin-left: 7px;
+}
+  .info-basica {
+    gap: 0px;
 
   }
 }
@@ -486,7 +525,14 @@ function checkInput() {
     min-height: 100px;
   }
 }
-
+@media(max-width: 350px){
+  .gymTag{
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
 .usandoMovil {
   margin: 0;
 }

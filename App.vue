@@ -48,13 +48,13 @@ async function hashUserId(userId) {
 
 async function revisarCarpeta(user) {
   /*Construcción de la ruta de la carpeta propia del usuario.*/
-  const ruta = `users/user-${await hashUserId(user.id)}/`;
+  const ruta = `users/${await hashUserId(user.id)}/`;
   /*Comprobamos si existe una carpeta con el nombre de la ruta.*/
   const { data: carpeta, error: errorCarpeta } = await supabase
     .storage
     .from('files')
     .list(ruta);
-
+    
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (errorCarpeta) {
     logOut();

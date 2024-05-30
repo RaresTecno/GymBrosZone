@@ -148,7 +148,6 @@ async function guardar() {
   /*Comprobamos el gymtag.*/
   if (gymtagActual !== gymtag.value && await validarGymtag()) {
     consulta.gymtag = gymtag.value;
-    gymtag.value = gymtagActual;
   } else if (!(gymtagActual === gymtag.value)) {
     gymtag.value = gymtagActual;
     return false;
@@ -246,9 +245,19 @@ async function guardar() {
     if (error) {
       mensaje('Ha ocurrido un error al actualizar tu información.');
     } else {
+      if(gymtagActual !== gymtag.value){
+        gymtagActual = gymtag.value;
+        reloadPage();
+      }
       mensaje('Tu información ha sido actualizada.');
     }
   }
+}
+
+/*Función para actualizar la página.*/
+function reloadPage() {
+  localStorage.setItem('showMessage', 'true');
+  window.location.reload();
 }
 
 /*Función para encriptar cadenas de texto.*/
@@ -354,6 +363,11 @@ function mostrarImagen(file) {
 
 /*Cuando carga, obtenemos los datos del usuarios para mostrarlos.*/
 onMounted(async () => {
+  /*Muestro el mensaje que se debe mostrar si se ha actualizado el gymtag.*/
+  if (localStorage.getItem('showMessage') === 'true') {
+    mensaje('Tu información ha sido actualizada.');
+    localStorage.removeItem('showMessage');
+  }
   id = await obtenerId();
   const { data, error } = await supabase
     .from('usuarios')

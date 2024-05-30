@@ -22,7 +22,6 @@ async function cargarUsuario() {
   fotoPerfil.value = usuario[0].fotoperfil;
 
   if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
-    console.log('hola');
     fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
   } else {
     /*De lo contrario mostramos la foto de perfil actual del usuario.*/

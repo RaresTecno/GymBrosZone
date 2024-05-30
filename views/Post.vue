@@ -97,77 +97,42 @@ async function insertarImagen() {
   const id = await obtenerId();
   const encId = await hashString(id);
 
+  /*Consultamos el número de publicación del usuario.*/
   const { data: publicaciones, error } = await supabase
     .from('usuarios')
     .select('publicaciones')
     .eq('id', id);
   if (error) {
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('Ha ocurrido un error al guardar la publicación.');
     return false;
   }
+  /*Creamos el nuevo nombre de la publicación y su ruta.*/
   nombrePublicacion = 'post-' + publicaciones[0].publicaciones;
   ruta = `users/${encId}/post/`;
   const nombreArchivo = await hashString(id + nombrePublicacion);
 
+  /*Subimos la imagen.*/
   const rutaFinal = `${ruta}${nombreArchivo}`;
   const { data, error: errorSubir } = await supabase.storage
     .from('files')
     .upload(rutaFinal, imagen);
   if (errorSubir) {
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('Ha ocurrido un error al guardar la publicación.');
     return false;
   }
+  /*Actualizamos el contador de las publicaciones del usuario.*/
   const { data: publicacionesUpdate, error: errorUpdate } = await supabase
     .from('usuarios')
     .update({ publicaciones: publicaciones[0].publicaciones + 1 })
     .eq('id', id);
   if(errorUpdate){
+    /*Avisamos al usuario en caso de error.*/
     avisoImagen('Ha ocurrido un error al guardar la publicación.');
     return false;
   }
   return [id, rutaFinal];
-  /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
-  // do {
-  //   /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
-  //   nombrePublicacion = 'post-' + contador;
-  //   /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
-  //   ruta = `users/user-${encId}/post/`;
-  //   /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
-  //   const { data: publicacion, error: errorPublicacion } = await supabase
-  //     .storage
-  //     .from('files')
-  //     .list(ruta);
-  //   /*Avisamos al usuario en caso de error.*/
-  //   if (errorPublicacion) {
-  //     
-  //   }
-
-  //   /*Encriptamos el nombre de la imagen que vamos a guardar.*/
-  //   const nombreArchivo = await hashString(id + nombrePublicacion);
-  //   /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
-  //   const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
-
-  //   /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
-  //   if (!existePublicacion) {
-  //     nombreDisponible = true;
-  //     /*Guardamos la publicación.*/
-  //     const rutaFinal = `${ruta}${nombreArchivo}`;
-  //     const { data, error } = await supabase.storage
-  //       .from('files')
-  //       .upload(rutaFinal, imagen);
-  //     /*Avisamos al usuario en caso de error.*/
-  //     if (error) {
-  //       avisoImagen('Ha ocurrido un error al guardar la publicación.');
-  //       return false;
-  //     }
-  //     return [id, rutaFinal];
-  //   } else {
-  //     contador++;
-  //   }
-  // } while (!nombreDisponible);
-  /*Avisamos al usuario en caso de error.*/
-  avisoImagen('Ha ocurrido un error al guardar la publicación.');
-  return false;
 }
 
 /*Función para guarda la publicación del usuario.*/

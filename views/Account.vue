@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
@@ -238,14 +238,16 @@ async function guardar() {
     consulta.fotoperfil = ruta;
   }
   /*Actualizamos la información del usuario.*/
-  const { data, error } = await supabase
-    .from('usuarios')
-    .update(consulta)
-    .eq('id', id)
-  if (error) {
-    mensaje('Ha ocurrido un error al actualizar tu información.');
-  } else {
-    mensaje('Tu información ha sido actualizada.');
+  if (Object.keys(consulta).length > 0) {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .update(consulta)
+      .eq('id', id)
+    if (error) {
+      mensaje('Ha ocurrido un error al actualizar tu información.');
+    } else {
+      mensaje('Tu información ha sido actualizada.');
+    }
   }
 }
 
@@ -393,26 +395,49 @@ function confirmacion() {
   if (!esPredeterminada.value) {
     mostrarPregunta.value = true;
     document.body.style.overflow = 'hidden';
+    nextTick(() => {
+      setTimeout(() => {
+        const divPregunta = document.querySelector('.div_pregunta');
+        if (divPregunta) {
+          divPregunta.classList.remove('shrink');
+          divPregunta.classList.add('expand');
+        }
+      }, 5);
+    });
   }
-};
+}
 
 /*El usuario confirma la eliminación de la foto de perfil.*/
 function confirmar() {
-  mostrarPregunta.value = false;
-  document.body.style.overflow = '';
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+    }, 250);
+  }
   quitar_imagen();
-};
+}
 
 /*El usuario cancela la eliminación de la foto de perfil.*/
 function cancelar() {
-  mostrarPregunta.value = false;
-  document.body.style.overflow = '';
-};
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+    }, 250);
+  }
+}
 </script>
 <template>
   <div class="todo_account">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
-      <div class="div_pregunta" @click.stop>
+      <div class="div_pregunta div_pregunta_inicio" @click.stop>
         <div class="pregunta">¿Quieres eliminar tu foto de perfil?</div>
         <div class="botones_pregunta">
           <button @click="confirmar">Eliminar</button>
@@ -438,7 +463,8 @@ function cancelar() {
           <div class="botones_imagen">
             <div class="contenedor_boton contendor_boton1">
               <div class="div_input_imagen">
-                <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" accept="image/*" />
+                <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput"
+                  accept="image/*" />
                 <div class="anadir">
                   <div class="anadir_texto">
                     <button @click="triggerFileInput">
@@ -729,6 +755,22 @@ function cancelar() {
   height: 120px;
   cursor: default;
   margin-left: 60px;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.div_pregunta_inicio {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.shrink {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.expand {
+  transform: scale(1);
+  opacity: 1;
 }
 
 .botones_pregunta {
@@ -1283,7 +1325,7 @@ svg.quitar_imagen {
     height: 104px;
   }
 
-  .pregunta{
+  .pregunta {
     text-align: center;
   }
 }
@@ -1297,18 +1339,18 @@ svg.quitar_imagen {
     padding-left: 20px;
   }
 
-  .pregunta{
+  .pregunta {
     width: 70%;
     margin-bottom: 20px
   }
 
-  .div_pregunta{
+  .div_pregunta {
     height: 120px;
     width: 75%;
     min-width: 235px;
   }
 
-  .botones_pregunta{
+  .botones_pregunta {
     width: 100%;
   }
 }

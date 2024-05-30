@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase, obtenerId } from '../clients/supabase';
 import { disponible } from "../main";
@@ -23,6 +23,8 @@ const publicar_container = ref();
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
 const mostrarPregunta = ref(false);
+
+const deshabilitado = ref(false);
 
 const router = useRouter();
 
@@ -65,12 +67,17 @@ async function publicar() {
 
 function deshabilitarBoton(deshabilitar) {
   const publicarBoton = document.querySelector('.publicar_boton');
+
   if (deshabilitar) {
-    publicarBoton.disabled = true;
-    publicarBoton.style.cursor = 'not-allowed';
+    if (publicarBoton) {
+      publicarBoton.disabled = true;
+    }
+    deshabilitado.value = true;
   } else {
-    publicarBoton.disabled = false;
-    publicarBoton.style.cursor = 'pointer';
+    if (publicarBoton) {
+      publicarBoton.disabled = false;
+    }
+    deshabilitado.value = false;
   }
 }
 
@@ -85,53 +92,79 @@ async function hashString(cadena) {
 /*Función para guardar la imagen en la bdd.*/
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
-  let nombreDisponible = false;
-  let contador = 1;
   let nombrePublicacion;
   let ruta;
   const id = await obtenerId();
   const encId = await hashString(id);
 
+  const { data: publicaciones, error } = await supabase
+    .from('usuarios')
+    .select('publicaciones')
+    .eq('id', id);
+  if (error) {
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  }
+  nombrePublicacion = 'post-' + publicaciones[0].publicaciones;
+  ruta = `users/${encId}/post/`;
+  const nombreArchivo = await hashString(id + nombrePublicacion);
+
+  const rutaFinal = `${ruta}${nombreArchivo}`;
+  const { data, error: errorSubir } = await supabase.storage
+    .from('files')
+    .upload(rutaFinal, imagen);
+  if (errorSubir) {
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  }
+  const { data: publicacionesUpdate, error: errorUpdate } = await supabase
+    .from('usuarios')
+    .update({ publicaciones: publicaciones[0].publicaciones + 1 })
+    .eq('id', id);
+  if(errorUpdate){
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  }
+  return [id, rutaFinal];
   /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
-  do {
-    /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
-    nombrePublicacion = 'post-' + contador;
-    /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
-    ruta = `users/user-${encId}/post/`;
-    /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
-    const { data: publicacion, error: errorPublicacion } = await supabase
-      .storage
-      .from('files')
-      .list(ruta);
-    /*Avisamos al usuario en caso de error.*/
-    if (errorPublicacion) {
-      avisoImagen('Ha ocurrido un error al guardar la publicación.');
-      return false;
-    }
+  // do {
+  //   /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
+  //   nombrePublicacion = 'post-' + contador;
+  //   /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
+  //   ruta = `users/user-${encId}/post/`;
+  //   /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
+  //   const { data: publicacion, error: errorPublicacion } = await supabase
+  //     .storage
+  //     .from('files')
+  //     .list(ruta);
+  //   /*Avisamos al usuario en caso de error.*/
+  //   if (errorPublicacion) {
+  //     
+  //   }
 
-    /*Encriptamos el nombre de la imagen que vamos a guardar.*/
-    const nombreArchivo = await hashString(id + nombrePublicacion);
-    /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
-    const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
+  //   /*Encriptamos el nombre de la imagen que vamos a guardar.*/
+  //   const nombreArchivo = await hashString(id + nombrePublicacion);
+  //   /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
+  //   const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
 
-    /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
-    if (!existePublicacion) {
-      nombreDisponible = true;
-      /*Guardamos la publicación.*/
-      const rutaFinal = `${ruta}${nombreArchivo}`;
-      const { data, error } = await supabase.storage
-        .from('files')
-        .upload(rutaFinal, imagen);
-      /*Avisamos al usuario en caso de error.*/
-      if (error) {
-        avisoImagen('Ha ocurrido un error al guardar la publicación.');
-        return false;
-      }
-      return [id, rutaFinal];
-    } else {
-      contador++;
-    }
-  } while (!nombreDisponible);
+  //   /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
+  //   if (!existePublicacion) {
+  //     nombreDisponible = true;
+  //     /*Guardamos la publicación.*/
+  //     const rutaFinal = `${ruta}${nombreArchivo}`;
+  //     const { data, error } = await supabase.storage
+  //       .from('files')
+  //       .upload(rutaFinal, imagen);
+  //     /*Avisamos al usuario en caso de error.*/
+  //     if (error) {
+  //       avisoImagen('Ha ocurrido un error al guardar la publicación.');
+  //       return false;
+  //     }
+  //     return [id, rutaFinal];
+  //   } else {
+  //     contador++;
+  //   }
+  // } while (!nombreDisponible);
   /*Avisamos al usuario en caso de error.*/
   avisoImagen('Ha ocurrido un error al guardar la publicación.');
   return false;
@@ -157,10 +190,6 @@ async function guardarPublicacion(data) {
   } else {
     /*Si se ha guardado la publicación, vaciamos todos los campos.*/
     aceptar();
-    quitar_imagen();
-    tematica.value = '';
-    contenido.value = '';
-    deshabilitarBoton(false);
   }
 }
 
@@ -298,30 +327,59 @@ function mostrarImagen(file) {
   reader.readAsDataURL(file);
 }
 
-/*Confirmación de si se elimina la foto de perfil.*/
 function aceptar() {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';
-};
+  nextTick(() => {
+    setTimeout(() => {
+      const divPregunta = document.querySelector('.div_pregunta');
+      if (divPregunta) {
+        divPregunta.classList.remove('shrink');
+        divPregunta.classList.add('expand');
+      }
+    }, 5);
+  });
+}
 
-/*El usuario confirma la eliminación de la foto de perfil.*/
 function irHome() {
-  mostrarPregunta.value = false;
-  document.body.style.overflow = '';
-  router.push('/');
-};
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.add('shrink');
+    divPregunta.classList.remove('expand');
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+    }, 250);
+    setTimeout(() => {
+      router.push('/');
+    }, 200);
+  }
+  quitar_imagen();
+  tematica.value = '';
+  contenido.value = '';
+  deshabilitarBoton(false);
+}
 
-/*El usuario cancela la eliminación de la foto de perfil.*/
 function cancelar() {
-  mostrarPregunta.value = false;
-  document.body.style.overflow = '';
-};
-
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+    }, 250);
+  }
+  quitar_imagen();
+  tematica.value = '';
+  contenido.value = '';
+  deshabilitarBoton(false);
+}
 </script>
 <template>
   <div class="todo_publicar">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
-      <div class="div_pregunta" @click.stop>
+      <div class="div_pregunta div_pregunta_inicio" @click.stop>
         <div>¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
         <div class="botones_pregunta">
           <button @click="cancelar">Volver a publicar</button>
@@ -399,7 +457,8 @@ function cancelar() {
           </div>
           <div class="publicar">
             <div class="publicar_div">
-              <button class="publicar_boton" @click="publicar">Publicar</button>
+              <button :class="deshabilitado ? 'boton_deshabilitado' : 'publicar_boton'"
+                @click="publicar">Publicar</button>
             </div>
           </div>
         </div>
@@ -730,7 +789,7 @@ svg.girar_imagen {
   justify-content: end;
 }
 
-.publicar_div button {
+.publicar_boton {
   cursor: pointer;
   background-color: var(--blue-buttons);
   width: 27%;
@@ -740,11 +799,28 @@ svg.girar_imagen {
   transition: background-color 0.5s, border 0.5s, color 0.5s;
 }
 
-.publicar_div button:hover,
-.publicar_div button:active {
+.publicar_boton:hover,
+.publicar_boton:active {
   background-color: var(--very-dark-blue);
   color: var(--light-blue-text);
   border: 2px solid var(--grey-buttons-inputs-border);
+}
+
+.boton_deshabilitado {
+  cursor: not-allowed;
+  background-color: #4e6368;
+  width: 27%;
+  color: rgba(0, 0, 0, 0.76);
+  border: solid rgba(0, 0, 0, 0.76) 2px;
+  border-radius: 2px;
+  font-size: 18px;
+}
+
+.boton_deshabilitado:hover,
+.boton_deshabilitado:active {
+  background-color: #4e6368;
+  color: rgba(0, 0, 0, 0.76);
+  border: solid rgba(0, 0, 0, 0.76) 2px;
 }
 
 #file-upload-button {
@@ -766,6 +842,22 @@ svg.girar_imagen {
   height: 120px;
   cursor: default;
   margin-left: 60px;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.div_pregunta_inicio {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.shrink {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.expand {
+  transform: scale(1);
+  opacity: 1;
 }
 
 .botones_pregunta {
@@ -975,6 +1067,10 @@ svg.girar_imagen {
   }
 
   .publicar_boton {
+    min-width: 125px;
+  }
+
+  .boton_deshabilitado {
     min-width: 125px;
   }
 

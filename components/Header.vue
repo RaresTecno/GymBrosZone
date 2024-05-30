@@ -93,7 +93,7 @@ async function cargarUsuario() {
       </div>
       <div v-if="gymTag">
         <div class="foto_usuario" v-if="route.path === '/account'">
-          <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
+          <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
             <img :src="fotoPerfil" class="imgperfil" />
           </RouterLink>
         </div>

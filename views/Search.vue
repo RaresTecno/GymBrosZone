@@ -369,25 +369,23 @@ const filtrarProductos = () => {
   <div id="reader"></div>
 
   <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
-      <div class="vista">
-        <template v-for="usuario in usuariosFiltrados" :key="usuario.id">
-          <RouterLink :to="{ name: 'user-profile', params: { gymtag: usuario.gymtag } }" class="usuario-card-link">
-            <div class="usuario-card">
-              <img :src="usuario.fotoPerfil" alt="Foto de perfil" class="usuario-foto" />
-              <div class="usuario-info">
-                <h2>{{ usuario.gymtag }}</h2>
-                <p>{{ usuario.nombre }} {{ usuario.apellidos }}</p>
-              </div>
-              <div class="usuario-estadisticas">
-                <span>Seguidores: {{ usuario.numSeguidores }}</span>
-                <span>Seguidos: {{ usuario.numSeguidos }}</span>
-                <span>Publicaciones: {{ usuario.cantidadPublicaciones }}</span>
-              </div>
-            </div>
-          </RouterLink>
-        </template>
-      </div>
+    <div class="vista">
+      <template v-for="usuario in usuariosFiltrados" :key="usuario.id">
+        <div class="usuario-card">
+          <img :src="usuario.fotoPerfil" alt="Foto de perfil" class="usuario-foto" />
+          <div class="usuario-info">
+            <h2>{{ usuario.gymtag }}</h2>
+            <p>{{ usuario.nombre }} {{ usuario.apellidos }}</p>
+          </div>
+          <div class="usuario-estadisticas">
+            <span>Seguidores: {{ usuario.numSeguidores }}</span>
+            <span>Seguidos: {{ usuario.numSeguidos }}</span>
+            <span>Publicaciones: {{ usuario.cantidadPublicaciones }}</span>
+          </div>
+        </div>
+      </template>
     </div>
+  </div>
   
   <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
       <div class="vista">

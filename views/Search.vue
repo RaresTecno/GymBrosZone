@@ -258,19 +258,20 @@ function error(err) {
   ).innerHTML = `<h2>Error</h2><p>Unable to detect Barcode. Please ensure the Barcode is visible and try again.</p>`;
 }
 
-// Estado
+// Estado;
+const busquedaUsuarios = ref("");
 const publicacionesFiltradas = ref([]);
 const usuariosFiltrados = ref([]);
-const userActive = ref(true); // Supongo que siempre hay un usuario activo. Ajusta según tu lógica.
+const userActive = ref(true);
 const botonSeleccionado = ref("");
 
-// Función para obtener publicaciones filtradas
+// Obtiene publicaciones filtradas
 const obtenerPublicacionesFiltradas = async () => {
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
       .select("*")
-      .or(`contenido.ilike.%${busqueda.value}%,tematica.ilike.%${busqueda.value}%`); // Busca en contenido y temática
+      .or(`contenido.ilike.%${busqueda.value}%,tematica.ilike.%${busqueda.value}%`);
 
     if (error) {
       console.error(error);
@@ -282,17 +283,36 @@ const obtenerPublicacionesFiltradas = async () => {
   }
 };
 
-// Función para obtener usuarios filtrados
+// Obtiene usuarios filtrados
 const obtenerUsuariosFiltrados = async () => {
   try {
     const { data: usuarios, error } = await supabase
       .from('usuarios')
       .select("*")
-      .or(`nombre.ilike.%${busqueda.value}%,gymtag.ilike.%${busqueda.value}%`); // Busca en nombre y gymtag
+      .or(`nombre.ilike.%${busquedaUsuarios.value}%,gymtag.ilike.%${busquedaUsuarios.value}%`);
 
     if (error) {
       console.error(error);
       return;
+    }
+    for (const usuario of usuarios) {
+      usuario.fotoPerfil = usuario.fotoperfil && usuario.fotoperfil !== "/predeterminada.png"
+        ? `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuario.fotoperfil}`
+        : "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg";
+
+      usuario.cantidadPublicaciones = usuario.publicaciones;
+
+      const { data: seguidoresPerfil, errorSeguidoresPerfil } = await supabase
+        .from('seguidores')
+        .select('*')
+        .eq('idseguido', usuario.id);
+      usuario.numSeguidores = seguidoresPerfil.length;
+
+      const { data: seguidosPerfil, errorSeguidosPerfil } = await supabase
+        .from('seguidores')
+        .select('*')
+        .eq('idseguidor', usuario.id);
+      usuario.numSeguidos = seguidosPerfil.length;
     }
     usuariosFiltrados.value = usuarios;
   } catch (err) {
@@ -325,20 +345,50 @@ const filtrarProductos = () => {
       <button class="filtro-productos" @click="filtrarProductos">Productos</button>
     </div>
     <div class="search">
-      <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
       <!-- <input type="search"> -->
       <!-- v-model="busquedaAlimento" -->
-      <input type="text" v-model="busqueda" />
-      <button @click="verApi">Search Product</button><br>
-      <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
+      <div v-if="userActive && botonSeleccionado === 'productos'">
+        <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
+        <input type="text" v-model="busqueda" />
+      <button @click="verApi">Search Product</button>
+      </div>
       <!-- <input type="search"> -->
-      <input type="text" v-model="busqueda"/>
-      <button @click="filtrarPublicaciones">General Search</button>
+      <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
+        <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
+        <input type="text" v-model="busquedaUsuarios"/>
+      <button @click="filtrarUsuarios">Search Users</button>
+      </div>
+      <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
+        <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
+        <input type="text" v-model="busquedaPublicaciones"/>
+      <button @click="filtrarUsuarios">Search Publicaciones</button>
+      </div>
       <div class="cerrar">x</div>
     </div>
   </div>
   <div id="reader"></div>
 
+  <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
+      <div class="vista">
+        <template v-for="usuario in usuariosFiltrados" :key="usuario.id">
+          <RouterLink :to="{ name: 'user-profile', params: { gymtag: usuario.gymtag } }" class="usuario-card-link">
+            <div class="usuario-card">
+              <img :src="usuario.fotoPerfil" alt="Foto de perfil" class="usuario-foto" />
+              <div class="usuario-info">
+                <h2>{{ usuario.gymtag }}</h2>
+                <p>{{ usuario.nombre }} {{ usuario.apellidos }}</p>
+              </div>
+              <div class="usuario-estadisticas">
+                <span>Seguidores: {{ usuario.numSeguidores }}</span>
+                <span>Seguidos: {{ usuario.numSeguidos }}</span>
+                <span>Publicaciones: {{ usuario.cantidadPublicaciones }}</span>
+              </div>
+            </div>
+          </RouterLink>
+        </template>
+      </div>
+    </div>
+  
   <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in publicacionesFiltradas" :key="publicacion.id">
@@ -346,16 +396,7 @@ const filtrarProductos = () => {
         </template>
       </div>
   </div>
-  <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
-      <div class="vista">
-        <template v-for="usuario in usuariosFiltrados" :key="usuario.id">
-          <div class="usuario">
-            <h2>{{ usuario.nombre }}</h2>
-            <p>{{ usuario.gymtag }}</p>
-          </div>
-        </template>
-      </div>
-  </div>
+  
   <div v-if="userActive && botonSeleccionado === 'productos'" class="productos">
       <div v-if="buscado" class="productos">
     <div class="producto-arriba">
@@ -647,9 +688,76 @@ const filtrarProductos = () => {
   margin: 0 50px;
 }
 
+.usuario-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 10px 20px 10px 80px;
+  border-radius: 10px;
+  border-color: black;
+  background-color: var(--blue);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.usuario-foto {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border-style: inherit;
+  border-color: black;
+  margin-right: 20px;
+  object-fit: cover;
+}
+
+.usuario-info {
+  flex: 1;
+}
+
+.usuario-info h2 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.usuario-info p {
+  margin: 5px 0;
+}
+
+.usuario-estadisticas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.usuario-estadisticas span {
+  margin: 2px 0;
+}
+
 @media (max-width: 1150px) {
   .producto-novagroup {
     margin: 0 2% 0 2%;
+  }
+
+  .usuario-card {
+    margin: 10px;
+    border-radius: 10px;
+  }
+
+  .usuario-foto {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 20px;
+  }
+
+  .usuario-info h2 {
+    margin: 0;
+    font-size: 1.2em;
+  }
+
+  .usuario-info p {
+   margin: 5px 0 0;
   }
 }
 
@@ -683,5 +791,4 @@ const filtrarProductos = () => {
     text-align: center;
   }
 }
-
 </style>

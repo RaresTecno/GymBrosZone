@@ -30,8 +30,6 @@ async function seguir() {
       .from('seguidores')
       .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
     siguiendo.value = true
-
-    // mostrarp();
   }
 }
 
@@ -42,7 +40,6 @@ async function dejarSeguir() {
     .eq('idseguidor', userId.value)
     .eq('idseguido', props.publicacionUnica.idusuario);
   siguiendo.value = false;
-  // mostrarp();
 }
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
@@ -51,6 +48,7 @@ const descripcion = ref(props.publicacionUnica.contenido);
 const fotoPerfil = ref();
 const gymTag = ref();
 const isCover = ref(true);
+const esCover = ref(true);
 
 const mostrarFinal = ref(false);
 const foto = ref('');
@@ -65,7 +63,9 @@ const combrobarImagen = () => {
 
 if (props.publicacionUnica.resolucion == "cover") {
   isCover.value = true;
+  esCover.value = true;
 } else {
+  esCover.value = false;
   if (windowWidth < 1100) {
     isCover.value = false;
   }
@@ -135,7 +135,6 @@ function mostrar() {
     document.body.style.overflow = "hidden";
     mostrarFinal.value = true;
   }
-  console.log(fotoPerfil.value);
 };
 
 function cerrar() {
@@ -174,7 +173,7 @@ onUnmounted(() => {
     <div class="final" v-if="mostrarFinal" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
-          <img :src="ruta" />
+          <img :src="ruta" :class="{ 'custom-image-style': !esCover }"/>
         </div>
         <div class="cuerpo">
           <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" /></div>
@@ -195,7 +194,7 @@ onUnmounted(() => {
               <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
             </div>
           </div>
-          <div class="descripcion"></div>
+          <div class="descripcion">{{ descripcion }}</div>
         </div>
       </div>
     </div>
@@ -207,13 +206,21 @@ onUnmounted(() => {
   cursor: default;
 }
 
+.custom-image-style {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: fill !important;
+  width: auto !important;
+  height: auto !important;
+}
+
 .encabezado {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   height: fit-content;
-  background-color: red;
+  /* background-color: red; */
   margin-top: 10px;
 }
 
@@ -221,22 +228,30 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: grey;
+  /* background-color: grey; */
   margin-left: 20px;
   font-size: 26px;
   color: var(--light-blue-text);
+  transition: text-shadow 0.3s;
 }
 
 .gymtag_encabezado {
   max-width: 270px;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foto_gymtag:hover,
+.foto_gymtag:active {
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.575), 0 0 6px rgba(255, 255, 255, 0.301);
 }
 
 .foto_encabezado {
   height: 60px;
   width: 60px;
   overflow: hidden;
-  background-color: green;
+  /* background-color: green; */
   margin-right: 10px;
 }
 
@@ -246,9 +261,11 @@ onUnmounted(() => {
   width: 100%;
   border: 1px solid black;
   transition: border 0.3s;
+  object-fit: cover;
 }
 
-.foto_encabezado img:hover,  .foto_encabezado img:active{
+.foto_gymtag:hover img,
+.foto_gymtag:active img {
   border: 1px solid rgb(109, 109, 109);
 }
 
@@ -434,20 +451,14 @@ onUnmounted(() => {
   }
 
   .foto_gymtag {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: grey;
     margin-left: 10px;
-    font-size: 26px;
-    color: var(--light-blue-text);
   }
 
-  .foto_encabezado{
+  .foto_encabezado {
     margin-right: 8px;
   }
 
-  .botones_seguir button{
+  .botones_seguir button {
     font-size: 12px;
     padding: 4px 6px;
   }
@@ -478,7 +489,7 @@ onUnmounted(() => {
   }
 
   .cuerpo {
-    width: 370px;
+    width: 380px;
   }
 
   .foto_gymtag {
@@ -488,7 +499,11 @@ onUnmounted(() => {
   .foto_encabezado {
     height: 50px;
     width: 50px;
-  } 
+  }
+
+  .gymtag_encabezado {
+    max-width: 210px;
+  }
 }
 
 @media (max-width: 875px) {

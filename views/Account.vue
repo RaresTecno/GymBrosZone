@@ -148,8 +148,8 @@ async function guardar() {
   /*Comprobamos el gymtag.*/
   if (gymtagActual !== gymtag.value && await validarGymtag()) {
     consulta.gymtag = gymtag.value;
-  } else if (gymtagActual === gymtag.value) {
-  } else {
+    gymtag.value = gymtagActual;
+  } else if (!(gymtagActual === gymtag.value)) {
     gymtag.value = gymtagActual;
     return false;
   }
@@ -274,7 +274,7 @@ function cerrar_mi_cuenta() {
   }
   setTimeout(() => {
     // router.push('/');
-    router.push({ name: 'profile', params: { gymtag: gymtag.value } });
+    router.push({ name: 'profile', params: { gymtag: gymtagActual } });
   }, 200);
 }
 
@@ -314,8 +314,27 @@ function comprobarImagen(event) {
     event.target.value = '';
     return;
   }
-  /*Llamamos a la función para mostrar la previsualización de la imagen.*/
-  mostrarImagen(file);
+  /* Verificar la proporción de la imagen */
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+      if (ratio < 0.33 || ratio > 3) {
+        /* Avisamos al usuario si la proporción no es aceptable */
+        avisoImagen('Las proporciones de la imágenes no son válidas.');
+        /* Limpiamos el input si la proporción no es aceptable */
+        event.target.value = '';
+        return;
+      }
+      /* Llamamos a la función para mostrar la previsualización de la imagen si todo es correcto */
+      mostrarImagen(file);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 /*Función para mostrar la previsualización de la imagen.*/
@@ -419,7 +438,7 @@ function cancelar() {
           <div class="botones_imagen">
             <div class="contenedor_boton contendor_boton1">
               <div class="div_input_imagen">
-                <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
+                <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" accept="image/*" />
                 <div class="anadir">
                   <div class="anadir_texto">
                     <button @click="triggerFileInput">
@@ -694,20 +713,6 @@ function cancelar() {
 .prev_imagen:hover svg,
 .prev_imagen:active svg {
   filter: opacity(0.7);
-}
-
-.todo_mostrar_pregunta {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  cursor: pointer;
 }
 
 .div_pregunta {

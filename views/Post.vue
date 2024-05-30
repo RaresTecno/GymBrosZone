@@ -22,6 +22,7 @@ const publicar_container = ref();
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
+const mostrarPregunta = ref(false);
 
 const router = useRouter();
 
@@ -43,6 +44,8 @@ function avisoImagen(mensaje) {
 
 /*Función para realizar la publicación.*/
 async function publicar() {
+  /*Deshabilitamos el botón.*/
+  deshabilitarBoton(true);
   /*Validamos la temática y el contenido de la publicación.*/
   if (validarTematica() && validarContenido()) {
     /*Comprobamos si hay una imagen para así realizar la publicación.*/
@@ -53,7 +56,21 @@ async function publicar() {
       await guardarPublicacion(data);
     } else {
       avisoImagen('Debes incluir una imagen.');
+      deshabilitarBoton(false);
     }
+  } else {
+    deshabilitarBoton(false);
+  }
+}
+
+function deshabilitarBoton(deshabilitar) {
+  const publicarBoton = document.querySelector('.publicar_boton');
+  if (deshabilitar) {
+    publicarBoton.disabled = true;
+    publicarBoton.style.cursor = 'not-allowed';
+  } else {
+    publicarBoton.disabled = false;
+    publicarBoton.style.cursor = 'pointer';
   }
 }
 
@@ -139,9 +156,11 @@ async function guardarPublicacion(data) {
     return false;
   } else {
     /*Si se ha guardado la publicación, vaciamos todos los campos.*/
+    aceptar();
     quitar_imagen();
     tematica.value = '';
     contenido.value = '';
+    deshabilitarBoton(false);
   }
 }
 
@@ -239,8 +258,27 @@ function comprobarImagen(event) {
     event.target.value = '';
     return;
   }
-  /*Llamamos a la función para mostrar la previsualización de la imagen.*/
-  mostrarImagen(file);
+  /* Verificar la proporción de la imagen */
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+      if (ratio < 0.33 || ratio > 3) {
+        /* Avisamos al usuario si la proporción no es aceptable */
+        avisoImagen('Las proporciones de la imágenes no son válidas.');
+        /* Limpiamos el input si la proporción no es aceptable */
+        event.target.value = '';
+        return;
+      }
+      /* Llamamos a la función para mostrar la previsualización de la imagen si todo es correcto */
+      mostrarImagen(file);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 /*Función para mostrar la previsualización de la imagen.*/
@@ -259,15 +297,35 @@ function mostrarImagen(file) {
   };
   reader.readAsDataURL(file);
 }
+
+/*Confirmación de si se elimina la foto de perfil.*/
+function aceptar() {
+  mostrarPregunta.value = true;
+  document.body.style.overflow = 'hidden';
+};
+
+/*El usuario confirma la eliminación de la foto de perfil.*/
+function irHome() {
+  mostrarPregunta.value = false;
+  document.body.style.overflow = '';
+  router.push('/');
+};
+
+/*El usuario cancela la eliminación de la foto de perfil.*/
+function cancelar() {
+  mostrarPregunta.value = false;
+  document.body.style.overflow = '';
+};
+
 </script>
 <template>
-  <div class="todo_publicar" >
+  <div class="todo_publicar">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
       <div class="div_pregunta" @click.stop>
         <div>¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
         <div class="botones_pregunta">
-          <button @click="confirmar">Volver a publicar</button>
-          <button @click="confirmar">Ver publicaciones</button>
+          <button @click="cancelar">Volver a publicar</button>
+          <button @click="irHome">Ver publicaciones</button>
         </div>
       </div>
     </div>
@@ -312,7 +370,8 @@ function mostrarImagen(file) {
             </div>
           </div>
           <div class="div_input_imagen">
-            <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
+            <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput"
+              accept="image/*" />
             <div class="anadir">
               <div class="anadir_texto">
                 <button @click="triggerFileInput">
@@ -693,6 +752,46 @@ svg.girar_imagen {
   width: 0 !important;
 }
 
+.div_pregunta {
+  color: var(--light-blue-text);
+  background-color: var(--dark-blue);
+  padding: 25px 30px;
+  border-radius: 5px;
+  border: var(--black) 2px solid;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 120px;
+  cursor: default;
+  margin-left: 60px;
+}
+
+.botones_pregunta {
+  width: 80%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botones_pregunta button {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
+  padding: 5px 10px;
+}
+
+.botones_pregunta button:hover,
+.botones_pregunta button:active {
+  border-color: #eef2fa81;
+}
+
 ::placeholder {
   color: var(--light-blue-text);
   opacity: 0.8;
@@ -851,6 +950,10 @@ svg.girar_imagen {
   .contenido {
     margin-top: 55px;
   }
+
+  .div_pregunta {
+    margin-left: 0;
+  }
 }
 
 @media(max-width: 600px) {
@@ -916,7 +1019,6 @@ svg.girar_imagen {
   }
 
   .publicar {
-    /* margin-bottom: 5px; */
     margin-bottom: 25px;
   }
 

@@ -3,11 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted, onUnmounted } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
-import { siguiendo, seguir } from "@/clients/supabase";  //Borrar
-
 
 const perfilPropio = ref();
-// const siguiendo = ref();
+const siguiendo = ref();
 
 const props = defineProps({
   publicacionUnica: {
@@ -20,20 +18,20 @@ const props = defineProps({
   }
 });
 
-// async function seguir() {
-//   const { data: seguidores, error: errorSeguidores } = await supabase
-//     .from('seguidores')
-//     .select('*')
-//     .eq('idseguidor', userId.value)
-//     .eq('idseguido', props.publicacionUnica.idusuario);
+async function seguir() {
+  const { data: seguidores, error: errorSeguidores } = await supabase
+    .from('seguidores')
+    .select('*')
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', props.publicacionUnica.idusuario);
 
-//   if (seguidores.length == 0) {
-//     const { data: inserted, error: insertError } = await supabase
-//       .from('seguidores')
-//       .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
-//     siguiendo.value = true
-//   }
-// }
+  if (seguidores.length == 0) {
+    const { data: inserted, error: insertError } = await supabase
+      .from('seguidores')
+      .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
+    siguiendo.value = true
+  }
+}
 
 async function dejarSeguir() {
   const { error: deleteError } = await supabase
@@ -192,7 +190,7 @@ onUnmounted(() => {
               </div>
             </RouterLink>
             <div class="botones_seguir">
-              <button v-if="siguiendo == false && perfilPropio == false" @click="seguir(props.publicacionUnica.idusuario)">Seguir</button>
+              <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
               <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
             </div>
           </div>

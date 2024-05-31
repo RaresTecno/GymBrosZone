@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export const userActive = ref(false);
 export const userId = ref();
+export const siguiendo = ref();
 // console.log(supabase.auth.user())
 
 /*Función para obtener el id del usuario.*/
@@ -22,6 +23,21 @@ export async function obtenerId() {
   console.log(userId.value)
   return user.id;
 }
+
+export async function seguir(idseguido) {
+    const { data: seguidores, error: errorSeguidores } = await supabase
+      .from('seguidores')
+      .select('*')
+      .eq('idseguidor', userId.value)
+      .eq('idseguido', idseguido);
+  
+    if (seguidores.length == 0) {
+      const { data: inserted, error: insertError } = await supabase
+        .from('seguidores')
+        .insert([{ idseguidor: userId.value, idseguido: idseguido }]);
+      siguiendo.value = true
+    }
+  }
 
 export async function userState(){
     const currentUser = await supabase.auth.getSession();

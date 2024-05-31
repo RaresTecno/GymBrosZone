@@ -1,10 +1,52 @@
 <script setup>
+// productos.value = result.products;
+// ProductoFat_100.value = producto.nutriments["fat_100g"];
+// ProductoFoto.value = imagen(producto);
+// ProductoNombre.value = nombre(producto);
+// ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
+// ProductoNovaGroup.value = urlNovaScore(producto.product.nova_group);
+// ProductoEcoScore.value = urlEcoScore(producto.product.ecoscore_grade);
+// ProductoKcal_100.value = producto.product.nutriments["energy-kcal_100g"];
+// ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
+// ProductoFat_100.value = producto.product.nutriments["fat_100g"];
+// ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
+// ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
+// ProductoSaturedFatUnit.value = producto.product.nutriments["saturated-fat_unit"];
+// ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
+// ProductoCarbohydratesUnit.value = producto.product.nutriments["carbohydrates_unit"];
+// ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
+// ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
+// ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
+// ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
+// ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
+// ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
+// ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
+// ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
+// ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
+// ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
+// ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+// ProductoCantidad.value = producto.product.quantity;
+
+// ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
+// ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
+// ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
+// ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
+// ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
+// ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
+// ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
+// ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
+// ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
+// ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
+
+// console.log(ProductoNegativePoints.value)
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { disponible } from "../main";
 
 disponible.value = true;
+
+const vistaUnica = ref(false)
 
 const buscado = ref(false);
 const busquedaAlimento = ref("");
@@ -13,6 +55,8 @@ const productos = ref([]);
 const totalPaginas = ref(1);
 const productosPorPagina = 12;
 const tiempoCarga = ref(null);
+const paginasParaMostrar = ref([]);
+const codigo = ref()
 
 const ProductoFoto = ref("");
 const ProductoNombre = ref("");
@@ -54,74 +98,56 @@ const ProductoNutriScorePoints = ref("");
 // watch([busquedaAlimento, pagina], buscarProductos);
 
 async function buscarProductos() {
+
   // if (busquedaAlimento.value.trim() === '') {
   //   productos.value = [];
   //   totalPaginas.value = 1;
   //   return;
   // }
+
+
   // https://es.openfoodfacts.org/cgi/search.pl?search_terms=&search_simple=1&action=process
   // https://es.openfoodfacts.org/cgi/search.pl?action=process&sort_by=unique_scans_n&page_size=24?sort_by=popularity
   //https://es.openfoodfacts.org/cgi/search.pl?search_terms=&search_simple=1&action=process
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value)}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true?sort_by=popularity`;
   // const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value)}&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
   // const url2 =
-  // "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value;
+
+
+  const url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value;
+
+  // if (busquedaAlimento.value.trim() !== '' && !isNaN(busquedaAlimento.value)) {
+  //   url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value;
+  // }
+
   const startTime = performance.now();
   try {
     const response = await fetch(url);
+    console.log(response.code)
+    let result = await response.json();
 
-    const result = await await response.json();
+    if (result.status === "failure") {
+      const alternativeUrl = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value)}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
+      const alternativeResponse = await fetch(alternativeUrl);
+      result = await alternativeResponse.json();
+      vistaUnica.value = false;
+    } else {
+      vistaUnica.value = true;
+
+    }
+
+    console.log(result)
     const resultado = result.products;
     productos.value = resultado;
-    console.log(result)
-    console.log(productos.value)
     totalPaginas.value = Math.ceil(result.count / productosPorPagina);
-    // productos.value = result.products;
-    // ProductoFat_100.value = producto.nutriments["fat_100g"];
-    // ProductoFoto.value = imagen(producto);
-    // ProductoNombre.value = nombre(producto);
-    // ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
-    // ProductoNovaGroup.value = urlNovaScore(producto.product.nova_group);
-    // ProductoEcoScore.value = urlEcoScore(producto.product.ecoscore_grade);
-    // ProductoKcal_100.value = producto.product.nutriments["energy-kcal_100g"];
-    // ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
-    // ProductoFat_100.value = producto.product.nutriments["fat_100g"];
-    // ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
-    // ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
-    // ProductoSaturedFatUnit.value = producto.product.nutriments["saturated-fat_unit"];
-    // ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
-    // ProductoCarbohydratesUnit.value = producto.product.nutriments["carbohydrates_unit"];
-    // ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
-    // ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
-    // ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
-    // ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
-    // ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
-    // ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
-    // ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
-    // ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
-    // ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
-    // ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
-    // ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
-    // ProductoCantidad.value = producto.product.quantity;
-
-    // ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
-    // ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
-    // ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
-    // ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
-    // ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
-    // ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
-    // ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
-    // ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
-    // ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
-    // ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
-
-    // console.log(ProductoNegativePoints.value)
     buscado.value = true;
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
   const endTime = performance.now(); // Fin del tiempo
-  tiempoCarga.value = (endTime - startTime).toFixed(2); 
+  tiempoCarga.value = (endTime - startTime).toFixed(2);
+}
+function toCapitalize(texto) {
+  return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
 }
 function nombre(producto) {
   const idiomas = [
@@ -170,10 +196,17 @@ function nombre(producto) {
   ];
   for (const idioma of idiomas) {
     if (producto[idioma] && producto[idioma].trim() !== '') {
-      return producto[idioma];
+      return producto[idioma] + " - " + toCapitalize(producto.brands_tags[0]);
     }
   }
-  return ''; //Retorna una cadena vacía si no se encuentra ningún nombre de producto
+  return false; //Retorna una cadena vacía si no se encuentra ningún nombre de producto
+}
+function cantidad(producto) {
+  if (producto.quantity) {
+    console.log(producto.quantity);
+    return ` - ${producto.quantity}`;
+  }
+  return ''; // Retorna una cadena vacía si no hay cantidad
 }
 function imagen(producto) {
   if (producto.image_url != null) {
@@ -208,7 +241,7 @@ function ingredients(producto) {
   }
 }
 function urlNutriScore(valor) {
-  switch (valor) {
+  switch (valor.nutriscore_grade) {
     case "a":
       return "https://static.openfoodfacts.org/images/attributes/dist/nutriscore-a.svg";
     case "b":
@@ -224,7 +257,7 @@ function urlNutriScore(valor) {
   }
 }
 function urlEcoScore(valor) {
-  switch (valor) {
+  switch (valor.ecoscore_grade) {
     case "a":
       return "https://static.openfoodfacts.org/images/attributes/dist/ecoscore-a.svg";
     case "b":
@@ -240,7 +273,7 @@ function urlEcoScore(valor) {
   }
 }
 function urlNovaScore(valor) {
-  switch (valor) {
+  switch (valor.nova_group) {
     case 1:
       return "https://static.openfoodfacts.org/images/attributes/dist/nova-group-1.svg";
     case 2:
@@ -258,17 +291,49 @@ function urlNovaScore(valor) {
 function paginaAnterior() {
   if (pagina.value > 1) {
     pagina.value--;
-    buscarProductos()
+    actualizarPaginasParaMostrar();
   }
 }
 
 function paginaSiguiente() {
   if (pagina.value < totalPaginas.value) {
     pagina.value++;
-    buscarProductos()
+    actualizarPaginasParaMostrar();
   }
 }
+function irAPagina(pageNumber) {
+  pagina.value = pageNumber;
+  actualizarPaginasParaMostrar();
+}
 
+function irPrimeraPagina() {
+  pagina.value = 1;
+  actualizarPaginasParaMostrar();
+}
+
+function irUltimaPagina() {
+  pagina.value = totalPaginas.value;
+  actualizarPaginasParaMostrar();
+}
+function actualizarPaginasParaMostrar() {
+  const paginas = [];
+  const numPaginasMostradas = 10;
+  const numPaginasAntesDespues = Math.floor(numPaginasMostradas / 2);
+  let startPage = Math.max(1, pagina.value - numPaginasAntesDespues);
+  let endPage = Math.min(totalPaginas.value, startPage + numPaginasMostradas - 1);
+
+  if (startPage > 1) {
+    paginas.push('...');
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    paginas.push(i);
+  }
+
+  if (endPage < totalPaginas.value) {
+    paginas.push('...');
+  }
+}
 // // Setup barcode scanner
 // const scanner = ref(null);
 
@@ -352,21 +417,41 @@ function paginaSiguiente() {
 
   </div>
   <div v-if="tiempoCarga !== null">
-      Tiempo de carga: {{ tiempoCarga }} ms
-    </div>
-  <div class="todos-productos">
-      <div v-for="producto in productos" :key="producto.code" class="product">
-        {{ nombre(producto) }}
-        <img :src="imagen(producto)" alt="" class="img-producto" />
-      </div>
+    Tiempo de carga: {{ tiempoCarga }} ms
+  </div>
+
+  <div class="productos-comun">
+    <div class="reja-productos">
+      <template v-for="producto in productos" :key="producto.code">
+        <div class="mini-producto">
+          <h2 class="mini-nombre">{{ (nombre(producto) + cantidad(producto)) || producto.id }}</h2>
+          <div class="mini-img">
+            <img :src="imagen(producto)" />
+          </div>
+
+          <div class="mini-scores">
+            <img :src="urlNutriScore(producto)" class="mini-nutri" />
+            <img :src="urlNovaScore(producto)" class="mini-nova" />
+            <img :src="urlEcoScore(producto)" class="mini-eco" />
+          </div>
+        </div>
+      </template>
     </div>
 
-  <div class="pagination-controls">
-    <button @click="paginaAnterior" :disabled="pagina === 1">Previous</button>
-    <span>{{ pagina }} / {{ totalPaginas }}</span>
-    <button @click="paginaSiguiente" :disabled="pagina === totalPaginas">Next</button>
+    <div class="pagination-controls">
+      <button @click="irPrimeraPagina" :disabled="pagina === 1">First</button>
+      <button @click="paginaAnterior" :disabled="pagina === 1">Previous</button>
+      <template v-for="pageNumber in paginasParaMostrar">
+        <button v-if="pageNumber === '...'" disabled>...</button>
+        <button v-else @click="irAPagina(pageNumber)" :class="{ active: pageNumber === pagina }">{{ pageNumber
+          }}</button>
+      </template>
+      <button @click="paginaSiguiente" :disabled="pagina === totalPaginas">Next</button>
+      <button @click="irUltimaPagina" :disabled="pagina === totalPaginas">Last</button>
+    </div>
   </div>
-  <!-- <div v-if="buscado" class="productos">
+
+  <div v-if="vistaUnica == true" class="productos">
     <div class="producto-arriba">
       <div class="producto-img">
         <img :src="ProductoFoto" alt="" class="img-producto" />
@@ -453,7 +538,7 @@ function paginaSiguiente() {
       </div>
     </div>
 
-  </div> -->
+  </div>
 </template>
 
 <style scoped>
@@ -492,28 +577,86 @@ function paginaSiguiente() {
 }
 
 
-.todos-productos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 16px;
+.productos-comun {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  width: 70%;
 }
 
-.product {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
+.reja-productos {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
-.pagination-controls {
-  text-align: center;
-  margin-top: 16px;
+.mini-producto {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid black;
+  width: 200px;
+  height: 320px;
+  background-color: white;
 }
 
-.pagination-controls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.mini-nombre {
+  width: 80%;
+  height: 20%;
+  font-size: clamp(9px, 1.8em, 20px);
+  margin: 10px;;
+}
+
+.mini-img {
+  height: 55%;
+  background-color: white;
+  padding: 10px;
+}
+
+.mini-img img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
+
+.mini-scores {
+  height: 25%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.mini-nutri {
+  max-width: 33.33%;
+}
+
+.mini-nova {
+  height: 70%;
+}
+
+.mini-eco {
+  max-width: 33.33%;
+}
+
+@media(max-width: 1100px) {
+  .reja-productos {
+    width: 100%;
+  }
+
+  .productos-comun {
+    width: 90%;
+
+  }
+  .mini-producto {
+  width: 250px;
+}
+}
+@media(max-width:600px) {
+  .mini-producto {
+  width: 80%;
+}
 }
 /* .productos {
   margin-left: 60px;

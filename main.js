@@ -1,4 +1,4 @@
-import { createApp, ref } from "vue";
+import { createApp, ref, reactive } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -9,6 +9,16 @@ export const disponible = ref();
 disponible.value = true;
 
 const navegador = ref(navigator.userAgent);
+
+
+export const state = reactive({
+  headerKey: 0
+});
+
+export function reloadHeader() {
+  state.headerKey += 1;
+}
+
 export const usandoMovil = ref();
 async function init() {
   if (

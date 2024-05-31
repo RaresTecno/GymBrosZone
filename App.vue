@@ -7,7 +7,7 @@ import NavInferior from './components/BarraInferior.vue'
 import Footer from './components/Footer.vue'
 import './assets/index.css'
 import { supabase, userActive, logOut } from './clients/supabase'
-import { usandoMovil, disponible } from './main'
+import { usandoMovil, disponible, state } from './main'
 
 import { ref, computed, onMounted } from "vue";
 
@@ -154,7 +154,7 @@ async function revisarFotoPerfil(user) {
 </script>
 
 <template>
-  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" />
+  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey"/>
   <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->

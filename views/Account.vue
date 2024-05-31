@@ -2,7 +2,7 @@
 import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase, obtenerId } from '../clients/supabase';
-import { disponible } from "../main";
+import { disponible, reloadHeader } from "../main";
 
 disponible.value = true;
 
@@ -144,6 +144,7 @@ function avisoImagen(mensaje) {
 async function guardar() {
   mensajeAviso.value = '';
   mostrarAviso.value = false;
+  let recargar = false;
   let consulta = {};
   /*Comprobamos el gymtag.*/
   if (gymtagActual !== gymtag.value && await validarGymtag()) {
@@ -199,6 +200,7 @@ async function guardar() {
     consulta.fotoperfil = '/predeterminada.png';
     fotoperfilActual.value = '/predeterminada.png';
     foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    recargar = true;
     /*No ha cambiado su foto de perfil anterior.*/
   } else if (foto.value === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoperfilActual.value) {
     /*No ha quitado la foto de perfil predeterminada.*/
@@ -235,6 +237,7 @@ async function guardar() {
     }
     fotoperfilActual.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + ruta;
     consulta.fotoperfil = ruta;
+    recargar = true;
   }
   /*Actualizamos la información del usuario.*/
   if (Object.keys(consulta).length > 0) {
@@ -247,17 +250,14 @@ async function guardar() {
     } else {
       if(gymtagActual !== gymtag.value){
         gymtagActual = gymtag.value;
-        reloadPage();
+        reloadHeader();
+      }
+      if(recargar){
+        reloadHeader();
       }
       mensaje('Tu información ha sido actualizada.');
     }
   }
-}
-
-/*Función para actualizar la página.*/
-function reloadPage() {
-  localStorage.setItem('showMessage', 'true');
-  window.location.reload();
 }
 
 /*Función para encriptar cadenas de texto.*/
@@ -374,7 +374,7 @@ onMounted(async () => {
     .select('gymtag, nombre, apellidos, fechanacimiento, fotoperfil')
     .eq('id', id);
   if (error) {
-    /*Si ocurre un error avisamos al usuario y colocamos en la previsualización de la foto de perfil la imagen predeterminada.*/
+    /*Si ocurre un error avisamos al usuario y colocamos en la previsualización de la foto de perfil la imagen pfotoperfilActualreredeterminada.*/
     mensaje('Hubo un error al cargar tu información.');
     foto.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     esPredeterminada.value = true;

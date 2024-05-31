@@ -46,6 +46,8 @@ function avisoImagen(mensaje) {
 
 /*Función para realizar la publicación.*/
 async function publicar() {
+  mensajeAviso.value = '';
+  mostrarAviso.value = false;
   /*Deshabilitamos el botón.*/
   deshabilitarBoton(true);
   /*Validamos la temática y el contenido de la publicación.*/
@@ -304,6 +306,7 @@ function aceptar() {
       }
     }, 5);
   });
+  deshabilitarBoton(false);
 }
 
 function irHome() {

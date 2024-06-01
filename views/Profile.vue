@@ -220,8 +220,8 @@ function checkInput() {
     </div>
     <div id="contenido">
       <div id="botones">
-        <button @click="cambiarVista('Publicaciones')">Posts</button>
-        <button @click="cambiarVista('Estadisticas')">Estadisticas</button>
+        <button @click="cambiarVista('Publicaciones')" :class="{ vistaBoton: vista === 'Publicaciones', vistaNormal: vista !== 'Publicaciones' }">Posts</button>
+        <button @click="cambiarVista('Estadisticas')" :class="{ vistaBoton: vista === 'Estadisticas', vistaNormal: vista !== 'Estadisticas' }">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
@@ -404,7 +404,7 @@ function checkInput() {
   width: 100%;
 }
 
-#botones button {
+.vistaNormal{
   width: 50%;
   padding: 10px;
   font-weight: bold;
@@ -412,7 +412,15 @@ function checkInput() {
   background-color: var(--light-blue-text);
   border: 1px solid black;
 }
+.vistaBoton{
+  width: 50%;
+  padding: 10px;
+  font-weight: bold;
+  color:var(--light-blue-text);
+  background-color: var(--blue-inputs);
+  border: 1px solid rgb(255, 255, 255);
 
+}
 .vista {
   width: 100%;
   display: grid;

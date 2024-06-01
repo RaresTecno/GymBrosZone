@@ -97,13 +97,13 @@ const ProductoNutriScorePoints = ref("");
 
 watch([busquedaAlimento, pagina], buscarProductos);
 
+const esCodigoBarras = /^[0-9]{4,}$/;
 async function buscarProductos() {
   // if (busquedaAlimento.value.trim() === '') {
   //   productos.value = [];
   //   totalPaginas.value = 1;
   //   return;
   // }
-  const esCodigoBarras = /^[0-9]{4,}$/;
   let url;
   if (esCodigoBarras.test(busquedaAlimento.value)) {
     url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value;
@@ -339,15 +339,24 @@ const paginaSiguiente = () => {
 // function error(err) {
 // }
 
-
+const vistaBusqueda = ref(sessionStorage.getItem("vistaBusqueda") || "Usuarios");
+function cambiarVista(tipo) {
+  vistaBusqueda.value = tipo;
+  sessionStorage.setItem("vistaBusqueda", tipo); // Guardar la vista seleccionada en el almacenamiento local
+}
+onMounted(() => {
+  if (!sessionStorage.getItem("vistaBusqueda")) {
+    sessionStorage.setItem("vistaBusqueda", "Usuarios"); // Establecer la vista predeterminada si no hay una vista almacenada
+  }
+});
 </script>
 
 <template>
   <div class="buscador">
     <div class="filtros">
-      <button class="filtro-usuarios">Gym Bros</button>
-      <button class="filtro-publicaciones">Publicaciones</button>
-      <button class="filtro-productos">Productos</button>
+      <button @click="cambiarVista('Usuarios')" :class="{ filtroSeleccionado: vistaBusqueda === 'Usuarios', filtrosNoSeleccionado: vistaBusqueda !== 'Usuarios' }">Gym Bros</button>
+      <button @click="cambiarVista('Publicaciones')" :class="{ filtroSeleccionado: vistaBusqueda === 'Publicaciones', filtrosNoSeleccionado: vistaBusqueda !== 'Publicaciones' }">Publicaciones</button>
+      <button @click="cambiarVista('Productos')" :class="{ filtroSeleccionado: vistaBusqueda === 'Productos', filtrosNoSeleccionado: vistaBusqueda !== 'Productos' }">Productos</button>
     </div>
     <div class="search">
       <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
@@ -373,17 +382,21 @@ const paginaSiguiente = () => {
   <div class="productos-comun" v-if="buscado">
     <div class="reja-productos">
       <template v-for="producto in productos" :key="producto.code">
-        <div class="mini-producto">
-          <h2 class="mini-nombre">{{ (nombre(producto) && cantidad(producto)) ? (nombre(producto) + cantidad(producto)) : producto.id }}</h2>
-          <div class="mini-img">
-            <img :src="imagen(producto)" />
+        <div class="mini-producto-padre">
+          <div class="mini-producto">
+            <h2 class="mini-nombre">{{ (nombre(producto) && cantidad(producto)) ? (nombre(producto) +
+        cantidad(producto)) : producto.id }}</h2>
+            <div class="mini-img">
+              <img :src="imagen(producto)" />
+            </div>
+
+            <div class="mini-scores">
+              <img :src="urlNutriScore(producto)" class="mini-nutri" />
+              <img :src="urlNovaScore(producto)" class="mini-nova" />
+              <img :src="urlEcoScore(producto)" class="mini-eco" />
+            </div>
           </div>
 
-          <div class="mini-scores">
-            <img :src="urlNutriScore(producto)" class="mini-nutri" />
-            <img :src="urlNovaScore(producto)" class="mini-nova" />
-            <img :src="urlEcoScore(producto)" class="mini-eco" />
-          </div>
         </div>
       </template>
     </div>
@@ -518,21 +531,38 @@ const paginaSiguiente = () => {
 
 .filtros * {
   width: 33.33%;
+  padding: 10px;
+  font-weight: bold;
+  border: 1px solid black;
 }
-
-
+.filtroSeleccionado{
+  background-color: var(--dark-blue);
+  color: var(--light-blue-text);
+}
+.filtrosNoSeleccionado{
+  background-color: var(--light-blue-text);
+  color: var(--dark-blue);
+}
 .productos-comun {
-  margin: auto;
-  width: 70%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 
 .reja-productos {
-  margin: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 10px;
-  width: 100%;
+  width: 70%;
+  margin-left: 60px;
+}
+
+.mini-producto-padre {
+  display: flex;
+  justify-content: center;
 }
 
 .mini-producto {
@@ -566,11 +596,12 @@ const paginaSiguiente = () => {
   height: 20%;
   width: 100%;
   display: flex;
-  align-items: center;
   justify-content: space-evenly;
+  align-items: center;
 }
 
 .mini-nutri {
+  max-height: 75%;
   max-width: 30.33%;
 }
 
@@ -579,34 +610,49 @@ const paginaSiguiente = () => {
 }
 
 .mini-eco {
-  max-width: 33.33%;
+  max-width: 25.33%;
 }
 
 @media(max-width: 1100px) {
   .reja-productos {
-    width: 100%;
-    margin-left: 40px;
-
-  }
-
-  .productos-comun {
     width: 90%;
 
   }
-
   .mini-producto {
     width: 250px;
   }
 }
 
 @media(max-width: 875.5px) {
+  .buscador {
+  margin: 60px 0 0 0px;
+  height: 80px;
+}
   .reja-productos {
+
     margin-left: 0;
 
   }
+  .mini-producto {
+    width: 100%;
+  }
 }
 
-@media(max-width:600px) {
+/* @media(max-width:730px) {
+  .mini-producto-padre {
+    display: block;
+    margin: auto;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .mini-producto {
+    width: auto;
+
+  }
+} */
+
+@media(max-width:566.5px) {
   .mini-producto {
     width: 80%;
   }

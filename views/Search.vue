@@ -696,7 +696,7 @@ const filtrarProductos = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #ddd;
+  border: 3px solid black;
   padding: 20px;
   margin: 10px 20px 10px 80px;
   border-radius: 10px;
@@ -721,7 +721,8 @@ const filtrarProductos = () => {
 
 .usuario-info h2 {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1.3em;
+  font-style: bold;
 }
 
 .usuario-info p {
@@ -736,6 +737,7 @@ const filtrarProductos = () => {
 
 .usuario-estadisticas span {
   margin: 2px 0;
+  font-size: 1.1em;
 }
 
 .usuario-card-link {
@@ -743,31 +745,24 @@ const filtrarProductos = () => {
   color: inherit;
 }
 
+.usuario-card:hover {
+  background-color: #0c1f49;
+  scale: 0.995;
+}
 
-@media (max-width: 1150px) {
+.usuario-foto:hover, .usuario-info:hover, .usuario-info h2:hover, .usuario-info h2:hover, .usuario-info p:hover, .usuario-estadisticas:hover, .usuario-estadisticas span:hover, .usuario-card-link:hover {
+  color: aliceblue;
+}
+
+@media (max-width: 1150px){
   .producto-novagroup {
     margin: 0 2% 0 2%;
   }
+}
 
+@media (max-width: 880px) {
   .usuario-card {
-    margin: 10px;
-    border-radius: 10px;
-  }
-
-  .usuario-foto {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin-right: 20px;
-  }
-
-  .usuario-info h2 {
-    margin: 0;
-    font-size: 1.2em;
-  }
-
-  .usuario-info p {
-   margin: 5px 0 0;
+    margin-left: 20px;
   }
 }
 

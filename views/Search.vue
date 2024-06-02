@@ -260,8 +260,9 @@ function error(err) {
 
 // Estado;
 const busquedaUsuarios = ref("");
-const publicacionesFiltradas = ref([]);
 const usuariosFiltrados = ref([]);
+const busquedaPublicaciones = ref("");
+const publicacionesFiltradas = ref([]);
 const userActive = ref(true);
 const botonSeleccionado = ref("");
 
@@ -271,7 +272,7 @@ const obtenerPublicacionesFiltradas = async () => {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
       .select("*")
-      .or(`contenido.ilike.%${busqueda.value}%,tematica.ilike.%${busqueda.value}%`);
+      .or(`contenido.ilike.%${busquedaPublicaciones.value}%,tematica.ilike.%${busquedaPublicaciones.value}%`);
 
     if (error) {
       console.error(error);
@@ -345,14 +346,11 @@ const filtrarProductos = () => {
       <button class="filtro-productos" @click="filtrarProductos">Productos</button>
     </div>
     <div class="search">
-      <!-- <input type="search"> -->
-      <!-- v-model="busquedaAlimento" -->
       <div v-if="userActive && botonSeleccionado === 'productos'">
         <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
         <input type="text" v-model="busqueda" />
       <button @click="verApi">Search Product</button>
       </div>
-      <!-- <input type="search"> -->
       <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
         <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
         <input type="text" v-model="busquedaUsuarios"/>
@@ -361,7 +359,7 @@ const filtrarProductos = () => {
       <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
         <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
         <input type="text" v-model="busquedaPublicaciones"/>
-      <button @click="filtrarUsuarios">Search Publicaciones</button>
+        <button @click="filtrarPublicaciones">Search Publicaciones</button>
       </div>
       <div class="cerrar">x</div>
     </div>
@@ -389,7 +387,7 @@ const filtrarProductos = () => {
       </div>
     </div>
   
-  <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
+  <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones publicaciones-estilo">
       <div class="vista-publicaciones">
         <template v-for="publicacion in publicacionesFiltradas" :key="publicacion.id">
           <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
@@ -519,6 +517,7 @@ const filtrarProductos = () => {
 
 .filtros * {
   width: 33.33%;
+  margin-top: 0.15%;
 }
 
 .productos {
@@ -688,12 +687,6 @@ const filtrarProductos = () => {
   margin: 0 50px;
 }
 
-/* .vista-publicaciones {
-  justify-content: center;
-
-  width: 80%;
-} */
-
 .usuarios{
   margin-bottom: 8%;
 }
@@ -766,9 +759,35 @@ const filtrarProductos = () => {
   border-color: aliceblue;
 }
 
+.publicaciones-estilo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 60px;
+  margin-bottom: 100px;
+  padding-top: 80px;
+}
+.vista-publicaciones {
+  width: 65%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+
 @media (max-width: 1150px){
   .producto-novagroup {
     margin: 0 2% 0 2%;
+  }
+}
+
+
+
+@media (max-width: 1100px) {
+  .vista-publicaciones{
+    width: 100%;
+  }
+  .buttons {
+    margin: 2%;
   }
 }
 
@@ -776,19 +795,14 @@ const filtrarProductos = () => {
   .usuario-card {
     margin-left: 20px;
   }
-}
-
-@media (max-width: 875px) {
   .productos {
     margin-left: 0;
   }
-
   .producto-arriba {
     flex-direction: column;
     align-items: center;
     max-height: fit-content;
   }
-
   .producto-img {
     min-width: 100%;
     width: fit-content;
@@ -796,16 +810,36 @@ const filtrarProductos = () => {
     max-height: 600px;
     margin: 0;
   }
-
   .img-producto {
     height: 30%;
     min-height: 200px;
     margin: 0;
-
   }
-
   .producto-general h2 {
     text-align: center;
+  }
+  .publicaciones-estilo {
+    margin-left: 0;
+    padding-top: 0;
+  }
+  .vista-publicaciones {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    align-items: center;
+  }
+}
+
+@media (max-width: 625px) {
+  .publicaciones-estilo {
+    margin-left: 0;
+    padding-top: 30px;
+  }
+
+  .vista-publicaciones {
+    width: 100%;
+    margin: 0px;
   }
 }
 </style>

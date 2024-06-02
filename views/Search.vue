@@ -64,11 +64,7 @@ watch(busquedaAlimento, () => {
 });
 const esCodigoBarras = /^[0-9]{4,}$/;
 async function buscarProductos() {
-  // if (busquedaAlimento.value.trim() === '') {
-  //   productos.value = [];
-  //   totalPaginas.value = 1;
-  //   return;
-  // }
+
   let url;
   console.log(codigo.value);
   const startTime = performance.now();
@@ -325,61 +321,6 @@ const paginaSiguiente = () => {
     buscarProductos();
   }
 };
-// // Setup barcode scanner
-// const scanner = ref(null);
-
-// onMounted(() => {
-//   scanner.value = new Html5QrcodeScanner("reader", {
-//     fps: 10,
-//     qrbox: { width: 250, height: 180 },
-//     formatsToSupport: [
-//       Html5QrcodeSupportedFormats.CODE_128,
-//       Html5QrcodeSupportedFormats.EAN_13,
-//     ],
-//   });
-//   scanner.value.render(success, error);
-// });
-// document.addEventListener('DOMContentLoaded', function () {
-//   // Encuentra el elemento con el id "reader"
-//   var readerElement = document.getElementById("reader");
-
-//   // Verifica si el elemento existe
-//   if (readerElement) {
-//     // Crea un nuevo div
-//     var newDiv = document.createElement("div");
-
-//     // Añade la clase 'ocultar-i' al nuevo div
-//     newDiv.classList.add('ocultar-i');
-
-//     // Opcional: Añadir contenido al nuevo div
-//     newDiv.innerHTML = "<p>Este es un nuevo contenido</p>";
-
-//     // Añade el nuevo div como hijo del elemento "reader"
-//     readerElement.appendChild(newDiv);
-//   } else {
-//     // console.error('Elemento con id "reader" no encontrado.');
-//   }
-// });
-// onUnmounted(() => {
-//   if (scanner.value) {
-//     scanner.value.clear();
-//   }
-// });
-
-
-//Codigo de barras
-// function success(result) {
-//   busquedaAlimento.value = result.decodedText; // Automatically fills the input with the barcode result
-//   busquedaAlimento.value = result;
-//   buscarProductos();
-//   if (scanner.value) {
-//     scanner.value.clear();
-//   }
-//   document.getElementById("reader").remove();
-// }
-
-// function error(err) {
-// }
 
 // const vistaBusqueda = ref(sessionStorage.getItem("vistaBusqueda") || "Usuarios");
 const vistaBusqueda = ref("Usuarios");
@@ -392,8 +333,58 @@ onMounted(() => {
   // if (!sessionStorage.getItem("vistaBusqueda")) {
   //   sessionStorage.setItem("vistaBusqueda", "Usuarios"); // Establecer la vista predeterminada si no hay una vista almacenada
   // }
-
 });
+let html5QrcodeScanner = null;
+
+function onScanSuccess(decodedText, decodedResult) {
+  console.log(`Code matched = ${decodedText}`, decodedResult);
+  busquedaAlimento.value = decodedText;
+  if (html5QrcodeScanner) {
+    html5QrcodeScanner.clear();
+    html5QrcodeScanner = null;
+  }
+}
+
+function onScanError(errorMessage) {
+  console.log(`Error = ${errorMessage}`);
+}
+
+function mostrarScanner() {
+  const readerElement = document.getElementById("reader");
+
+  if (readerElement) {
+    if (!html5QrcodeScanner) {
+      html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 180 },
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.EAN_13,
+          ],
+        },
+        false // Esto previene múltiples instancias del escáner
+      );
+      html5QrcodeScanner.render(onScanSuccess, onScanError);
+
+      // Verifica si el elemento existe
+      if (readerElement) {
+        // Crea un nuevo div
+        var newDiv = document.createElement("div");
+
+        // Añade la clase 'ocultar-i' al nuevo div
+        newDiv.classList.add('ocultar-i');
+
+        // Opcional: Añadir contenido al nuevo div
+        newDiv.innerHTML = "<p>Este es un nuevo contenido</p>";
+
+        // Añade el nuevo div como hijo del elemento "reader"
+        readerElement.appendChild(newDiv);
+      }
+    }
+  }
+}
 </script>
 
 <template>
@@ -408,14 +399,6 @@ onMounted(() => {
         :class="{ filtroSeleccionado: vistaBusqueda === 'Productos', filtrosNoSeleccionado: vistaBusqueda !== 'Productos' }">Productos</button>
     </div>
   </div>
-  <div id="reader">
-
-
-  </div>
-
-  <div id="result">
-
-  </div>
   <!-- <div v-if="tiempoCarga !== null">
     Tiempo de carga: {{ tiempoCarga }} ms
   </div> -->
@@ -425,6 +408,11 @@ onMounted(() => {
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
       <input type="text" v-model="busquedaAlimento" />
       <font-awesome-icon class="cross" :icon="['fas', 'xmark']" @click="borrar" />
+    </div>
+    <div>
+      <button @click="mostrarScanner()">Escanear producto</button>
+      <div id="reader"></div>
+      <div id="result"></div>
     </div>
     <div class="reja-productos" v-if="vistaUnica == false">
       <template v-for="producto in productos" :key="producto.code">
@@ -456,7 +444,7 @@ onMounted(() => {
 
   <div v-if="vistaUnica == true && vistaBusqueda === 'Productos'" class="productos">
     <div class="producto-arriba">
-      <font-awesome-icon @click="cerrarProducto()" class="cross-interno" :icon="['fas', 'xmark']"/>
+      <font-awesome-icon @click="cerrarProducto()" class="cross-interno" :icon="['fas', 'xmark']" />
       <div class="producto-img">
         <img :src="ProductoFoto" alt="" class="img-producto" />
       </div>
@@ -771,6 +759,7 @@ onMounted(() => {
   top: 15px;
   right: 15px;
 }
+
 .cross-interno:hover {
   cursor: pointer;
 }

@@ -720,6 +720,7 @@ const filtrarProductos = () => {
   border-color: black;
   margin-right: 20px;
   object-fit: cover;
+  transition: transform 1s ease, border-color 0.65s ease;
 }
 
 .usuario-info {
@@ -761,13 +762,17 @@ const filtrarProductos = () => {
   color: aliceblue;
 }
 
+.usuario-foto:hover{
+  border-color: aliceblue;
+}
+
 @media (max-width: 1150px){
   .producto-novagroup {
     margin: 0 2% 0 2%;
   }
 }
 
-@media (max-width: 880px) {
+@media (max-width: 875px) {
   .usuario-card {
     margin-left: 20px;
   }

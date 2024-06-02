@@ -369,7 +369,7 @@ const filtrarProductos = () => {
   <div id="reader"></div>
 
   <div v-if="userActive && botonSeleccionado === 'usuarios'" class="usuarios">
-      <div class="vista">
+      <div class="vista-usuarios">
         <template v-for="usuario in usuariosFiltrados" :key="usuario.id">
           <RouterLink :to="{ name: 'profile', params: { gymtag: usuario.gymtag } }" class="usuario-card-link">
             <div class="usuario-card">
@@ -390,7 +390,7 @@ const filtrarProductos = () => {
     </div>
   
   <div v-if="userActive && botonSeleccionado === 'publicaciones'" class="publicaciones">
-      <div class="vista">
+      <div class="vista-publicaciones">
         <template v-for="publicacion in publicacionesFiltradas" :key="publicacion.id">
           <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
         </template>
@@ -688,6 +688,12 @@ const filtrarProductos = () => {
   margin: 0 50px;
 }
 
+/* .vista-publicaciones {
+  justify-content: center;
+
+  width: 80%;
+} */
+
 .usuarios{
   margin-bottom: 8%;
 }
@@ -703,6 +709,7 @@ const filtrarProductos = () => {
   border-color: black;
   background-color: var(--blue);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 1s ease, background-color 0.65s ease;
 }
 
 .usuario-foto {

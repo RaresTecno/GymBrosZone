@@ -77,7 +77,7 @@ async function buscarProductos() {
 
     if (codigo.value === undefined) {
       url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value.trim();
-
+      codigo.value = busquedaAlimento.value.trim()
     } else {
       url = "https://world.openfoodfacts.org/api/v3/product/" + codigo.value;
     }
@@ -156,7 +156,11 @@ async function buscarProductos() {
 function mostrarProducto(codigoP) {
   codigo.value = codigoP
   buscarProductos()
-
+}
+function cerrarProducto() {
+  codigo.value = undefined
+  buscarProductos()
+  vistaUnica.value = false
 }
 function toCapitalize(texto) {
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
@@ -412,9 +416,9 @@ onMounted(() => {
   <div id="result">
 
   </div>
-  <div v-if="tiempoCarga !== null">
+  <!-- <div v-if="tiempoCarga !== null">
     Tiempo de carga: {{ tiempoCarga }} ms
-  </div>
+  </div> -->
 
   <div class="productos-comun" v-if="vistaBusqueda === 'Productos'">
     <div class="search-producto">
@@ -452,17 +456,18 @@ onMounted(() => {
 
   <div v-if="vistaUnica == true && vistaBusqueda === 'Productos'" class="productos">
     <div class="producto-arriba">
+      <font-awesome-icon @click="cerrarProducto()" class="cross-interno" :icon="['fas', 'xmark']"/>
       <div class="producto-img">
         <img :src="ProductoFoto" alt="" class="img-producto" />
       </div>
       <div class="producto-general">
         <div class="general-texto">
-          <h2 class="producto-nombre">{{ ProductoNombre }}</h2>
+          <h2 class="producto-nombre">{{ ProductoNombre !== false ? ProductoNombre : codigo }}</h2>
 
           <p class="producto-cantidad">
-          <div>Cantidad: </div>{{ ProductoCantidad }}.</p>
+          <div>Cantidad: </div>{{ ProductoCantidad && ProductoCantidad.trim() !== '' ? ProductoCantidad : '?' }}.</p>
           <p class="producto-ingredientes">
-          <div>Ingredientes: </div>{{ ProductoIngredientes }}.</p>
+          <div>Ingredientes: </div>{{ ProductoIngredientes ?? '?' }}.</p>
         </div>
         <div class="general-scores">
           <img class="producto-nutriscore" :src="ProductoNutriScore" alt="" />
@@ -476,7 +481,7 @@ onMounted(() => {
       <div class="tabla-nutrientes">
         <div class="tr">
           <div class="th">Información nutricional</div>
-          <div class="th">Vendido por 100 g / 100 ml</div>
+          <div class="th">Por 100 g / 100 ml</div>
         </div>
         <div class="tr">
           <div>Energía</div>
@@ -603,7 +608,7 @@ onMounted(() => {
   align-items: center;
   margin-top: 10px;
   margin-bottom: 30px;
-
+  margin-left: 60px;
 }
 
 .search-producto .lupa {
@@ -619,7 +624,7 @@ onMounted(() => {
   padding-right: 5px;
   font-size: 18px;
   border: 2px solid var(--dark-blue);
-
+  border-radius: 8px;
 }
 
 .search-producto input:focus {
@@ -639,7 +644,7 @@ onMounted(() => {
 .reja-productos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 10px;
+  gap: 15px;
   width: 70%;
   margin-left: 60px;
 }
@@ -655,6 +660,7 @@ onMounted(() => {
   border: 2px solid black;
   height: 320px;
   background-color: white;
+  border-radius: 10px;
 }
 
 .mini-nombre {
@@ -662,6 +668,7 @@ onMounted(() => {
   height: 20%;
   font-size: clamp(9px, 1.4em, 20px);
   margin: 10px;
+  margin-left: 15px;
 }
 
 .mini-img {
@@ -682,6 +689,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  margin-bottom: 5px;
 }
 
 .mini-nutri {
@@ -713,6 +721,11 @@ onMounted(() => {
     margin: 60px 0 0 0px;
   }
 
+  .search-producto {
+    width: 70%;
+    margin-left: 0;
+  }
+
   .reja-productos {
 
     margin-left: 0;
@@ -739,6 +752,7 @@ onMounted(() => {
 }
 
 .producto-arriba {
+  position: relative;
   display: flex;
   width: 80%;
   background-color: #5984df;
@@ -749,6 +763,16 @@ onMounted(() => {
   border: 2px solid black;
   margin-bottom: 20px;
 
+}
+
+.cross-interno {
+  font-size: 20px;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+.cross-interno:hover {
+  cursor: pointer;
 }
 
 .producto-img {
@@ -802,6 +826,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   width: 60%;
+  margin: 20px auto
 }
 
 .producto-nutriscore {
@@ -835,6 +860,8 @@ onMounted(() => {
 .tabla-nutrientes {
   border: 1px solid black;
   background-color: white;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .tabla-nutrientes .th {
@@ -901,6 +928,11 @@ onMounted(() => {
     align-items: center;
     max-height: fit-content;
     justify-content: center
+  }
+
+  .cross-interno {
+    top: 10px;
+    right: 10px;
   }
 
   .producto-img {

@@ -266,7 +266,6 @@ function checkInput() {
 }
 
 .perfil {
-  margin-top: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -275,6 +274,7 @@ function checkInput() {
 }
 
 #info {
+  padding-top: 80px;
   background-color: var(--dark-blue);
   min-height: fit-content;
   width: 73%;
@@ -457,11 +457,13 @@ function checkInput() {
 
 @media (max-width: 875px) {
   .perfil {
-    margin: 60px 0 0 0;
+    margin: 0;
   }
 
   #info {
     width: 100%;
+  padding-top: 60px;
+
   }
 
   #contenido {

@@ -203,6 +203,7 @@ onMounted(() => {
   });
   scanner.value.render(success, error);
 });
+
 document.addEventListener('DOMContentLoaded', function() {
     // Encuentra el elemento con el id "reader"
     var readerElement = document.getElementById("reader");

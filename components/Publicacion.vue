@@ -1,13 +1,40 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
 
 const perfilPropio = ref();
 const siguiendo = ref();
-const like = ref(false);
-const guardado = ref(false);
+const fotoPerfil = ref();
+
+const gymTag = ref();
+const foto = ref('');
+
+const likes = ref({});
+const guardados = ref({});
+
+const animatingLike = ref(false);
+const animatingLike2 = ref({});
+const animatingSave = ref({});
+const likeAnimationStyle = ref({ top: '50%', left: '50%' });
+const numeroLikes = ref();
+
+const likeText = computed(() => {
+  return numeroLikes.value === 1 ? ' Like' : ' Likes';
+});
+
+const deshabilitado = computed(() => comentarioTexto.value.length === 0);
+const comentarioTexto = ref('');
+const comentarioInput = ref(null);
+const comentarios = ref([]);
+
+const mostrarFinal = ref(false);
+
+const isCover = ref(true);
+const esCover = ref(true);
+
+const windowWidth = ref(window.innerWidth);
 
 const props = defineProps({
   publicacionUnica: {
@@ -17,51 +44,21 @@ const props = defineProps({
   ProfileView: {
     type: Boolean,
     default: false
+  },
+  fotoTuPerfilMostrar: {
+    type: String,
+    required: false
   }
 });
 
-async function seguir() {
-  const { data: seguidores, error: errorSeguidores } = await supabase
-    .from('seguidores')
-    .select('*')
-    .eq('idseguidor', userId.value)
-    .eq('idseguido', props.publicacionUnica.idusuario);
-
-  if (seguidores.length == 0) {
-    const { data: inserted, error: insertError } = await supabase
-      .from('seguidores')
-      .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
-    siguiendo.value = true
-  }
-}
-
-async function dejarSeguir() {
-  const { error: deleteError } = await supabase
-    .from('seguidores')
-    .delete()
-    .eq('idseguidor', userId.value)
-    .eq('idseguido', props.publicacionUnica.idusuario);
-  siguiendo.value = false;
-}
-
-const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
+const isProfile = ref(props.ProfileView);
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
-const fotoPerfil = ref();
-const gymTag = ref();
-const isCover = ref(true);
-const esCover = ref(true);
 
-const mostrarFinal = ref(false);
-const foto = ref('');
-const windowWidth = ref(window.innerWidth);
-const isProfile = ref(props.ProfileView);
-
+const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
-const combrobarImagen = () => {
-  ruta.value = fotoPredeterminada;
-}
+cargarPublicacion();
 
 if (props.publicacionUnica.resolucion == "cover") {
   isCover.value = true;
@@ -73,6 +70,228 @@ if (props.publicacionUnica.resolucion == "cover") {
   }
 }
 
+/*Función para seguir a un usuario.*/
+async function seguir() {
+  /*Se sigue al usuario, de manera visual.*/
+  siguiendo.value = true;
+  /*Comprobamos si el usuario sigue al usuario que quiere seguir.*/
+  const { data: seguidores, errorSeguidores } = await supabase
+    .from('seguidores')
+    .select('*')
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', props.publicacionUnica.idusuario);
+  /*En caso de error no se sigue al usuario, se vuelve al estado anterior visualmente.*/
+  if (errorSeguidores) {
+    siguiendo.value = false;
+    return;
+  }
+  /*Se guarda en la tabla seguidores si no existe la relación.*/
+  if (seguidores.length == 0) {
+    const { error: insertError } = await supabase
+      .from('seguidores')
+      .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
+    /*En caso de error no se sigue al usuario, se vuelve al estado anterior visualmente.*/
+    if (insertError) {
+      siguiendo.value = false;
+      return;
+    }
+  } else {
+    siguiendo.value = true;
+  }
+}
+
+/*Función para dejar de seguir a un usuario.*/
+async function dejarSeguir() {
+  /*Se deja de seguir al usuario, de manera visual.*/
+  siguiendo.value = false;
+  /*Hacemos la consulta para eliminarle de seguidor.*/
+  const { error: deleteError } = await supabase
+    .from('seguidores')
+    .delete()
+    .eq('idseguidor', userId.value)
+    .eq('idseguido', props.publicacionUnica.idusuario);
+  /*En caso de error no deja de seguir al usuario, se vuelve al estado anterior visualmente.*/
+  if (deleteError) {
+    siguiendo.value = true;
+    return;
+  }
+}
+
+function handleDoubleClick(event) {
+  const rect = event.target.getBoundingClientRect();
+  likeAnimationStyle.value = {
+    top: `${event.clientY - rect.top}px`,
+    left: `${event.clientX - rect.left}px`,
+  };
+
+  if (!animatingLike.value) {
+    animatingLike.value = true;
+    setTimeout(() => {
+      animatingLike.value = false;
+    }, 600); // Duración de la animación
+  }
+  darLike();
+}
+
+
+
+
+
+
+
+async function obtenerComentarios(idpublicacion) {
+  // const { data: comentariosData, error } = await supabase
+  //   .from('comentarios')
+  //   .select('*')
+  //   .eq('idpublicacion', idpublicacion);
+  //   // .order('fechacreacion', { ascending: true });
+
+  const { data: comentariosData, error } = await supabase
+  .from('comentarios')
+  .select('*, usuarios(gymtag)')
+  .eq('idpublicacion', idpublicacion)
+  .order('fechacreacion', { ascending: true });
+
+  if (error) {
+    console.error('Error al obtener los comentarios:', error);
+    return;
+  }
+
+  comentarios.value = comentariosData;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function darLike() {
+  const idpublicacion = props.publicacionUnica.idpublicacion;
+
+  if (likes.value[props.publicacionUnica.idpublicacion]) {
+    return;
+  }
+  animatingLike2.value[props.publicacionUnica.idpublicacion] = true;
+  setTimeout(() => animatingLike2.value[props.publicacionUnica.idpublicacion] = false, 600);
+
+  likes.value[idpublicacion] = true;
+  numeroLikes.value++;
+  const { data, errorLike } = await supabase
+    .from('likes')
+    .select('*')
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', idpublicacion);
+
+  if (errorLike) {
+    likes.value[idpublicacion] = false;
+    numeroLikes.value--;
+    return;
+  }
+
+  if (data.length == 0) {
+    const { error: insertError } = await supabase
+      .from('likes')
+      .insert([{ idusuario: userId.value, idpublicacion: idpublicacion }]);
+
+    if (insertError) {
+      likes.value[idpublicacion] = false;
+      numeroLikes.value--;
+      return;
+    }
+  } else {
+    likes.value[idpublicacion] = true;
+  }
+}
+
+/*Función para quitar like a la publicación.*/
+async function quitarLike() {
+  const idpublicacion = props.publicacionUnica.idpublicacion;
+  /*Se quita el like de la publicación, de manera visual.*/
+  likes.value[idpublicacion] = !likes.value[idpublicacion];
+  numeroLikes.value--;
+  /*Hacemos la consulta para quitar el like.*/
+  const { error: quitarLikeError } = await supabase
+    .from('likes')
+    .delete()
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', idpublicacion);
+  /*En caso de error no se quita el like a la publicación, se vuelve al estado anterior visualmente.*/
+  if (quitarLikeError) {
+    numeroLikes.value++;
+    likes.value[idpublicacion] = !likes.value[idpublicacion];
+    return;
+  }
+}
+
+/*Función para guardar a una publicación.*/
+async function guardar() {
+  // const idpublicacion = props.publicacionUnica.idpublicacion;
+  // /*Se guarda la publicación, de manera visual.*/
+  // guardados.value[idpublicacion] = !guardados.value[idpublicacion];
+  // /*Comprobamos si el usuario ha guardado la publicación anteriormente.*/
+  const idpublicacion = props.publicacionUnica.idpublicacion;
+  if (guardados.value[idpublicacion]) return;
+  animatingSave.value[idpublicacion] = true;
+  setTimeout(() => animatingSave.value[idpublicacion] = false, 400);
+
+  guardados.value[idpublicacion] = true;
+  const { data, errorGuardado } = await supabase
+    .from('guardados')
+    .select('*')
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', idpublicacion);
+  /*En caso de error no se guarda la publicación, se vuelve al estado anterior visualmente.*/
+  if (errorGuardado) {
+    guardados.value[idpublicacion] = !guardados.value[idpublicacion];
+    return;
+  }
+  /*Se guarda en la tabla guardados si no se había guardado antes.*/
+  if (data.length == 0) {
+    const { error: insertError } = await supabase
+      .from('guardados')
+      .insert([{ idusuario: userId.value, idpublicacion: idpublicacion }]);
+    /*En caso de error no se guarda la publicación, se vuelve al estado anterior visualmente.*/
+    if (insertError) {
+      guardados.value[idpublicacion] = !guardados.value[idpublicacion];
+      return;
+    }
+  } else {
+    guardados.value[idpublicacion] = true;
+  }
+}
+
+/*Función para quitar el guardado de la publicación.*/
+async function eliminarGuardado() {
+  const idpublicacion = props.publicacionUnica.idpublicacion;
+  /*Se quita el guardado de la publicación, de manera visual.*/
+  guardados.value[idpublicacion] = !guardados.value[idpublicacion];
+  /*Hacemos la consulta para quitar el guardado.*/
+  const { error: quitarGuardadoError } = await supabase
+    .from('guardados')
+    .delete()
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', idpublicacion);
+  /*En caso de error no se quita el guardado a la publicación, se vuelve al estado anterior visualmente.*/
+  if (quitarGuardadoError) {
+    guardados.value[idpublicacion] = !guardados.value[idpublicacion];
+    return;
+  }
+}
+
+function combrobarImagen() {
+  ruta.value = fotoPredeterminada;
+}
 
 async function cargarPublicacion() {
   const { data: usuario, error: errorUsuario } = await supabase
@@ -80,40 +299,72 @@ async function cargarPublicacion() {
     .select("*")
     .eq('id', props.publicacionUnica.idusuario);
   if (errorUsuario) {
-
-  } else {
-    gymTag.value = usuario[0].gymtag;
-    fotoPerfil.value = usuario[0].fotoperfil;
-    if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
-      fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
-    } else {
-      /*De lo contrario mostramos la foto de perfil actual del usuario.*/
-      fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
-    }
-
-    if (props.publicacionUnica.idusuario === userId.value) {
-      perfilPropio.value = true;
-    } else {
-      perfilPropio.value = false;
-      const { data: seguidores, error: errorSeguidores } = await supabase
-        .from('seguidores')
-        .select('*')
-        .eq('idseguidor', userId.value)
-        .eq('idseguido', props.publicacionUnica.idusuario);
-      if (errorSeguidores) {
-
-      }
-
-      if (seguidores.length == 0) {
-        siguiendo.value = false;
-      } else {
-        siguiendo.value = true;
-      }
-    }
+    return;
   }
+  gymTag.value = usuario[0].gymtag;
+  fotoPerfil.value = usuario[0].fotoperfil;
+  if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
+    fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+  } else {
+    /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+    fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
+  }
+
+  if (props.publicacionUnica.idusuario === userId.value) {
+    perfilPropio.value = true;
+  } else {
+    perfilPropio.value = false;
+    const { data: seguidores, error: errorSeguidores } = await supabase
+      .from('seguidores')
+      .select('*')
+      .eq('idseguidor', userId.value)
+      .eq('idseguido', props.publicacionUnica.idusuario);
+    if (errorSeguidores) {
+      return;
+    }
+
+    siguiendo.value = seguidores.length !== 0;
+  }
+
+  const { data: likeData, error: errorLike } = await supabase
+    .from('likes')
+    .select('*')
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', props.publicacionUnica.idpublicacion);
+
+  if (errorLike) {
+    return;
+  }
+
+  likes.value[props.publicacionUnica.idpublicacion] = likeData.length !== 0;
+
+  const { data: guardadoData, error: errorGuardado } = await supabase
+    .from('guardados')
+    .select('*')
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', props.publicacionUnica.idpublicacion);
+
+  if (errorGuardado) {
+    return;
+  }
+  guardados.value[props.publicacionUnica.idpublicacion] = guardadoData.length !== 0;
+
+  await obtenerCantidadLikes(props.publicacionUnica.idpublicacion);
+  await obtenerComentarios(props.publicacionUnica.idpublicacion);
 }
 
-cargarPublicacion();
+async function obtenerCantidadLikes(idpublicacion) {
+  const { count, error } = await supabase
+    .from('likes')
+    .select('idpublicacion', { count: 'exact', head: true })
+    .eq('idpublicacion', idpublicacion);
+
+  if (error) {
+    return;
+  }
+
+  numeroLikes.value = count;
+}
 
 function updateWidth() {
   windowWidth.value = window.innerWidth;
@@ -148,6 +399,35 @@ function quitarOverflow() {
   document.body.style.overflow = "visible";
 }
 
+function enfocarInput() {
+  comentarioInput.value.focus();
+}
+
+function actualizarComentario(event) {
+  comentarioTexto.value = event.target.value;
+}
+
+async function publicar() {
+  if (!deshabilitado.value) {
+    const { error } = await supabase
+      .from('comentarios')
+      .insert([{
+        idpublicacion: props.publicacionUnica.idpublicacion,
+        idusuario: userId.value,
+        comentario: comentarioTexto.value
+      }]);
+
+    if (error) {
+      console.error("Error al publicar el comentario:", error);
+      return;
+    }
+    comentarioTexto.value = '';
+    comentarioInput.value.value = '';
+  }
+  await obtenerComentarios(props.publicacionUnica.idpublicacion);
+}
+
+
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth);
 });
@@ -155,27 +435,66 @@ onUnmounted(() => {
 <template>
   <div class="publicacion" id="forzar-publicacion">
     <div class="header-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
-      <div class="header-publicacion-izq">
+      <!-- <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
-          <img :src="fotoPerfil" alt="">
+          
+          <img :src="fotoPerfilMostrada" alt="">
           <h2 class="gymtag">@{{ gymTag }}</h2>
         </RouterLink>
       </div>
       <div class="header-publicacion-der">
         <font-awesome-icon class="icon" :icon="['fas', 'ellipsis-vertical']" />
+      </div> -->
+      <div class="encabezado encabezado_p">
+        <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink"
+          @click="quitarOverflow">
+          <div class="foto_gymtag">
+            <div class="foto_encabezado">
+              <img :src="fotoPerfilMostrada" alt="">
+            </div>
+            <div class="gymtag_encabezado">
+              @{{ gymTag }}
+            </div>
+          </div>
+        </RouterLink>
       </div>
     </div>
     <div @click="mostrar" class="inicial" id="forzar-inicial">
-      <img :src="ruta" @error="combrobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto" />
+      <img :src="ruta" @error="combrobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto"
+        @dblclick="handleDoubleClick" />
+      <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
+        :style="likeAnimationStyle" />
       <!-- <img :src="ruta" @error="combrobarImagen" :class="true ? 'cover' : 'normal'" /> -->
     </div>
     <div class="footer-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
-      <h2 class="tematica">{{ tematica }}</h2>
+      <div class="todo_botones_publicacion_grande todo_botones_publicacion_p">
+        <div class="botones_publicacion_grande">
+          <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()">
+            <font-awesome-icon :icon="['far', 'heart']" class="heart" />
+          </div>
+          <div class="megusta" v-if="likes[props.publicacionUnica.idpublicacion]" @click="quitarLike">
+            <font-awesome-icon :icon="['fas', 'heart']" class="heart"
+              :class="{ 'like-animation2': animatingLike2[props.publicacionUnica.idpublicacion] }" />
+          </div>
+          <div class="guardar" v-if="!guardados[props.publicacionUnica.idpublicacion]" @click="guardar">
+            <font-awesome-icon :icon="['far', 'bookmark']" class="save" />
+          </div>
+          <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
+            <font-awesome-icon :icon="['fas', 'bookmark']" class="save" />
+          </div>
+          <div class="comentar">
+            <font-awesome-icon :icon="['far', 'comment']" class="comment" />
+          </div>
+        </div>
+      </div>
+      <!-- <h2 class="tematica">{{ tematica }}</h2> -->
     </div>
     <div class="final" v-if="mostrarFinal" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
-          <img :src="ruta" :class="{ 'custom-image-style': !esCover }" />
+          <img :src="ruta" class="cover" @dblclick="handleDoubleClick" />
+          <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
+            :style="likeAnimationStyle" />
         </div>
         <div class="cuerpo">
           <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" /></div>
@@ -192,8 +511,8 @@ onUnmounted(() => {
               </div>
             </RouterLink>
             <div class="botones_seguir">
-              <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
-              <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
+              <button v-if="!siguiendo && perfilPropio == false" @click="seguir">Seguir</button>
+              <button v-if="siguiendo && perfilPropio == false" @click="dejarSeguir">Siguiendo</button>
             </div>
           </div>
           <div class="contenedor_tematica">
@@ -202,37 +521,69 @@ onUnmounted(() => {
           <div class="contenedor_descripcion">
             <div class="descripcion">{{ descripcion }}</div>
           </div>
+
+
+          <div class="comentarios">
+            <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
+              <div class="comentario-header">
+                <img :src="fotoTuPerfilMostrar" class="comentario-foto" />
+                <!-- <span class="comentario-usuario">{{ comentario.idusuario }}</span> -->
+                <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
+
+              </div>
+              <div class="comentario-contenido">
+                {{ comentario.comentario }}
+              </div>
+              <div class="comentario-fecha">
+                {{ new Date(comentario.fechacreacion).toLocaleString() }}
+              </div>
+            </div>
+          </div>
+
+
           <div class="todo_botones_publicacion_grande">
+            <div class="borde"></div>
             <div class="botones_publicacion_grande">
-              <div class="megusta">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    d="M225.8 468.2l-2.5-2.3L48.1 303.2C17.4 274.7 0 234.7 0 192.8v-3.3c0-70.4 50-130.8 119.2-144C158.6 37.9 198.9 47 231 69.6c9 6.4 17.4 13.8 25 22.3c4.2-4.8 8.7-9.2 13.5-13.3c3.7-3.2 7.5-6.2 11.5-9c0 0 0 0 0 0C313.1 47 353.4 37.9 392.8 45.4C462 58.6 512 119.1 512 189.5v3.3c0 41.9-17.4 81.9-48.1 110.4L288.7 465.9l-2.5 2.3c-8.2 7.6-19 11.9-30.2 11.9s-22-4.2-30.2-11.9zM239.1 145c-.4-.3-.7-.7-1-1.1l-17.8-20c0 0-.1-.1-.1-.1c0 0 0 0 0 0c-23.1-25.9-58-37.7-92-31.2C81.6 101.5 48 142.1 48 189.5v3.3c0 28.5 11.9 55.8 32.8 75.2L256 430.7 431.2 268c20.9-19.4 32.8-46.7 32.8-75.2v-3.3c0-47.3-33.6-88-80.1-96.9c-34-6.5-69 5.4-92 31.2c0 0 0 0-.1 .1s0 0-.1 .1l-17.8 20c-.3 .4-.7 .7-1 1.1c-4.5 4.5-10.6 7-16.9 7s-12.4-2.5-16.9-7z" />
-                </svg>
+              <div class="megusta_comentario">
+                <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()">
+                  <font-awesome-icon :icon="['far', 'heart']" class="heart" />
+                </div>
+                <div class="megusta" v-if="likes[props.publicacionUnica.idpublicacion]" @click="quitarLike">
+                  <font-awesome-icon :icon="['fas', 'heart']" class="heart"
+                    :class="{ 'like-animation2': animatingLike2[props.publicacionUnica.idpublicacion] }" />
+                </div>
+                <div class="comentar" @click="enfocarInput">
+                  <font-awesome-icon :icon="['far', 'comment']" class="comment" />
+                </div>
               </div>
-              <div class="megusta" v-if="like">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" />
-                </svg>
+              <div class="guardar" v-if="!guardados[props.publicacionUnica.idpublicacion]" @click="guardar">
+                <font-awesome-icon :icon="['far', 'bookmark']" class="save"
+                  :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
               </div>
-              <div class="guardar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                  <path
-                    d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z" />
-                </svg>
+              <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
+                <font-awesome-icon :icon="['fas', 'bookmark']" class="save"
+                  :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
               </div>
-              <div class="guardar" v-if="guardado">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-                  <path
-                    d="M0 48V487.7C0 501.1 10.9 512 24.3 512c5 0 9.9-1.5 14-4.4L192 400 345.7 507.6c4.1 2.9 9 4.4 14 4.4c13.4 0 24.3-10.9 24.3-24.3V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48z" />
-                </svg>
+            </div>
+            <div class="numero_likes">
+              {{ numeroLikes }} {{ likeText }}
+            </div>
+          </div>
+          <div class="borde borde2"></div>
+          <div class="div_comentar">
+            <div class="anadir">
+              <div class="foto_anadir">
+                <img :src="props.fotoTuPerfilMostrar" />
               </div>
-              <div class="comentar">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    d="M123.6 391.3c12.9-9.4 29.6-11.8 44.6-6.4c26.5 9.6 56.2 15.1 87.8 15.1c124.7 0 208-80.5 208-160s-83.3-160-208-160S48 160.5 48 240c0 32 12.4 62.8 35.7 89.2c8.6 9.7 12.8 22.5 11.8 35.5c-1.4 18.1-5.7 34.7-11.3 49.4c17-7.9 31.1-16.7 39.4-22.7zM21.2 431.9c1.8-2.7 3.5-5.4 5.1-8.1c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208s-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6c-15.1 6.6-32.3 12.6-50.1 16.1c-.8 .2-1.6 .3-2.4 .5c-4.4 .8-8.7 1.5-13.2 1.9c-.2 0-.5 .1-.7 .1c-5.1 .5-10.2 .8-15.3 .8c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4c4.1-4.2 7.8-8.7 11.3-13.5c1.7-2.3 3.3-4.6 4.8-6.9c.1-.2 .2-.3 .3-.5z" />
-                </svg>
+              <div class="input_anadir">
+                <textarea class="input" ref="comentarioInput" required autocomplete="off"
+                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario"></textarea>
+              </div>
+            </div>
+            <div class="publicar">
+              <div class="publicar_div">
+                <button @click="publicar"
+                  :class="deshabilitado ? 'boton_deshabilitado' : 'publicar_boton'">Publicar</button>
               </div>
             </div>
           </div>
@@ -261,7 +612,10 @@ onUnmounted(() => {
   align-items: center;
   width: 100%;
   height: fit-content;
-  margin-top: 10px;
+}
+
+.encabezado_p {
+  padding: 7px 0 7px 3px;
 }
 
 .foto_gymtag {
@@ -340,7 +694,7 @@ onUnmounted(() => {
   background-color: green;
 }
 
-.contenedor_tematica{
+.contenedor_tematica {
   margin-top: 20px;
   margin-bottom: 20px;
 }
@@ -367,27 +721,83 @@ onUnmounted(() => {
   color: var(--light-blue-text);
 }
 
-.todo_botones_publicacion_grande{
-  display: flex;
+
+
+
+
+
+
+
+
+
+
+.comentarios {
+  margin-top: 20px;
 }
 
-.botones_publicacion_grande {
+.comentario {
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+}
+
+.comentario-header {
   display: flex;
-  /* justify-content: space-between; */
   align-items: center;
-  position: absolute;
-  bottom: 0;
-  height: 60px;
-  width: 80%;
-  background-color: grey;
 }
 
-.botones_publicacion_grande svg {
-  height: 40px;
+.comentario-foto {
   width: 40px;
-  fill: var(--light-blue-text);
-  margin: 0 20px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
 }
+
+.foto_encabezado img {
+  border-radius: 50%;
+  height: 100%;
+  width: 100%;
+  border: 1px solid black;
+  transition: border 0.3s;
+  object-fit: cover;
+}
+
+.foto_gymtag:hover img,
+.foto_gymtag:active img {
+  border: 1px solid rgb(109, 109, 109);
+}
+
+.comentario-usuario {
+  font-weight: bold;
+}
+
+.comentario-contenido {
+  margin-top: 5px;
+}
+
+.comentario-fecha {
+  font-size: 0.8em;
+  color: #999;
+  margin-top: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .publicacion {
   background-color: var(--black);
@@ -404,7 +814,6 @@ onUnmounted(() => {
   overflow: clip; */
   overflow: hidden;
   cursor: pointer;
-  /* cursor: url('../assets/img/corazonp.png'), auto; */
 }
 
 .header-publicacion {
@@ -523,6 +932,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: pointer;
 }
 
 .cuerpo {
@@ -531,28 +941,356 @@ onUnmounted(() => {
   width: 500px;
 }
 
+.publicar_div {
+  width: 80%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  justify-content: end;
+}
+
+.publicar_boton {
+  cursor: pointer;
+  background-color: var(--blue-buttons);
+  /* width: 50px; */
+  border: solid var(--black) 2px;
+  border-radius: 2px;
+  font-size: 18px;
+  transition: background-color 0.5s, border 0.5s, color 0.5s;
+  height: 42px;
+  padding: 0 10px;
+  margin-top: 8px;
+}
+
+.publicar_boton:hover,
+.publicar_boton:active {
+  background-color: var(--very-dark-blue);
+  color: var(--light-blue-text);
+  border: 2px solid var(--grey-buttons-inputs-border);
+}
+
+.boton_deshabilitado {
+  cursor: not-allowed;
+  background-color: #4e6368;
+  color: rgba(0, 0, 0, 0.76);
+  border: solid rgba(0, 0, 0, 0.76) 2px;
+  border-radius: 2px;
+  height: 42px;
+  font-size: 18px;
+  padding: 0 10px;
+  margin-top: 8px;
+}
+
+.boton_deshabilitado:hover,
+.boton_deshabilitado:active {
+  background-color: #4e6368;
+  color: rgba(0, 0, 0, 0.76);
+  border: solid rgba(0, 0, 0, 0.76) 2px;
+}
+
+.div_comentar {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  justify-content: space-between;
+  bottom: 0;
+  height: 65px;
+  width: 100%;
+}
+
+.anadir {
+  display: flex;
+  align-items: center;
+}
+
+.input_anadir {
+  margin-left: 20px;
+}
+
+.input_anadir .input {
+  height: 42px;
+  border: none;
+  outline: none;
+  padding: 0 4px;
+  border-radius: 2px;
+  color: var(--light-blue-text);
+  font-size: 16px;
+  background-color: var(--blue-inputs);
+  border: 2px solid transparent;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 1);
+  cursor: pointer;
+  width: 290px;
+  resize: none;
+  overflow-y: auto;
+  margin-top: 12px;
+  word-spacing: -4px;
+}
+
+.input_anadir .input:focus {
+  border: 2px solid var(--grey-buttons-inputs-border);
+  color: var(--light-blue-text);
+}
+
+.input_anadir .input::placeholder {
+  color: var(--light-blue-text);
+}
+
+
+.foto_anadir {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  overflow: hidden;
+  border-right: var(--black) 1px solid;
+  margin-left: 20px;
+  margin-top: 7px;
+}
+
+.foto_anadir img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.todo_botones_publicacion_grande {
+  display: flex;
+  flex-direction: column;
+}
+
+.borde {
+  width: 100%;
+  background-color: #eef2fa;
+  height: 1px;
+  transform: scaleY(0.4);
+  transform-origin: top;
+  position: absolute;
+  bottom: 130px;
+}
+
+.borde2 {
+  bottom: 58px;
+  z-index: 100;
+}
+
+.botones_publicacion_grande {
+  display: flex;
+  align-items: bottom;
+  position: absolute;
+  justify-content: space-between;
+  bottom: 81px;
+  padding-top: 5px;
+  height: 50px;
+  width: 100%;
+  /* background-color: grey; */
+  z-index: 100;
+  overflow: visible;
+}
+
+.numero_likes {
+  position: absolute;
+  bottom: 62px;
+  height: 21px;
+  width: 100%;
+  /* background-color: lightcoral; */
+  padding-left: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  color: var(--light-blue-text);
+  font-size: 17px;
+}
+
+.megusta_comentario {
+  display: flex;
+}
+
+.megusta_comentario div {
+  width: 55px;
+}
+
+.megusta {
+  margin-left: 0px !important;
+}
+
+.comentar,
+.megusta,
+.guardar {
+  height: 45px;
+}
+
+.todo_botones_publicacion_p .botones_publicacion_grande {
+  position: static;
+}
+
+.botones_publicacion_grande * {
+  font-size: 35px;
+  color: var(--light-blue-text);
+  margin: 0 10px;
+}
+
+.guardar {
+  margin-right: 15px;
+  margin-top: 3px;
+}
+
+.heart,
+.save,
+.comment {
+  color: var(--light-blue-text);
+  cursor: pointer;
+}
+
+.heart,
+.comment {
+  font-size: 40px;
+}
+
+@keyframes likeBounce {
+  0% {
+    transform: scale(1);
+    color: var(--light-blue-text);
+  }
+  
+  50% {
+    transform: scale(1.5);
+    color: red;
+  }
+  
+  70% {
+    transform: scale(1.2);
+    color: red;
+  }
+  
+  100% {
+    transform: scale(1);
+    color: var(--light-blue-text);
+  }
+}
+
+
+.like-animation2 {
+  animation: likeBounce 0.6s ease-in-out;
+}
+
+.image-container {
+  position: relative;
+}
+
+.like-animation {
+  position: absolute;
+  font-size: 100px;
+  color: rgba(255, 0, 0, 0.75);
+  animation: like-animation 0.6s forwards;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes like-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  
+  50% {
+    transform: translate(-50%, -80%) scale(1.2);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translate(-50%, -190%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.heart {
+  color: var(--light-blue-text);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.heart:hover {
+  transform: scale(1.1);
+}
+
+@keyframes saveGlow {
+  0% {
+    transform: scale(1);
+    color: rgb(171, 153, 16);
+  }
+  
+  50% {
+    transform: scale(1.2);
+    color: rgb(230, 196, 28);
+  }
+  
+  100% {
+    transform: scale(1);
+    color: rgb(171, 153, 16);
+  }
+}
+
+.save-animation {
+  animation: saveGlow 0.4s ease-in-out;
+}
+
+.save {
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.save:hover {
+  transform: scale(1.1);
+}
+
+::placeholder {
+  padding-top: 2px;
+  padding-left: 2px;
+  font-size: 14px;
+  word-spacing: -2px;
+}
+
+::-moz-placeholder {
+  padding-left: 2px;
+  padding-top: 2px;
+  font-size: 14px;
+  word-spacing: -2px;
+}
+
+:-ms-input-placeholder {
+  padding-left: 2px;
+  padding-top: 2px;
+  font-size: 14px;
+  word-spacing: -2px;
+}
+
+::-ms-input-placeholder {
+  padding-left: 2px;
+  padding-top: 2px;
+  font-size: 14px;
+  word-spacing: -2px;
+}
 @media (max-width: 1200px) {
   .imagen {
     width: 500px;
     height: 500px;
   }
-
+  
   .cuerpo {
     width: 400px;
   }
-
+  
   .foto_gymtag {
     font-size: 24px;
   }
-
+  
   .foto_gymtag {
     margin-left: 10px;
   }
-
+  
   .foto_encabezado {
     margin-right: 8px;
   }
-
+  
   .botones_seguir button {
     font-size: 12px;
     padding: 4px 6px;
@@ -568,13 +1306,17 @@ onUnmounted(() => {
 
   }
 
-  /* .botones_seguir{
-    padding-right: 10px;
-  } */
-  /* .foto_encabezado {
-    height: 50px;
-    width: 50px;
-  } */
+  .input_anadir .input {
+    width: 210px;
+  }
+
+  .foto_anadir {
+    margin-left: 10px;
+  }
+
+  .input_anadir {
+    margin-left: 12px;
+  }
 }
 
 @media (max-width: 985px) {
@@ -599,6 +1341,14 @@ onUnmounted(() => {
   .gymtag_encabezado {
     max-width: 210px;
   }
+
+  .input_anadir .input {
+    width: 200px;
+  }
+
+  .publicar button {
+    transform: translate(8px);
+  }
 }
 
 @media (max-width: 875px) {
@@ -607,13 +1357,15 @@ onUnmounted(() => {
     aspect-ratio: 0;
     border: 2px solid black;
     border-radius: 12px;
-    margin: 5px;
+    margin: 25px 0 25px 0;
     overflow: hidden;
   }
 
   .final {
     display: none;
   }
+
+
 }
 
 @media (max-width: 625px) {

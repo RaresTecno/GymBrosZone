@@ -19,7 +19,6 @@ export async function obtenerId() {
     return false;
   }
   userId.value = user.id;
-  console.log(userId.value)
   return user.id;
 }
 

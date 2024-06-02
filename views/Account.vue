@@ -185,7 +185,7 @@ async function guardar() {
   const encId = await hashString(id);
   const nombreFoto = await hashString(id + obtenerFechaYHoraActual());
   /*Creamos la carpeta de la imagen de perfil.*/
-  const ruta = 'users/user-' + encId + '/' + nombreFoto;
+  const ruta = 'users/' + encId + '/' + nombreFoto;
   /*Si el usuario borra su foto de perfil.*/
   if (foto.value === 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg' && fotoperfilActual.value !== '/predeterminada.png') {
     /*Borramos la foto de perfil.*/

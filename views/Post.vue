@@ -453,7 +453,6 @@ function cancelar() {
   padding-bottom: 150px;
 }
 
-
 .publicar_container {
   width: 80%;
   margin-top: 100px;

@@ -1,11 +1,12 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
-import { supabase, userActive } from "../clients/supabase";
+import { supabase, userActive, userId } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
 import { ref, reactive } from "vue"
 const todasPublicaciones = ref()
 const idPublicacion = ref()
 const cantidadPublicaciones = ref()
+const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 async function mostrarp() {
   try {
@@ -21,8 +22,22 @@ async function mostrarp() {
 }
 mostrarp();
 
-
-
+async function obtenerTuFotoPerfil(){
+  if(userActive.value == true){
+    const { data: usuario, error } = await supabase
+      .from('usuarios')
+      .select("*")
+      .eq('id', userId.value);
+    fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
+    if (fotoTuPerfilMostrar.value === '/predeterminada.png' || fotoTuPerfilMostrar.value === null || fotoTuPerfilMostrar.value === '') {
+      fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    } else {
+      /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+      fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoTuPerfilMostrar.value;
+    }
+  }
+}
+obtenerTuFotoPerfil();
 
 disponible.value = true;
 </script>
@@ -70,7 +85,7 @@ disponible.value = true;
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" />
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
         </template>
       </div>
     </div>
@@ -266,7 +281,7 @@ disponible.value = true;
   }
 
   .vista {
-    margin-top: 25px;
+    margin-top: 35px;
     display: flex;
     flex-direction: column;
     width: 80%;

@@ -44,7 +44,6 @@ onUnmounted(() => {
 function redirigir() {
     window.location.href = url.value; 
 }
-
 </script>
 <template>
     <div class="todo_waiting">

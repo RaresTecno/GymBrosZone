@@ -4,6 +4,7 @@ import router from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
+import { far } from '@fortawesome/free-regular-svg-icons';
 import { userActive, userState, obtenerId } from "./clients/supabase";
 export const disponible = ref();
 disponible.value = true;
@@ -39,6 +40,7 @@ async function init() {
   // await obtenerId();
   library.add(fas);
   library.add(fab);
+  library.add(far);
   const app = createApp(App);
   app.use(router);
   app.mount('#app');

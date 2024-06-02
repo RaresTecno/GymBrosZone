@@ -1,44 +1,4 @@
 <script setup>
-// productos.value = result.products;
-// ProductoFat_100.value = producto.nutriments["fat_100g"];
-// ProductoFoto.value = imagen(producto);
-// ProductoNombre.value = nombre(producto);
-// ProductoNutriScore.value = urlNutriScore(producto.product.nutriscore_grade);
-// ProductoNovaGroup.value = urlNovaScore(producto.product.nova_group);
-// ProductoEcoScore.value = urlEcoScore(producto.product.ecoscore_grade);
-// ProductoKcal_100.value = producto.product.nutriments["energy-kcal_100g"];
-// ProductoKjul_100.value = producto.product.nutriments["energy-kj_100g"];
-// ProductoFat_100.value = producto.product.nutriments["fat_100g"];
-// ProductoFatUnit.value = producto.product.nutriments["fat_unit"];
-// ProductoSaturedFat_100.value = producto.product.nutriments["saturated-fat_100g"];
-// ProductoSaturedFatUnit.value = producto.product.nutriments["saturated-fat_unit"];
-// ProductoCarbohydrates_100g.value = producto.product.nutriments["carbohydrates_100g"];
-// ProductoCarbohydratesUnit.value = producto.product.nutriments["carbohydrates_unit"];
-// ProductoSugars_100.value = producto.product.nutriments["sugars_100g"];
-// ProductoSugarsUnit.value = producto.product.nutriments["sugars_unit"];
-// ProductoFiber_100.value = producto.product.nutriments["fiber_100g"];
-// ProductoFiberUnit.value = producto.product.nutriments["fiber_unit"];
-// ProductoProteins_100.value = producto.product.nutriments["proteins_100g"];
-// ProductoProteinsUnit.value = producto.product.nutriments["proteins_unit"];
-// ProductoSalt_100.value = producto.product.nutriments["salt_100g"];
-// ProductoSaltUnit.value = producto.product.nutriments["salt_unit"];
-// ProductoAlcohol_100.value = producto.product.nutriments["alcohol_100g"];
-// ProductoAlcoholUnit.value = producto.product.nutriments["alcohol_unit"];
-// ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
-// ProductoCantidad.value = producto.product.quantity;
-
-// ProductoNegativePoints.value = producto.product.nutriscore_data.negative_points;
-// ProductoPositivePoints.value = producto.product.nutriscore_data.positive_points;
-// ProductoProteinsPoints.value = producto.product.nutriscore_data.proteins_points;
-// ProductoFiberPoints.value = producto.product.nutriscore_data.fiber_points;
-// ProductoFruitsPoints.value = producto.product.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points;
-// ProductoEnergyPoints.value = producto.product.nutriscore_data.energy_points;
-// ProductoSaturatedPoints.value = producto.product.nutriscore_data.saturated_fat_points;
-// ProductoSugarsPoints.value = producto.product.nutriscore_data.sugars_points;
-// ProductoSodiumPoints.value = producto.product.nutriscore_data.sodium_points;
-// ProductoNutriScorePoints.value = producto.product.nutriscore_score_opposite;
-
-// console.log(ProductoNegativePoints.value)
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -96,7 +56,12 @@ const ProductoSodiumPoints = ref("");
 const ProductoNutriScorePoints = ref("");
 
 watch([busquedaAlimento, pagina], buscarProductos);
-
+// Observar cambios en busquedaAlimento
+watch(busquedaAlimento, () => {
+  // Cuando busquedaAlimento cambia, establecer pagina a 1
+  codigo.value = undefined
+  pagina.value = 1;
+});
 const esCodigoBarras = /^[0-9]{4,}$/;
 async function buscarProductos() {
   // if (busquedaAlimento.value.trim() === '') {
@@ -105,29 +70,93 @@ async function buscarProductos() {
   //   return;
   // }
   let url;
-  if (esCodigoBarras.test(busquedaAlimento.value)) {
-    url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value;
-    vistaUnica.value = true;
-  } else {
-    url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value)}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
-    vistaUnica.value = false;
-  }
+  console.log(codigo.value);
   const startTime = performance.now();
-  try {
-    const response = await fetch(url);
-    console.log(response.code)
-    let result = await response.json();
 
-    console.log(result)
-    const resultado = result.products;
-    productos.value = resultado;
-    totalPaginas.value = Math.ceil(result.count / productosPorPagina);
-    buscado.value = true;
-  } catch (error) {
-    console.log(error);
+  if (esCodigoBarras.test(busquedaAlimento.value.trim()) || codigo.value != undefined) {
+
+    if (codigo.value === undefined) {
+      url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value.trim();
+
+    } else {
+      url = "https://world.openfoodfacts.org/api/v3/product/" + codigo.value;
+    }
+    vistaUnica.value = true;
+
+    const response = await fetch(url);
+    let result = await response.json();
+    const producto = result.product;
+
+
+    productos.value = result.products;
+    ProductoFat_100.value = producto.nutriments["fat_100g"];
+    ProductoFoto.value = imagen(producto);
+    ProductoNombre.value = nombre(producto);
+    ProductoNutriScore.value = urlNutriScore(producto);
+    ProductoNovaGroup.value = urlNovaScore(producto);
+    ProductoEcoScore.value = urlEcoScore(producto);
+    ProductoKcal_100.value = producto.nutriments["energy-kcal_100g"];
+    ProductoKjul_100.value = producto.nutriments["energy-kj_100g"];
+    ProductoFat_100.value = producto.nutriments["fat_100g"];
+    ProductoFatUnit.value = producto.nutriments["fat_unit"];
+    ProductoSaturedFat_100.value = producto.nutriments["saturated-fat_100g"];
+    ProductoSaturedFatUnit.value = producto.nutriments["saturated-fat_unit"];
+    ProductoCarbohydrates_100g.value = producto.nutriments["carbohydrates_100g"];
+    ProductoCarbohydratesUnit.value = producto.nutriments["carbohydrates_unit"];
+    ProductoSugars_100.value = producto.nutriments["sugars_100g"];
+    ProductoSugarsUnit.value = producto.nutriments["sugars_unit"];
+    ProductoFiber_100.value = producto.nutriments["fiber_100g"];
+    ProductoFiberUnit.value = producto.nutriments["fiber_unit"];
+    ProductoProteins_100.value = producto.nutriments["proteins_100g"];
+    ProductoProteinsUnit.value = producto.nutriments["proteins_unit"];
+    ProductoSalt_100.value = producto.nutriments["salt_100g"];
+    ProductoSaltUnit.value = producto.nutriments["salt_unit"];
+    ProductoAlcohol_100.value = producto.nutriments["alcohol_100g"];
+    ProductoAlcoholUnit.value = producto.nutriments["alcohol_unit"];
+    ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+    ProductoCantidad.value = producto.quantity;
+
+    ProductoNegativePoints.value = producto.nutriscore_data ? producto.nutriscore_data.negative_points : "?";
+    ProductoPositivePoints.value = producto.nutriscore_data ? producto.nutriscore_data.positive_points : "?";
+    ProductoProteinsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.proteins_points : "?";
+    ProductoFiberPoints.value = producto.nutriscore_data ? producto.nutriscore_data.fiber_points : "?";
+    ProductoFruitsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points : "?";
+    ProductoEnergyPoints.value = producto.nutriscore_data ? producto.nutriscore_data.energy_points : "?";
+    ProductoSaturatedPoints.value = producto.nutriscore_data ? producto.nutriscore_data.saturated_fat_points : "?";
+    ProductoSugarsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sugars_points : "?";
+    ProductoSodiumPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sodium_points : "?";
+    ProductoNutriScorePoints.value = producto.nutriscore_data ? producto.nutriscore_score_opposite : "?";
+
+
+    // console.log(ProductoNegativePoints.value)
+
+  } else {
+    url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value.trim())}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
+    vistaUnica.value = false;
+
+    try {
+      const response = await fetch(url);
+      // console.log(response.code)
+      let result = await response.json();
+
+
+      const resultado = result.products;
+      productos.value = resultado;
+      totalPaginas.value = Math.ceil(result.count / productosPorPagina);
+      buscado.value = true;
+    } catch (error) {
+      console.log(error);
+    }
+
+
   }
   const endTime = performance.now(); // Fin del tiempo
   tiempoCarga.value = (endTime - startTime).toFixed(2);
+}
+function mostrarProducto(codigoP) {
+  codigo.value = codigoP
+  buscarProductos()
+
 }
 function toCapitalize(texto) {
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
@@ -181,6 +210,13 @@ function nombre(producto) {
     if (producto[idioma] && producto[idioma].trim() !== '' && producto.brands_tags && producto.brands_tags.length > 0) {
       return producto[idioma] + " - " + toCapitalize(producto.brands_tags[0]);
     }
+    if (producto[idioma] && producto[idioma].trim() !== '') {
+      return producto[idioma]
+    }
+  }
+  if (producto.brands_tags && producto.brands_tags.length > 0) {
+    console.log(producto.brands_tags)
+    return toCapitalize(producto.brands_tags[0]);
   }
   return false; //Retorna una cadena vacía si no se encuentra ningún nombre de producto
 }
@@ -199,23 +235,23 @@ function imagen(producto) {
 }
 function ingredients(producto) {
   if (
-    producto.product.ingredients_text_es != null &&
-    producto.product.ingredients_text_es != ""
+    producto.ingredients_text_es != null &&
+    producto.ingredients_text_es != ""
   ) {
-    return producto.product.ingredients_text_es;
+    return producto.ingredients_text_es;
   } else if (
-    producto.product.ingredients_text_en != null &&
-    producto.product.ingredients_text_en != ""
+    producto.ingredients_text_en != null &&
+    producto.ingredients_text_en != ""
   ) {
-    return producto.product.ingredients_text_en;
+    return producto.ingredients_text_en;
   } else if (
-    producto.product.ingredients_text_uk != null &&
-    producto.product.ingredients_text_uk != ""
+    producto.ingredients_text_uk != null &&
+    producto.ingredients_text_uk != ""
   ) {
-    return producto.product.ingredients_text_en;
+    return producto.ingredients_text_en;
   } else if (
-    producto.product.ingredients_text != null &&
-    producto.product.ingredients_text != ""
+    producto.ingredients_text != null &&
+    producto.ingredients_text != ""
   ) {
     return producto.product.ingredients_text;
   } else {
@@ -268,7 +304,9 @@ function urlNovaScore(valor) {
       return "https://static.openfoodfacts.org/images/attributes/dist/nova-group-unknown.svg";
   }
 }
-
+function borrar() {
+  busquedaAlimento.value = ""
+}
 
 const paginaAnterior = () => {
   if (pagina.value > 1) {
@@ -339,32 +377,31 @@ const paginaSiguiente = () => {
 // function error(err) {
 // }
 
-const vistaBusqueda = ref(sessionStorage.getItem("vistaBusqueda") || "Usuarios");
+// const vistaBusqueda = ref(sessionStorage.getItem("vistaBusqueda") || "Usuarios");
+const vistaBusqueda = ref("Usuarios");
 function cambiarVista(tipo) {
   vistaBusqueda.value = tipo;
-  sessionStorage.setItem("vistaBusqueda", tipo); // Guardar la vista seleccionada en el almacenamiento local
+  // sessionStorage.setItem("vistaBusqueda", tipo); // Guardar la vista seleccionada en el almacenamiento local
 }
 onMounted(() => {
-  if (!sessionStorage.getItem("vistaBusqueda")) {
-    sessionStorage.setItem("vistaBusqueda", "Usuarios"); // Establecer la vista predeterminada si no hay una vista almacenada
-  }
+  buscarProductos()
+  // if (!sessionStorage.getItem("vistaBusqueda")) {
+  //   sessionStorage.setItem("vistaBusqueda", "Usuarios"); // Establecer la vista predeterminada si no hay una vista almacenada
+  // }
+
 });
 </script>
 
 <template>
   <div class="buscador">
     <div class="filtros">
-      <button @click="cambiarVista('Usuarios')" :class="{ filtroSeleccionado: vistaBusqueda === 'Usuarios', filtrosNoSeleccionado: vistaBusqueda !== 'Usuarios' }">Gym Bros</button>
-      <button @click="cambiarVista('Publicaciones')" :class="{ filtroSeleccionado: vistaBusqueda === 'Publicaciones', filtrosNoSeleccionado: vistaBusqueda !== 'Publicaciones' }">Publicaciones</button>
-      <button @click="cambiarVista('Productos')" :class="{ filtroSeleccionado: vistaBusqueda === 'Productos', filtrosNoSeleccionado: vistaBusqueda !== 'Productos' }">Productos</button>
-    </div>
-    <div class="search">
-      <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
-      <!-- <input type="search"> -->
-      <input type="text" v-model="busquedaAlimento" />
-      <button @click="buscarProductos()">Search Product</button>
-
-      <div class="cerrar">x</div>
+      <button @click="cambiarVista('Usuarios')"
+        :class="{ filtroSeleccionado: vistaBusqueda === 'Usuarios', filtrosNoSeleccionado: vistaBusqueda !== 'Usuarios' }">Gym
+        Bros</button>
+      <button @click="cambiarVista('Publicaciones')"
+        :class="{ filtroSeleccionado: vistaBusqueda === 'Publicaciones', filtrosNoSeleccionado: vistaBusqueda !== 'Publicaciones' }">Publicaciones</button>
+      <button @click="cambiarVista('Productos')"
+        :class="{ filtroSeleccionado: vistaBusqueda === 'Productos', filtrosNoSeleccionado: vistaBusqueda !== 'Productos' }">Productos</button>
     </div>
   </div>
   <div id="reader">
@@ -379,13 +416,18 @@ onMounted(() => {
     Tiempo de carga: {{ tiempoCarga }} ms
   </div>
 
-  <div class="productos-comun" v-if="buscado">
-    <div class="reja-productos">
+  <div class="productos-comun" v-if="vistaBusqueda === 'Productos'">
+    <div class="search-producto">
+      <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
+      <input type="text" v-model="busquedaAlimento" />
+      <font-awesome-icon class="cross" :icon="['fas', 'xmark']" @click="borrar" />
+    </div>
+    <div class="reja-productos" v-if="vistaUnica == false">
       <template v-for="producto in productos" :key="producto.code">
         <div class="mini-producto-padre">
-          <div class="mini-producto">
+          <div class="mini-producto" @click="mostrarProducto(producto.id)">
             <h2 class="mini-nombre">{{ (nombre(producto) && cantidad(producto)) ? (nombre(producto) +
-        cantidad(producto)) : producto.id }}</h2>
+          cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
             <div class="mini-img">
               <img :src="imagen(producto)" />
             </div>
@@ -401,14 +443,14 @@ onMounted(() => {
       </template>
     </div>
 
-    <div class="pagination-controls">
+    <div class="pagination-controls" v-if="buscado && vistaUnica == false">
       <button @click="paginaAnterior" :disabled="pagina === 1">Previous</button>
       <span>{{ pagina }} / {{ totalPaginas }}</span>
       <button @click="paginaSiguiente" :disabled="pagina === totalPaginas">Next</button>
     </div>
   </div>
 
-  <div v-if="vistaUnica == true" class="productos">
+  <div v-if="vistaUnica == true && vistaBusqueda === 'Productos'" class="productos">
     <div class="producto-arriba">
       <div class="producto-img">
         <img :src="ProductoFoto" alt="" class="img-producto" />
@@ -438,60 +480,60 @@ onMounted(() => {
         </div>
         <div class="tr">
           <div>Energía</div>
-          <div>{{ ProductoKjul_100 }} Kj <br> {{ ProductoKcal_100 }} Kcal</div>
+          <div>{{ ProductoKjul_100 ?? '?' }} Kj <br> {{ ProductoKcal_100 ?? '?' }} Kcal</div>
         </div>
         <div class="tr">
           <div>Grasas</div>
-          <div>{{ ProductoFat_100 }} {{ ProductoFatUnit }}</div>
+          <div>{{ ProductoFat_100 ?? '?' }} {{ ProductoFatUnit }}</div>
         </div>
         <div class="tr">
           <div>Grasas saturadas</div>
-          <div>{{ ProductoSaturedFat_100 }} {{ ProductoSaturedFatUnit }}</div>
+          <div>{{ ProductoSaturedFat_100 ?? '?' }} {{ ProductoSaturedFatUnit }}</div>
         </div>
         <div class="tr">
           <div>Carbohidratos</div>
-          <div>{{ ProductoCarbohydrates_100g }} {{ ProductoCarbohydratesUnit }}</div>
+          <div>{{ ProductoCarbohydrates_100g ?? '?' }} {{ ProductoCarbohydratesUnit }}</div>
         </div>
         <div class="tr">
           <div>Fibra</div>
-          <div>{{ ProductoFiber_100 }} {{ ProductoFiberUnit }}</div>
+          <div>{{ ProductoFiber_100 ?? '?' }} {{ ProductoFiberUnit }}</div>
         </div>
         <div class="tr">
           <div>Proteinas</div>
-          <div>{{ ProductoProteins_100 }} {{ ProductoProteinsUnit }}</div>
+          <div>{{ ProductoProteins_100 ?? '?' }} {{ ProductoProteinsUnit }}</div>
         </div>
         <div class="tr">
           <div>Sal</div>
-          <div>{{ ProductoSalt_100 }} {{ ProductoSaltUnit }}</div>
+          <div>{{ ProductoSalt_100 ?? '?' }} {{ ProductoSaltUnit }}</div>
         </div>
         <div class="tr">
           <div>Azucar</div>
-          <div>{{ ProductoSugars_100 }} {{ ProductoSugarsUnit }}</div>
+          <div>{{ ProductoSugars_100 ?? '?' }} {{ ProductoSugarsUnit }}</div>
         </div>
         <div class="tr">
           <div>Alcohol</div>
-          <div>{{ ProductoAlcohol_100 }} {{ ProductoAlcoholUnit }}</div>
+          <div>{{ ProductoAlcohol_100 ?? '?' }} {{ ProductoAlcoholUnit }}</div>
         </div>
       </div>
       <div class="tabla-nutriscore">
         <div class="positive-points points">
-          <h3>Puntos positivos: {{ ProductoPositivePoints }}</h3>
-          <span>Proteinas: {{ ProductoProteinsPoints }}/5</span>
-          <span>Fibra: {{ ProductoFiberPoints }}/5</span>
-          <span>Frutas, vegetales, nueces y aceites de colza/nuez/oliva : {{ ProductoFruitsPoints }}/5</span>
+          <h3>Puntos positivos: {{ ProductoPositivePoints ?? '?' }}</h3>
+          <span>Proteinas: {{ ProductoProteinsPoints ?? '?' }}/5</span>
+          <span>Fibra: {{ ProductoFiberPoints ?? '?' }}/5</span>
+          <span>Frutas, vegetales, nueces y aceites de colza/nuez/oliva : {{ ProductoFruitsPoints ?? '?' }}/5</span>
 
         </div>
         <div class="negative-points points">
-          <h3>Puntos negativos: {{ ProductoNegativePoints }}</h3>
-          <span>Energía: {{ ProductoEnergyPoints }}/10</span>
-          <span>Azucares: {{ ProductoSugarsPoints }}/10</span>
-          <span>Grasas saturadas: {{ ProductoSaturatedPoints }}/10</span>
-          <span>Sodio: {{ ProductoSodiumPoints }}/10</span>
+          <h3>Puntos negativos: {{ ProductoNegativePoints ?? '?' }}</h3>
+          <span>Energía: {{ ProductoEnergyPoints ?? '?' }}/10</span>
+          <span>Azucares: {{ ProductoSugarsPoints ?? '?' }}/10</span>
+          <span>Grasas saturadas: {{ ProductoSaturatedPoints ?? '?' }}/10</span>
+          <span>Sodio: {{ ProductoSodiumPoints ?? '?' }}/10</span>
         </div>
       </div>
       <div class="nutriscore-points">
         <img class="total-nutriscore" :src="ProductoNutriScore" alt="" />
-        <h3>Puntuación total: {{ ProductoNutriScorePoints }}</h3>
+        <h3>Puntuación total: {{ ProductoNutriScorePoints ?? '?' }}</h3>
       </div>
     </div>
 
@@ -526,7 +568,6 @@ onMounted(() => {
 
 .buscador {
   margin: 80px 0 0 60px;
-  height: 80px;
 }
 
 .filtros * {
@@ -535,14 +576,17 @@ onMounted(() => {
   font-weight: bold;
   border: 1px solid black;
 }
-.filtroSeleccionado{
+
+.filtroSeleccionado {
   background-color: var(--dark-blue);
   color: var(--light-blue-text);
 }
-.filtrosNoSeleccionado{
+
+.filtrosNoSeleccionado {
   background-color: var(--light-blue-text);
   color: var(--dark-blue);
 }
+
 .productos-comun {
   width: 100%;
   display: flex;
@@ -551,6 +595,46 @@ onMounted(() => {
   align-items: center;
 }
 
+.search-producto {
+  position: relative;
+  width: 40%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 30px;
+
+}
+
+.search-producto .lupa {
+  position: absolute;
+  height: 65%;
+  left: 5px;
+}
+
+.search-producto input {
+  height: 100%;
+  width: 100%;
+  padding-left: 30px;
+  padding-right: 5px;
+  font-size: 18px;
+  border: 2px solid var(--dark-blue);
+
+}
+
+.search-producto input:focus {
+  outline: none;
+}
+
+.search-producto .cross {
+  position: absolute;
+  right: 5px;
+  height: 65%;
+}
+
+.search-producto .cross:hover {
+  cursor: pointer;
+}
 
 .reja-productos {
   display: grid;
@@ -618,6 +702,7 @@ onMounted(() => {
     width: 90%;
 
   }
+
   .mini-producto {
     width: 250px;
   }
@@ -625,32 +710,20 @@ onMounted(() => {
 
 @media(max-width: 875.5px) {
   .buscador {
-  margin: 60px 0 0 0px;
-  height: 80px;
-}
+    margin: 60px 0 0 0px;
+  }
+
   .reja-productos {
 
     margin-left: 0;
 
   }
+
   .mini-producto {
     width: 100%;
   }
 }
 
-/* @media(max-width:730px) {
-  .mini-producto-padre {
-    display: block;
-    margin: auto;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .mini-producto {
-    width: auto;
-
-  }
-} */
 
 @media(max-width:566.5px) {
   .mini-producto {
@@ -658,7 +731,7 @@ onMounted(() => {
   }
 }
 
-/* .productos {
+.productos {
   margin-left: 60px;
   display: flex;
   flex-direction: column;
@@ -697,7 +770,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   max-height: 500px;
-  min-width: 200px;
   object-fit: contain;
 }
 
@@ -718,7 +790,8 @@ onMounted(() => {
 }
 
 .producto-ingredientes {
-  margin-top: 10px
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
 
 .producto-cantidad div {
@@ -728,10 +801,7 @@ onMounted(() => {
 .general-scores {
   display: flex;
   align-items: center;
-  flex: 1;
-  justify-content: center;
-  margin: 15px 20px 20px 0;
-
+  width: 60%;
 }
 
 .producto-nutriscore {
@@ -745,7 +815,7 @@ onMounted(() => {
   margin: 0 10% 0 10%;
   background-color: white;
   padding: 7px;
-  border-radius: 15px;
+  border-radius: 7%;
 }
 
 .producto-ecoscore {
@@ -769,7 +839,6 @@ onMounted(() => {
 
 .tabla-nutrientes .th {
   display: flex;
-  justify-content: center;
   font-size: x-large;
   font-weight: 600;
   background-color: #0c1f49;
@@ -819,16 +888,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.nutriscore-points * {
-  margin: 0 50px;
-}
-
-@media (max-width: 1150px) {
-  .producto-novagroup {
-    margin: 0 2% 0 2%;
-  }
+  gap: 10%;
 }
 
 @media (max-width: 875px) {
@@ -840,25 +900,81 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     max-height: fit-content;
+    justify-content: center
   }
 
   .producto-img {
     min-width: 100%;
     width: fit-content;
     max-width: 100%;
+    min-height: auto;
+
     max-height: 600px;
     margin: 0;
   }
 
   .img-producto {
     height: 30%;
-    min-height: 200px;
+    /* min-height: 200px; */
     margin: 0;
 
+  }
+
+  .tabla-nutriscore {
+    display: block;
+    width: 100%;
+  }
+
+  .points {
+    width: 100%;
   }
 
   .producto-general h2 {
     text-align: center;
   }
-} */
+
+  .total-nutriscore {
+    width: 40%;
+  }
+
+  .general-scores {
+    margin: auto;
+    width: 80%;
+    justify-content: center;
+  }
+
+  .producto-nutriscore {
+    /* min-width: 60px; */
+  }
+
+  .producto-novagroup {
+    /* min-width: 30px; */
+
+  }
+
+  .producto-ecoscore {
+    /* min-width: 60px; */
+
+  }
+
+}
+
+@media (max-width: 655px) {
+  .points {
+    margin: 20px 0;
+  }
+
+}
+
+@media (max-width: 450px) {
+  .tr {
+    font-size: 0.8em;
+
+  }
+
+  .tr .th {
+    font-size: 0.9em;
+  }
+
+}
 </style>

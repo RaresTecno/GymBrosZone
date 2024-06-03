@@ -965,6 +965,10 @@ function verPoliticas() {
     }
 
     .contenedor_calendario {
+        height: 30px;
+    }
+
+    .contenedor_calendario {
         padding: 8px 0;
     }
 

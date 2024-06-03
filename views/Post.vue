@@ -348,7 +348,7 @@ function cancelar() {
   <div class="todo_publicar">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
       <div class="div_pregunta div_pregunta_inicio" @click.stop>
-        <div>¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
+        <div class="mensaje">¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
         <div class="botones_pregunta">
           <button @click="cancelar">Volver a publicar</button>
           <button @click="irHome">Ver publicaciones</button>
@@ -1057,6 +1057,43 @@ svg.girar_imagen {
   .textarea {
     height: 200px;
   }
+
+  .mensaje{
+    width: 70%;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .div_pregunta{
+    height: 140px;
+    width: 80%;
+  }
+
+  .botones_pregunta{
+    width: 100%;
+  }
+}
+
+@media(max-width: 490px) {
+  .mensaje{
+    width: 85%;
+  }
+
+  .botones_pregunta{
+    flex-direction: column;
+    width: 60%;
+    justify-content: space-between;
+    height: 100px;
+  }
+
+  .botones_pregunta:first-child{
+    margin-bottom: 20px;
+  }
+
+  .div_pregunta{
+    height: 180px;
+    width: 80%;
+  }
 }
 
 @media(max-width: 440px) {
@@ -1096,6 +1133,21 @@ svg.girar_imagen {
 
   .textarea {
     height: 155px;
+  }
+}
+
+@media(max-width: 415px) {
+  .mensaje{
+    width: 85%;
+  }
+
+  .botones_pregunta{
+    width: 80%;
+  }
+
+  .div_pregunta{
+    height: 200px;
+    width: 80%;
   }
 }
 
@@ -1148,6 +1200,12 @@ svg.girar_imagen {
 
   .textarea {
     height: 125px;
+  }
+}
+
+@media(max-width: 315px) {
+  .mensaje, .botones_pregunta{
+    width: 100%;
   }
 }
 

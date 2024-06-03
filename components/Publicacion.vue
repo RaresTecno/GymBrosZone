@@ -57,6 +57,7 @@ const descripcion = ref(props.publicacionUnica.contenido);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
+const fotoPerfilComentarioMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 cargarPublicacion();
 
@@ -147,66 +148,42 @@ async function obtenerComentarios(idpublicacion) {
   //   // .order('fechacreacion', { ascending: true });
 
   const { data: comentariosData, error } = await supabase
-  .from('comentarios')
-  .select('*, usuarios(gymtag)')
-  .eq('idpublicacion', idpublicacion)
-  .order('fechacreacion', { ascending: false });
+    .from('comentarios')
+    .select('*, usuarios(gymtag)')
+    .eq('idpublicacion', idpublicacion)
+    .order('fechacreacion', { ascending: false });
 
   if (error) {
     console.error('Error al obtener los comentarios:', error);
     return;
   }
 
-  comentarios.value = comentariosData;
-  
+  // Mapear sobre los datos de los comentarios para obtener la foto de perfil de cada usuario
+  const comentariosConFotoPerfil = await Promise.all(comentariosData.map(async comentario => {
+    // Realizar una consulta adicional para obtener la foto de perfil del usuario
+    const { data: usuarioData, error: usuarioError } = await supabase
+      .from('usuarios')
+      .select('fotoperfil')
+      .eq('id', comentario.idusuario);
+
+    // Manejar cualquier error que ocurra durante la consulta de la foto de perfil
+    if (usuarioError) {
+      console.error('Error al obtener la foto de perfil del usuario:', usuarioError);
+      fotoPerfilComentarioMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    } else {
+      // Asignar la URL completa de la foto de perfil si está disponible, de lo contrario asignar la foto predeterminada
+      if (usuarioData[0].fotoperfil === '/predeterminada.png' || usuarioData[0].fotoperfil === null || usuarioData[0].fotoperfil === '') {
+        fotoPerfilComentarioMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+      } else {
+        fotoPerfilComentarioMostrada.value = `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuarioData[0].fotoperfil}`;
+      }
+    }
+    return comentario;
+  }));
+
+  // Actualizar el estado de comentarios con los datos obtenidos
+  comentarios.value = comentariosConFotoPerfil;
 }
-
-
-// async function obtenerComentarios(idpublicacion) {
-//   const { data: comentariosData, error } = await supabase
-//     .from('comentarios')
-//     .select('*, usuarios(gymtag)')
-//     .eq('idpublicacion', idpublicacion)
-//     .order('fechacreacion', { ascending: false });
-
-//   if (error) {
-//     console.error('Error al obtener los comentarios:', error);
-//     return;
-//   }
-
-//   const comentariosConFotoPerfil = await Promise.all(comentariosData.map(async comentario => {
-//     const { data: usuarioData, error: usuarioError } = await supabase
-//       .from('usuarios')
-//       .select('fotoperfil')
-//       .eq('idusuario', comentario.idusuario)
-//       .single();
-
-//     if (usuarioError) {
-//       console.error('Error al obtener la foto de perfil del usuario:', usuarioError);
-//       comentario.fotoPerfil = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
-//     } else {
-//       comentario.fotoPerfil = usuarioData.fotoperfil 
-//         ? `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuarioData.fotoperfil}`
-//         : 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
-//     }
-
-//     return comentario;
-//   }));
-
-//   comentarios.value = comentariosConFotoPerfil;
-//   console.log(comentarios.value);
-// }
-
-
-
-
-
-
-
-
-
-
-
 
 async function darLike() {
   const idpublicacion = props.publicacionUnica.idpublicacion;
@@ -382,7 +359,6 @@ async function cargarPublicacion() {
   guardados.value[props.publicacionUnica.idpublicacion] = guardadoData.length !== 0;
 
   await obtenerCantidadLikes(props.publicacionUnica.idpublicacion);
-  await obtenerComentarios(props.publicacionUnica.idpublicacion);
 }
 
 async function obtenerCantidadLikes(idpublicacion) {
@@ -400,25 +376,18 @@ async function obtenerCantidadLikes(idpublicacion) {
 
 function updateWidth() {
   windowWidth.value = window.innerWidth;
-  if (windowWidth.value <= 875) {
-    document.body.style.overflow = "visible";
-    mostrarFinal.value = false;
-    foto.value.style.cursor = 'default';
-  }
-
-  if (windowWidth.value > 875) {
-    foto.value.style.cursor = 'pointer';
-  }
+  foto.value.style.cursor = 'pointer';
 }
 
 onMounted(() => {
   window.addEventListener("resize", updateWidth);
 });
 
-function mostrar() {
-  if (windowWidth.value > 875) {
+async function mostrar(bool) {
+  if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
     document.body.style.overflow = "hidden";
     mostrarFinal.value = true;
+    await obtenerComentarios(props.publicacionUnica.idpublicacion);
   }
 };
 
@@ -491,7 +460,7 @@ onUnmounted(() => {
         </RouterLink>
       </div>
     </div>
-    <div @click="mostrar" class="inicial" id="forzar-inicial">
+    <div @click="mostrar(false)" class="inicial" id="forzar-inicial">
       <img :src="ruta" @error="combrobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto"
         @dblclick="handleDoubleClick" />
       <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
@@ -509,14 +478,14 @@ onUnmounted(() => {
               :class="{ 'like-animation2': animatingLike2[props.publicacionUnica.idpublicacion] }" />
           </div>
           <div class="guardar" v-if="!guardados[props.publicacionUnica.idpublicacion]" @click="guardar">
-                <font-awesome-icon :icon="['far', 'bookmark']" class="save"
-                  :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
-              </div>
-              <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
-                <font-awesome-icon :icon="['fas', 'bookmark']" class="save"
-                  :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
-              </div>
-          <div class="comentar">
+            <font-awesome-icon :icon="['far', 'bookmark']" class="save"
+              :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
+          </div>
+          <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
+            <font-awesome-icon :icon="['fas', 'bookmark']" class="save"
+              :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
+          </div>
+          <div class="comentar" @click="mostrar(true)" @click.stop>
             <font-awesome-icon :icon="['far', 'comment']" class="comment" />
           </div>
         </div>
@@ -561,7 +530,7 @@ onUnmounted(() => {
             <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
               <div class="comentario-header">
                 <!-- <img :src="fotoTuPerfilMostrar" class="comentario-foto" /> -->
-                <img :src="comentario.usuarios.fotoPerfil" class="comentario-foto" /> 
+                <img :src="fotoPerfilComentarioMostrada" class="comentario-foto" />
                 <!-- <span class="comentario-usuario">{{ comentario.idusuario }}</span> -->
                 <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
 
@@ -769,11 +738,13 @@ onUnmounted(() => {
 .comentarios {
   margin-top: 20px;
   height: 300px;
-  overflow-y: auto; /* Habilitar el scroll vertical */
+  overflow-y: auto;
+  /* Habilitar el scroll vertical */
   overflow-x: hidden;
-  border: 1px solid #ebebebd3; /* Opcional: para visualizar mejor el contenedor */
-  margin: 10px; 
-  
+  border: 1px solid #ebebebd3;
+  /* Opcional: para visualizar mejor el contenedor */
+  margin: 10px;
+
 }
 
 .comentarios::-webkit-scrollbar {
@@ -781,8 +752,8 @@ onUnmounted(() => {
 }
 
 .comentarios::-webkit-scrollbar-track {
-  background: var(--dark-blue) ;
-  background: #b8c1d346 ;
+  background: var(--dark-blue);
+  background: #b8c1d346;
   border-left: var(--light-blue-text) solid 1px;
 }
 
@@ -801,6 +772,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   color: var(--light-blue-text);
+  /* background-color: red; */
+  width: fit-content;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.comentario-header:hover, .comentario-header:active{
+
 }
 
 .comentario-foto {
@@ -809,19 +788,20 @@ onUnmounted(() => {
   border-radius: 50%;
   margin-right: 10px;
   object-fit: cover;
+  margin-left: 5px;
+  border: 1px solid black;
+  transition: border 0.3s;
 }
 
 .foto_encabezado img {
   border-radius: 50%;
   height: 100%;
   width: 100%;
-  border: 1px solid black;
-  transition: border 0.3s;
   object-fit: cover;
 }
 
-.foto_gymtag:hover img,
-.foto_gymtag:active img {
+.comentario-header .comentario-foto:hover,
+.comentario-header .comentario-foto:active{
   border: 1px solid rgb(109, 109, 109);
 }
 
@@ -830,21 +810,28 @@ onUnmounted(() => {
 }
 
 .comentario-contenido {
-  margin-top: 5px;
+  margin: 10px 0;
   color: var(--light-blue-text);
+  word-wrap: break-word; 
+  overflow-wrap: break-word; 
+  white-space: pre-wrap; 
+  margin-left: 12px;
+  margin-right: 12px;
 }
 
 .comentario-fecha {
-  font-size: 0.8em;
+  font-size: 13px;
+  margin-left: 12px;
   color: #999;
   margin-top: 5px;
+  /* text-align: end; */
 }
 
-.comentario:last-child{
+.comentario:last-child {
   border: none;
 }
 
-.comentario:first-child{
+.comentario:first-child {
   /* padding-top: 0; */
 }
 
@@ -1210,7 +1197,7 @@ onUnmounted(() => {
   font-size: 40px;
 }
 
-.heart.rojo{
+.heart.rojo {
   color: rgb(235, 4, 4);
 }
 
@@ -1219,17 +1206,17 @@ onUnmounted(() => {
     transform: scale(1);
     color: rgb(238, 70, 70);
   }
-  
+
   50% {
     transform: scale(1.5);
     color: rgb(235, 4, 4);
   }
-  
+
   70% {
     transform: scale(1.2);
     color: rgb(235, 4, 4);
   }
-  
+
   100% {
     transform: scale(1);
     color: rgb(238, 70, 70);
@@ -1258,7 +1245,7 @@ onUnmounted(() => {
     transform: translate(-50%, -50%) scale(0);
     opacity: 1;
   }
-  
+
   50% {
     transform: translate(-50%, -80%) scale(1.2);
     opacity: 0.9;
@@ -1285,12 +1272,12 @@ onUnmounted(() => {
     transform: scale(1);
     color: rgb(171, 153, 16);
   }
-  
+
   50% {
     transform: scale(1.2);
     color: rgb(230, 196, 28);
   }
-  
+
   100% {
     transform: scale(1);
     color: rgb(171, 153, 16);
@@ -1337,28 +1324,29 @@ onUnmounted(() => {
   font-size: 14px;
   word-spacing: -2px;
 }
+
 @media (max-width: 1200px) {
   .imagen {
     width: 500px;
     height: 500px;
   }
-  
+
   .cuerpo {
     width: 400px;
   }
-  
+
   .foto_gymtag {
     font-size: 24px;
   }
-  
+
   .foto_gymtag {
     margin-left: 10px;
   }
-  
+
   .foto_encabezado {
     margin-right: 8px;
   }
-  
+
   .botones_seguir button {
     font-size: 12px;
     padding: 4px 6px;
@@ -1429,7 +1417,11 @@ onUnmounted(() => {
     overflow: hidden;
   }
 
-  .final {
+  /*.final {
+    display: none;
+  }*/
+
+  .imagen {
     display: none;
   }
 

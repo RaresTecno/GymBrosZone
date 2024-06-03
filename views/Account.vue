@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase, obtenerId } from '../clients/supabase';
+import { supabase, obtenerId, logOut } from '../clients/supabase';
 import { disponible, reloadHeader } from "../main";
 
 disponible.value = true;
@@ -248,11 +248,11 @@ async function guardar() {
     if (error) {
       mensaje('Ha ocurrido un error al actualizar tu información.');
     } else {
-      if(gymtagActual !== gymtag.value){
+      if (gymtagActual !== gymtag.value) {
         gymtagActual = gymtag.value;
         reloadHeader();
       }
-      if(recargar){
+      if (recargar) {
         reloadHeader();
       }
       mensaje('Tu información ha sido actualizada.');
@@ -549,6 +549,11 @@ function cancelar() {
           {{ mensajeAviso }}
         </div>
       </div>
+    </div>
+    <div class="div_cerrar_sesion">
+      <button class="cerrar_sesion" @click="logOut">
+        Cerrar Sesión
+      </button>
     </div>
   </div>
 
@@ -981,6 +986,11 @@ svg.quitar_imagen {
 #file-upload-button {
   cursor: pointer !important;
   width: 0 !important;
+}
+
+.div_cerrar_sesion{
+  background-color: red;
+  margin-top: 70px;
 }
 
 ::placeholder {

@@ -150,7 +150,7 @@ async function obtenerComentarios(idpublicacion) {
   .from('comentarios')
   .select('*, usuarios(gymtag)')
   .eq('idpublicacion', idpublicacion)
-  .order('fechacreacion', { ascending: true });
+  .order('fechacreacion', { ascending: false });
 
   if (error) {
     console.error('Error al obtener los comentarios:', error);
@@ -158,12 +158,44 @@ async function obtenerComentarios(idpublicacion) {
   }
 
   comentarios.value = comentariosData;
+  
 }
 
 
+// async function obtenerComentarios(idpublicacion) {
+//   const { data: comentariosData, error } = await supabase
+//     .from('comentarios')
+//     .select('*, usuarios(gymtag)')
+//     .eq('idpublicacion', idpublicacion)
+//     .order('fechacreacion', { ascending: false });
 
+//   if (error) {
+//     console.error('Error al obtener los comentarios:', error);
+//     return;
+//   }
 
+//   const comentariosConFotoPerfil = await Promise.all(comentariosData.map(async comentario => {
+//     const { data: usuarioData, error: usuarioError } = await supabase
+//       .from('usuarios')
+//       .select('fotoperfil')
+//       .eq('idusuario', comentario.idusuario)
+//       .single();
 
+//     if (usuarioError) {
+//       console.error('Error al obtener la foto de perfil del usuario:', usuarioError);
+//       comentario.fotoPerfil = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+//     } else {
+//       comentario.fotoPerfil = usuarioData.fotoperfil 
+//         ? `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuarioData.fotoperfil}`
+//         : 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+//     }
+
+//     return comentario;
+//   }));
+
+//   comentarios.value = comentariosConFotoPerfil;
+//   console.log(comentarios.value);
+// }
 
 
 
@@ -473,15 +505,17 @@ onUnmounted(() => {
             <font-awesome-icon :icon="['far', 'heart']" class="heart" />
           </div>
           <div class="megusta" v-if="likes[props.publicacionUnica.idpublicacion]" @click="quitarLike">
-            <font-awesome-icon :icon="['fas', 'heart']" class="heart"
+            <font-awesome-icon :icon="['fas', 'heart']" class="heart rojo"
               :class="{ 'like-animation2': animatingLike2[props.publicacionUnica.idpublicacion] }" />
           </div>
           <div class="guardar" v-if="!guardados[props.publicacionUnica.idpublicacion]" @click="guardar">
-            <font-awesome-icon :icon="['far', 'bookmark']" class="save" />
-          </div>
-          <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
-            <font-awesome-icon :icon="['fas', 'bookmark']" class="save" />
-          </div>
+                <font-awesome-icon :icon="['far', 'bookmark']" class="save"
+                  :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
+              </div>
+              <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
+                <font-awesome-icon :icon="['fas', 'bookmark']" class="save"
+                  :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
+              </div>
           <div class="comentar">
             <font-awesome-icon :icon="['far', 'comment']" class="comment" />
           </div>
@@ -526,7 +560,8 @@ onUnmounted(() => {
           <div class="comentarios">
             <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
               <div class="comentario-header">
-                <img :src="fotoTuPerfilMostrar" class="comentario-foto" />
+                <!-- <img :src="fotoTuPerfilMostrar" class="comentario-foto" /> -->
+                <img :src="comentario.usuarios.fotoPerfil" class="comentario-foto" /> 
                 <!-- <span class="comentario-usuario">{{ comentario.idusuario }}</span> -->
                 <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
 
@@ -549,7 +584,7 @@ onUnmounted(() => {
                   <font-awesome-icon :icon="['far', 'heart']" class="heart" />
                 </div>
                 <div class="megusta" v-if="likes[props.publicacionUnica.idpublicacion]" @click="quitarLike">
-                  <font-awesome-icon :icon="['fas', 'heart']" class="heart"
+                  <font-awesome-icon :icon="['fas', 'heart']" class="heart rojo"
                     :class="{ 'like-animation2': animatingLike2[props.publicacionUnica.idpublicacion] }" />
                 </div>
                 <div class="comentar" @click="enfocarInput">
@@ -733,16 +768,39 @@ onUnmounted(() => {
 
 .comentarios {
   margin-top: 20px;
+  height: 300px;
+  overflow-y: auto; /* Habilitar el scroll vertical */
+  overflow-x: hidden;
+  border: 1px solid #ebebebd3; /* Opcional: para visualizar mejor el contenedor */
+  margin: 10px; 
+  
+}
+
+.comentarios::-webkit-scrollbar {
+  width: 8px;
+}
+
+.comentarios::-webkit-scrollbar-track {
+  background: var(--dark-blue) ;
+  background: #b8c1d346 ;
+  border-left: var(--light-blue-text) solid 1px;
+}
+
+.comentarios::-webkit-scrollbar-thumb {
+  /* border-radius: 20px; */
+  background-color: var(--light-blue-text);
+
 }
 
 .comentario {
-  border-bottom: 1px solid #ccc;
-  padding: 10px 0;
+  border-bottom: 1px solid #cccccc4d;
+  padding: 10px 5px;
 }
 
 .comentario-header {
   display: flex;
   align-items: center;
+  color: var(--light-blue-text);
 }
 
 .comentario-foto {
@@ -773,6 +831,7 @@ onUnmounted(() => {
 
 .comentario-contenido {
   margin-top: 5px;
+  color: var(--light-blue-text);
 }
 
 .comentario-fecha {
@@ -781,7 +840,13 @@ onUnmounted(() => {
   margin-top: 5px;
 }
 
+.comentario:last-child{
+  border: none;
+}
 
+.comentario:first-child{
+  /* padding-top: 0; */
+}
 
 
 
@@ -1125,7 +1190,6 @@ onUnmounted(() => {
 
 .botones_publicacion_grande * {
   font-size: 35px;
-  color: var(--light-blue-text);
   margin: 0 10px;
 }
 
@@ -1146,25 +1210,29 @@ onUnmounted(() => {
   font-size: 40px;
 }
 
+.heart.rojo{
+  color: rgb(235, 4, 4);
+}
+
 @keyframes likeBounce {
   0% {
     transform: scale(1);
-    color: var(--light-blue-text);
+    color: rgb(238, 70, 70);
   }
   
   50% {
     transform: scale(1.5);
-    color: red;
+    color: rgb(235, 4, 4);
   }
   
   70% {
     transform: scale(1.2);
-    color: red;
+    color: rgb(235, 4, 4);
   }
   
   100% {
     transform: scale(1);
-    color: var(--light-blue-text);
+    color: rgb(238, 70, 70);
   }
 }
 

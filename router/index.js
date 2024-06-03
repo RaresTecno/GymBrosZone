@@ -69,6 +69,16 @@ const router = createRouter({
       component: () => import("@/views/Post.vue"),
       meta: { requiresAuth: true }
     },
+    {
+      path: '/recoverPassword',
+      name: 'password',
+      component: () => import("@/views/Password.vue")
+    },
+    {
+      path: '/recovery',
+      name: 'recovery',
+      component: () => import("@/views/ChangePassword.vue")
+    },
     /*Ruta comodín para manejar rutas no encontradas*/
     {
       path: "/:catchAll(.*)",

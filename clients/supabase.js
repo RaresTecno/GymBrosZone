@@ -35,7 +35,8 @@ export async function userState(){
 
 export async function seeCurrentUser() {
     const localUser = await supabase.auth.getSession();
-    console.log(localUser);
+    console.log(localUser.data.session.user);
+    return localUser.data.session.user
 }
 
 export async function logOut() {

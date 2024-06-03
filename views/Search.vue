@@ -335,7 +335,7 @@ onMounted(() => {
   // }
 });
 let html5QrcodeScanner = null;
-
+const mostrandoScanner = ref(false);
 function onScanSuccess(decodedText, decodedResult) {
   console.log(`Code matched = ${decodedText}`, decodedResult);
   busquedaAlimento.value = decodedText;
@@ -350,6 +350,13 @@ function onScanError(errorMessage) {
 }
 
 function mostrarScanner() {
+  mostrandoScanner.value = !mostrandoScanner.value
+  if (mostrandoScanner.value == false) {
+    html5QrcodeScanner.clear();
+    html5QrcodeScanner = null;
+    return
+  }
+
   const readerElement = document.getElementById("reader");
 
   if (readerElement) {
@@ -377,7 +384,7 @@ function mostrarScanner() {
         newDiv.classList.add('ocultar-i');
 
         // Opcional: Añadir contenido al nuevo div
-        newDiv.innerHTML = "<p>Este es un nuevo contenido</p>";
+        newDiv.innerHTML = "<div style='position: absolute !important; background-color: rgb(181, 57, 57) !important; height: 50px !important; width: 50px !important; right: 0 !important; top: 0 !important; z-index: 100 !important; background: var(--bg-color) !important;'></div>"
 
         // Añade el nuevo div como hijo del elemento "reader"
         readerElement.appendChild(newDiv);
@@ -409,8 +416,8 @@ function mostrarScanner() {
       <input type="text" v-model="busquedaAlimento" />
       <font-awesome-icon class="cross" :icon="['fas', 'xmark']" @click="borrar" />
     </div>
-    <div>
-      <button @click="mostrarScanner()">Escanear producto</button>
+    <div class="scanner-padre">
+      <button class="btn-scanner" @click="mostrarScanner()">Escanear producto</button>
       <div id="reader"></div>
       <div id="result"></div>
     </div>
@@ -419,7 +426,7 @@ function mostrarScanner() {
         <div class="mini-producto-padre">
           <div class="mini-producto" @click="mostrarProducto(producto.id)">
             <h2 class="mini-nombre">{{ (nombre(producto) && cantidad(producto)) ? (nombre(producto) +
-          cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
+              cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
             <div class="mini-img">
               <img :src="imagen(producto)" />
             </div>
@@ -534,30 +541,10 @@ function mostrarScanner() {
 </template>
 
 <style scoped>
-#result {
-  position: relative;
-}
-
-#reader {
-  position: relative;
-  margin-left: 60px;
-  border: none
-}
-
 /* img[alt="info icon"] {
   width: 32px !important;  Cambiar el tamaño del ancho 
   height: 32px !important; Cambiar el tamaño de la altura 
 } */
-.ocultar-i {
-  position: absolute;
-  background-color: red;
-  height: 150px;
-  width: 50px;
-  right: 0;
-  top: 1px;
-  z-index: 100;
-  background: var(--bg-color);
-}
 
 .buscador {
   margin: 80px 0 0 60px;
@@ -568,6 +555,7 @@ function mostrarScanner() {
   padding: 10px;
   font-weight: bold;
   border: 1px solid black;
+  height: 37px;
 }
 
 .filtroSeleccionado {
@@ -586,6 +574,7 @@ function mostrarScanner() {
   justify-content: center;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 50px;
 }
 
 .search-producto {
@@ -627,6 +616,53 @@ function mostrarScanner() {
 
 .search-producto .cross:hover {
   cursor: pointer;
+}
+
+.scanner-padre {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: 60px;
+  margin-bottom: 20px;
+}
+
+.btn-scanner {
+  width: 20%;
+  min-width: 250px;
+  margin: auto;
+  margin-bottom: 10px;
+  background-color: var(--blue-inputs);
+  border: 2px solid var(--dark-blue);
+  padding: 5px;
+  color: var(--light-blue-text);
+  font-size: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.496);
+}
+
+.btn-scanner:hover {
+  cursor: pointer;
+  box-shadow: 0 2px 10px 2px rgba(0, 0, 0, 0.8);
+
+}
+
+#result {}
+
+#reader {
+  position: relative;
+  margin-top: 10px;
+  width: 60%;
+}
+
+.ocultar-i {
+  position: absolute !important;
+  background-color: rgb(181, 57, 57) !important;
+  height: 150px !important;
+  width: 50px !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  background: var(--bg-color) !important;
 }
 
 .reja-productos {
@@ -711,6 +747,10 @@ function mostrarScanner() {
 
   .search-producto {
     width: 70%;
+    margin-left: 0;
+  }
+
+  .scanner-padre {
     margin-left: 0;
   }
 
@@ -984,10 +1024,17 @@ function mostrarScanner() {
   .points {
     margin: 20px 0;
   }
-
+  .search-producto {
+    width: 95%;
+  }
 }
 
 @media (max-width: 450px) {
+  .btn-scanner{
+    width: 50%;
+    min-width: 60px;
+    font-size: 1em;
+  }
   .tr {
     font-size: 0.8em;
 

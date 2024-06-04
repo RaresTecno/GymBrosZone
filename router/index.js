@@ -50,6 +50,18 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: "/liked",
+      name: "liked",
+      component: () => import("@/views/Liked.vue"),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: "/saved",
+      name: "saved",
+      component: () => import("@/views/Saved.vue"),
+      meta: { requiresAuth: true }
+    },
+    {
       path: "/profile/:gymtag",
       name: "profile",
       component: () => import("@/views/Profile.vue"),

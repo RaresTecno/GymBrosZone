@@ -22,6 +22,7 @@ const apellidos = ref('');
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
+const mensajePopUp = ref('');
 
 const mostrarPregunta = ref(false);
 const esPredeterminada = ref(true);
@@ -409,6 +410,7 @@ function confirmacion() {
   if (!esPredeterminada.value) {
     mostrarPregunta.value = true;
     document.body.style.overflow = 'hidden';
+    mensajePopUp.value = '¿Quieres eliminar tu foto de perfil?';
     nextTick(() => {
       setTimeout(() => {
         const divPregunta = document.querySelector('.div_pregunta');
@@ -428,8 +430,9 @@ function confirmar() {
     divPregunta.classList.remove('expand');
     divPregunta.classList.add('shrink');
     setTimeout(() => {
-      mostrarPregunta.value = false;
+      mostrarPregunta.value = '';
       document.body.style.overflow = '';
+      mensajePopUp.value = '';
     }, 250);
   }
   quitar_imagen();
@@ -444,23 +447,64 @@ function cancelar() {
     setTimeout(() => {
       mostrarPregunta.value = false;
       document.body.style.overflow = '';
+      mensajePopUp.value = '';
     }, 250);
   }
+}
+
+function cerrarSes() {
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+      mensajePopUp.value = '';
+    }, 250);
+  }
+  logOut();
+}
+
+function cerrarSesion() {
+  mostrarPregunta.value = true;
+  document.body.style.overflow = 'hidden';
+  mensajePopUp.value = '¿Estás seguro que deseas cerrar sesión?';
+  nextTick(() => {
+    setTimeout(() => {
+      const divPregunta = document.querySelector('.div_pregunta');
+      if (divPregunta) {
+        divPregunta.classList.remove('shrink');
+        divPregunta.classList.add('expand');
+      }
+    }, 5);
+  });
+
 }
 </script>
 <template>
   <div class="todo_account">
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
       <div class="div_pregunta div_pregunta_inicio" @click.stop>
-        <div class="pregunta">¿Quieres eliminar tu foto de perfil?</div>
+        <div class="pregunta">{{ mensajePopUp }}</div>
         <div class="botones_pregunta">
-          <button @click="confirmar">Eliminar</button>
-          <button @click="cancelar">Cancelar</button>
+          <button v-if="mensajePopUp == '¿Quieres eliminar tu foto de perfil?'" @click="confirmar">Eliminar</button>
+          <button v-if="mensajePopUp == '¿Quieres eliminar tu foto de perfil?'" @click="cancelar">Cancelar</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
+            @click="cerrarSes">Si</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
+            @click="cancelar">No</button>
         </div>
       </div>
     </div>
     <div class="account_container" ref="account_container">
       <div class="titulo_account">
+        <div class="cerrar_sesion_arriba" @click="cerrarSesion">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+          </svg>
+        </div>
         <div class="cerrar_account">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" @click="cerrar_mi_cuenta">
             <path
@@ -550,11 +594,11 @@ function cancelar() {
         </div>
       </div>
     </div>
-    <div class="div_cerrar_sesion">
-      <button class="cerrar_sesion" @click="logOut">
+    <!-- <div class="div_cerrar_sesion">
+      <button class="cerrar_sesion" @click="cerrarSesion">
         Cerrar Sesión
       </button>
-    </div>
+    </div> -->
   </div>
 
 </template>
@@ -564,6 +608,31 @@ function cancelar() {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.cerrar_sesion_arriba {
+  position: absolute;
+  height: 35px;
+  width: 35px;
+  top: 10px;
+  left: 25px;
+  z-index: 200;
+  cursor: pointer;
+}
+
+.cerrar_sesion_arriba svg path {
+  fill: var(--light-blue-text);
+  stroke: var(--light-blue-text);
+  stroke-width: 1.5px;
+}
+
+.cerrar_sesion_arriba:hover svg path,
+.cerrar_sesion_arriba:active svg path {
+  filter: drop-shadow(0 0 15px rgba(179, 196, 241, 0.76));
+}
+
+.boton_esp {
+  width: 80px;
 }
 
 .editar_datos>div {
@@ -647,7 +716,7 @@ function cancelar() {
   flex-direction: column;
   align-items: center;
   margin-top: 80px;
-  padding-bottom: 150px;
+  padding-bottom: 90px;
 }
 
 .account_container {
@@ -687,6 +756,7 @@ function cancelar() {
   width: 98%;
   margin-top: 10px;
   height: 30px;
+  position: relative;
 }
 
 .cerrar_account {
@@ -988,9 +1058,24 @@ svg.quitar_imagen {
   width: 0 !important;
 }
 
-.div_cerrar_sesion{
-  background-color: red;
+.div_cerrar_sesion {
   margin-top: 70px;
+}
+
+.div_cerrar_sesion button {
+  padding: 7px 19px;
+  cursor: pointer;
+  background-color: var(--blue-inputs);
+  border: solid var(--black) 2px;
+  color: var(--light-blue-text);
+  border-radius: 2px;
+  font-size: 18px;
+  transition: background-color 0.5s, border 0.5s, color 0.5s;
+}
+
+.div_cerrar_sesion button:hover,
+.div_cerrar_sesion button:active {
+  border: 2px solid #eef2fa81;
 }
 
 ::placeholder {
@@ -1052,6 +1137,13 @@ svg.quitar_imagen {
 }
 
 @media(max-width: 875px) {
+  .cerrar_sesion_arriba {
+    height: 30px;
+    width: 30px;
+    top: 0;
+    left: 20px;
+  }
+
   .todo_account {
     margin-top: -6px;
     padding: 0;
@@ -1256,6 +1348,10 @@ svg.quitar_imagen {
 @media(max-width: 380px) {
   .div_contenido {
     min-width: 0;
+  }
+
+  .div_pregunta.div_pregunta_inicio {
+    height: fit-content;
   }
 
   .prev_imagen {

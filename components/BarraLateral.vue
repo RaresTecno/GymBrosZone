@@ -133,13 +133,13 @@ function reloadPage(event) {
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/likes" class="RouterLink">
+        <RouterLink to="/liked" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'heart']" /></div>
           <h2>Likes</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/keep" class="RouterLink">
+        <RouterLink to="/saved" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon guardado" :icon="['fas', 'bookmark']" /></div>
           <h2>Guardados</h2>
         </RouterLink>

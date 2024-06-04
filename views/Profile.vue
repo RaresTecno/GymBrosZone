@@ -5,15 +5,33 @@ import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
-import { supabase, userId } from "../clients/supabase";
+import { supabase, userId, userActive } from "../clients/supabase";
 
 disponible.value = true;
+const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 const props = defineProps({
   gymtag: {
     type: String
   }
 });
+
+async function obtenerTuFotoPerfil(){
+  if(userActive.value == true){
+    const { data: usuario, error } = await supabase
+      .from('usuarios')
+      .select("*")
+      .eq('id', userId.value);
+    fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
+    if (fotoTuPerfilMostrar.value === '/predeterminada.png' || fotoTuPerfilMostrar.value === null || fotoTuPerfilMostrar.value === '') {
+      fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    } else {
+      /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+      fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoTuPerfilMostrar.value;
+    }
+  }
+}
+obtenerTuFotoPerfil();
 
 const profileId = ref();
 const siguiendo = ref();
@@ -243,7 +261,7 @@ function checkInput() {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="true" />
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">

@@ -23,12 +23,12 @@ import { ref, onMounted } from "vue";
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/likes" class="RouterLink">
+        <RouterLink to="/liked" class="RouterLink">
           <font-awesome-icon class="icon" :icon="['fas', 'heart']" />
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/keep" class="RouterLink">
+        <RouterLink to="/saved" class="RouterLink">
           <font-awesome-icon
             class="icon"
             :icon="['fas', 'bookmark']"

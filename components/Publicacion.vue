@@ -57,7 +57,6 @@ const descripcion = ref(props.publicacionUnica.contenido);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
-const fotoPerfilComentarioMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 cargarPublicacion();
 
@@ -169,13 +168,13 @@ async function obtenerComentarios(idpublicacion) {
     // Manejar cualquier error que ocurra durante la consulta de la foto de perfil
     if (usuarioError) {
       console.error('Error al obtener la foto de perfil del usuario:', usuarioError);
-      fotoPerfilComentarioMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+      comentario.fotoPerfilComentarioMostrada = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     } else {
       // Asignar la URL completa de la foto de perfil si está disponible, de lo contrario asignar la foto predeterminada
       if (usuarioData[0].fotoperfil === '/predeterminada.png' || usuarioData[0].fotoperfil === null || usuarioData[0].fotoperfil === '') {
-        fotoPerfilComentarioMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+        comentario.fotoPerfilComentarioMostrada = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
       } else {
-        fotoPerfilComentarioMostrada.value = `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuarioData[0].fotoperfil}`;
+        comentario.fotoPerfilComentarioMostrada = `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuarioData[0].fotoperfil}`;
       }
     }
     return comentario;
@@ -528,12 +527,16 @@ onUnmounted(() => {
 
           <div class="comentarios">
             <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
-              <div class="comentario-header">
-                <!-- <img :src="fotoTuPerfilMostrar" class="comentario-foto" /> -->
-                <img :src="fotoPerfilComentarioMostrada" class="comentario-foto" />
-                <!-- <span class="comentario-usuario">{{ comentario.idusuario }}</span> -->
-                <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
-
+              <div class="header_cometario">
+                <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: comentario.usuarios.gymtag } }"
+                  class="RouterLink" @click="quitarOverflow">
+                  <div class="comentario-header">
+                    <!-- <img :src="fotoTuPerfilMostrar" class="comentario-foto" /> -->
+                    <img :src="comentario.fotoPerfilComentarioMostrada" class="comentario-foto" />
+                    <!-- <span class="comentario-usuario">{{ comentario.idusuario }}</span> -->
+                    <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
+                  </div>
+                </RouterLink>
               </div>
               <div class="comentario-contenido">
                 {{ comentario.comentario }}
@@ -581,7 +584,9 @@ onUnmounted(() => {
               </div>
               <div class="input_anadir">
                 <textarea class="input" ref="comentarioInput" required autocomplete="off"
-                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario"></textarea>
+                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario" v-if="windowWidth >= 875"></textarea>
+                <input class="input" ref="comentarioInput" required autocomplete="off"
+                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario" v-if="windowWidth < 875" type="text">
               </div>
             </div>
             <div class="publicar">
@@ -600,6 +605,11 @@ onUnmounted(() => {
 <style scoped>
 .contenido {
   cursor: default;
+}
+
+.header_cometario{
+  width: fit-content;
+  padding-right: 5px;
 }
 
 .custom-image-style {
@@ -699,8 +709,7 @@ onUnmounted(() => {
 }
 
 .contenedor_tematica {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  padding: 10px 20px;
 }
 
 .tematica {
@@ -736,15 +745,17 @@ onUnmounted(() => {
 
 
 .comentarios {
-  margin-top: 20px;
-  height: 300px;
+  height: 240px;
   overflow-y: auto;
   /* Habilitar el scroll vertical */
   overflow-x: hidden;
   border: 1px solid #ebebebd3;
   /* Opcional: para visualizar mejor el contenedor */
   margin: 10px;
-
+  position: absolute;
+  bottom: 135px;
+  width: calc(100% - 20px);
+  
 }
 
 .comentarios::-webkit-scrollbar {
@@ -778,9 +789,8 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.comentario-header:hover, .comentario-header:active{
-
-}
+.comentario-header:hover,
+.comentario-header:active {}
 
 .comentario-foto {
   width: 40px;
@@ -801,7 +811,7 @@ onUnmounted(() => {
 }
 
 .comentario-header .comentario-foto:hover,
-.comentario-header .comentario-foto:active{
+.comentario-header .comentario-foto:active {
   border: 1px solid rgb(109, 109, 109);
 }
 
@@ -812,9 +822,9 @@ onUnmounted(() => {
 .comentario-contenido {
   margin: 10px 0;
   color: var(--light-blue-text);
-  word-wrap: break-word; 
-  overflow-wrap: break-word; 
-  white-space: pre-wrap; 
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
   margin-left: 12px;
   margin-right: 12px;
 }
@@ -1415,6 +1425,10 @@ onUnmounted(() => {
     border-radius: 12px;
     margin: 25px 0 25px 0;
     overflow: hidden;
+  }
+
+  .cuerpo{
+    height: 454px;
   }
 
   /*.final {

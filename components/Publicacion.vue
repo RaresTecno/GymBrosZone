@@ -26,10 +26,10 @@ const fotoPerfil = ref();
 const gymTag = ref();
 const foto = ref('');
 const windowWidth = ref(window.innerWidth);
-const isProfile = ref(props.ProfileView);
 
 const likes = ref({});
 const guardados = ref({});
+const isProfile = ref(props.ProfileView);
 
 const animatingLike = ref(false);
 const animatingLike2 = ref({});

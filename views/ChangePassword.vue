@@ -1,16 +1,13 @@
 <script setup>
 import { ref } from 'vue';
-import { supabase, seeCurrentUser } from '../clients/supabase';
+import { supabase } from '../clients/supabase';
 const password = ref()
 const password2 = ref()
 
 async function cambiarContra() {
-    const usuario = seeCurrentUser()
     const { data, error } = await supabase.auth.updateUser({
-        email: usuario.email,
         password: password.value
     })
-
 }
 
 </script>

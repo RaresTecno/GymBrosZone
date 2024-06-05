@@ -4,6 +4,21 @@ import { ref, onMounted, onUnmounted, computed } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
 
+const props = defineProps({
+  publicacionUnica: {
+    type: Object,
+    required: true,
+  },
+  ProfileView: {
+    type: Boolean,
+    default: false
+  },
+  fotoTuPerfilMostrar: {
+    type: String,
+    required: false
+  }
+});
+
 const perfilPropio = ref();
 const siguiendo = ref();
 const fotoPerfil = ref();
@@ -36,24 +51,6 @@ const mostrarFinal = ref(false);
 const isCover = ref(true);
 const esCover = ref(true);
 
-const windowWidth = ref(window.innerWidth);
-
-const props = defineProps({
-  publicacionUnica: {
-    type: Object,
-    required: true,
-  },
-  ProfileView: {
-    type: Boolean,
-    default: false
-  },
-  fotoTuPerfilMostrar: {
-    type: String,
-    required: false
-  }
-});
-
-const isProfile = ref(props.ProfileView);
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
 

@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
-import { supabase, userId } from "../clients/supabase";
+import { supabase, userId, userActive } from "../clients/supabase";
 
 const props = defineProps({
   gymtag: {
@@ -89,12 +89,6 @@ mostrarp()
 disponible.value = true;
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
-const props = defineProps({
-  gymtag: {
-    type: String
-  }
-});
-
 async function obtenerTuFotoPerfil(){
   if(userActive.value == true){
     const { data: usuario, error } = await supabase
@@ -111,100 +105,6 @@ async function obtenerTuFotoPerfil(){
   }
 }
 obtenerTuFotoPerfil();
-
-const profileId = ref();
-const siguiendo = ref();
-const perfilPropio = ref();
-const editando = ref(false);
-const todasPublicaciones = ref();
-const cantidadPublicaciones = ref();
-const gymTag = ref();
-const nombreCompleto = ref();
-const sobreMi = ref();
-const numSeguidores = ref();
-const numSeguidos = ref();
-const seguidos = ref();
-const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
-
-const router = useRouter();
-
-async function mostrarp() {
-  const { data: usuario, error: errorUsuario } = await supabase
-    .from('usuarios')
-    .select("*")
-    .eq('gymtag', props.gymtag);
-  if(errorUsuario){
-
-  }
-
-  if (usuario.length == 0) {
-    router.push('/NotFound');
-  }
-
-  if (usuario[0].fotoperfil != "/predeterminada.png") {
-    fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + usuario[0].fotoperfil;
-
-  }
-
-  gymTag.value = usuario[0].gymtag;
-  nombreCompleto.value = usuario[0].nombre + " " + usuario[0].apellidos;
-  profileId.value = usuario[0].id;
-
-  const { data: publicaciones, error: errorPublicaciones } = await supabase
-    .from('publicaciones')
-    .select('*')
-    .eq('idusuario', usuario[0].id);
-  if(errorPublicaciones){
-
-  }
-
-  todasPublicaciones.value = publicaciones.reverse();
-  cantidadPublicaciones.value = publicaciones.length;
-
-  if (profileId.value == userId.value) {
-    perfilPropio.value = true;
-  } else {
-    perfilPropio.value = false;
-  }
-
-  const { data: seguidores, error: errorSeguidores } = await supabase
-    .from('seguidores')
-    .select('*')
-    .eq('idseguidor', userId.value)
-    .eq('idseguido', profileId.value);
-  if(errorSeguidores){
-
-  }
-
-  if (seguidores.length == 0) {
-    siguiendo.value = false;
-  } else {
-    siguiendo.value = true;
-  }
-
-  const { data: seguidoresPerfil, error: errorSeguidoresPerfil } = await supabase
-    .from('seguidores')
-    .select('*')
-    .eq('idseguido', profileId.value);
-  if(errorSeguidoresPerfil){
-
-  }
-
-  numSeguidores.value = seguidoresPerfil.length;
-
-  const { data: seguidosPerfil, error: errorSeguidosPerfil } = await supabase
-    .from('seguidores')
-    .select('*')
-    .eq('idseguidor', profileId.value);
-  if(errorSeguidosPerfil){
-
-  }
-
-  numSeguidos.value = seguidosPerfil.length
-}
-mostrarp();
-
-
 
 function arriba() {
   window.scrollTo(0, 0);

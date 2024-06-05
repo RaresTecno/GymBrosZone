@@ -203,5 +203,6 @@ div .RouterLink {
   width: 40px;
   height: 40px;
   margin: -2px;
+  object-fit: cover;
 }
 </style>

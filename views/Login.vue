@@ -168,7 +168,7 @@ function mensaje(mensaje, Input) {
                 </div>
             </div>
             <div class="cuenta_existente">
-                <div class="cuenta_existente_texto">¿No tienes una cuenta?</div>
+                <RouterLink to="/recoverPassword" class="cuenta_existente_texto">¿Has olvidado la contaseña?</RouterLink>
             </div>
             <div class="crear">
                 <div class="crear_texto">

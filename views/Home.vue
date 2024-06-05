@@ -2,25 +2,58 @@
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
-import { ref, reactive } from "vue"
-const todasPublicaciones = ref()
+import { ref, reactive , onMounted, onUnmounted} from "vue"
+// const todasPublicaciones = ref()
 const idPublicacion = ref()
 const cantidadPublicaciones = ref()
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
-async function mostrarp() {
+const todasPublicaciones = ref([]);
+let offset = 0;
+const limit = 9;
+let loading = false;
+
+const cargarPublicaciones = async () => {
+  if (loading) return;
+  loading = true;
+
   try {
     const { data: publicaciones, error } = await supabase
       .from('publicaciones')
-      .select('*');
+      .select('*')
+      .order('fechapublicacion', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    todasPublicaciones.value = publicaciones.reverse();
+    if (error) {
+      console.error(error);
+      loading = false;
+      return;
+    }
 
+    // Añadir las nuevas publicaciones a las existentes
+    todasPublicaciones.value.push(...publicaciones);
+    offset += limit;
+    loading = false;
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    loading = false;
   }
-}
-mostrarp();
+};
+
+const handleScroll = () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    cargarPublicaciones();
+  }
+};
+
+onMounted(() => {
+  cargarPublicaciones();
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 
 async function obtenerTuFotoPerfil(){
   if(userActive.value == true){
@@ -238,11 +271,11 @@ disponible.value = true;
 }
 
 @media (max-width: 1100px) {
-  
-  .vista{
+
+  .vista {
     width: 100%;
   }
-  
+
   .buttons {
     margin: 2%;
   }
@@ -252,6 +285,7 @@ disponible.value = true;
   main {
     margin-top: 60px;
   }
+  
   .todo-section {
     margin-top: 17%;
   }
@@ -275,6 +309,7 @@ disponible.value = true;
     margin-bottom: 10px;
     font-size: 18px;
   }
+  
   .publicaciones {
     margin-left: 0;
     padding-top: 0;
@@ -282,6 +317,7 @@ disponible.value = true;
 
   .vista {
     margin-top: 35px;
+    margin-top: 25px;
     display: flex;
     flex-direction: column;
     width: 80%;
@@ -307,6 +343,33 @@ disponible.value = true;
   .vista {
     width: 100%;
     margin: 0px;
+  }
+}
+
+@media (max-width: 600px) {
+  .todo-section {
+    margin-top: 40%;
+    width: 100%;
+  }
+
+  .section {
+    width: 100%;
+    margin: 5%;
+    border-radius: 25px;
+    background: linear-gradient(145deg, var(--blue), var(--alt-black));
+    box-shadow: 1px 1px 6px var(--alt-black), -1px -1px 4px var(--alt-black);
+  }
+
+  .section-image {
+    width: 250px;
+  }
+
+  .section-text {
+    width: 250px;
+  }
+
+  .buttons {
+    margin-top: 5px;
   }
 }
 

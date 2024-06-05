@@ -3,13 +3,15 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
 import { userId, supabase } from "../clients/supabase";
 
-const gymTag = ref()
+const gymTag = ref();
+const fotoPerfil = ref();
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('id', userId.value);
   gymTag.value = usuario[0].gymtag;
+  fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + usuario[0].fotoperfil;
 }
 cargarUsuario();
 const posicionAnt = ref(0);
@@ -108,16 +110,16 @@ function reloadPage(event) {
 <template>
   <transition name="slide-fade" mode="out-in">
     <nav :style="{ top: altura + 'px' }">
+      <div v-if="gymTag">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
+          <div class="icono"><img :src="fotoPerfil" class="imgperfil" /></div>
+          <h2>Perfil</h2>
+        </RouterLink>
+      </div>
       <div>
         <RouterLink to="/" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'house']" /></div>
           <h2>Home</h2>
-        </RouterLink>
-      </div>
-      <div v-if="gymTag">
-        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
-          <div class="icono"><font-awesome-icon class="icon usuario" :icon="['fas', 'user']" /></div>
-          <h2>Perfil</h2>
         </RouterLink>
       </div>
       <div>
@@ -194,5 +196,12 @@ div .RouterLink {
   color: var(--light-blue-text);
   width: 36px;
   height: 36px;
+}
+.imgperfil{
+  border-radius: 50px;
+  border: 1px solid var(--light-blue-text);
+  width: 40px;
+  height: 40px;
+  margin: -2px;
 }
 </style>

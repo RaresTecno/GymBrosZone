@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
 import editProfile from "../components/EditProfile.vue";
-import { supabase, userId } from "../clients/supabase";
+import { supabase, userId, userActive } from "../clients/supabase";
 
 const props = defineProps({
   gymtag: {
@@ -26,7 +26,7 @@ const numSeguidores = ref();
 const numSeguidos = ref();
 const seguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
-
+const esPrivado = ref(false)
 const router = useRouter();
 
 async function mostrarp() {
@@ -89,8 +89,8 @@ mostrarp()
 disponible.value = true;
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
-async function obtenerTuFotoPerfil(){
-  if(userActive.value == true){
+async function obtenerTuFotoPerfil() {
+  if (userActive.value == true) {
     const { data: usuario, error } = await supabase
       .from('usuarios')
       .select("*")
@@ -252,16 +252,19 @@ function calcularCalorias() {
     resultado.value.deficit = [];
   } else if (objetivo.value === 'bajar') {
     resultado.value.deficit = [
-    { nivel: 'Déficit ligero', kcal: Math.round(caloriasMantenimiento * 0.90) },
-    { nivel: 'Déficit moderado', kcal: Math.round(caloriasMantenimiento * 0.80) },
-    { nivel: 'Déficit agresivo', kcal: Math.round(caloriasMantenimiento * 0.70) },
-    { nivel: 'Déficit muy agresivo', kcal: Math.round(caloriasMantenimiento * 0.60) }
-  ];
+      { nivel: 'Déficit ligero', kcal: Math.round(caloriasMantenimiento * 0.90) },
+      { nivel: 'Déficit moderado', kcal: Math.round(caloriasMantenimiento * 0.80) },
+      { nivel: 'Déficit agresivo', kcal: Math.round(caloriasMantenimiento * 0.70) },
+      { nivel: 'Déficit muy agresivo', kcal: Math.round(caloriasMantenimiento * 0.60) }
+    ];
     resultado.value.superavit = [];
   } else {
     resultado.value.superavit = [];
     resultado.value.deficit = [];
   }
+}
+function cambiarPrivacidad(valor) {
+  esPrivado.value = valor
 }
 </script>
 
@@ -315,25 +318,35 @@ function calcularCalorias() {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="true" />
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
         </template>
       </div>
-      <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
-        <form calss="formulario-estadisticas">
-          <label>Tu Sexo</label>
-          <select class="sexo" v-model="sexo" required>
-            <option value="hombre">Hombre</option>
-            <option value="mujer">Mujer</option>
-          </select>
+      <div v-if="vista == 'Estadisticas'" id="estadisticas">
+        <form class="formulario-estadisticas">
+          <div class="privacidad">
+            <font-awesome-icon @click="cambiarPrivacidad(false)" v-if="esPrivado" :icon="['fas', 'lock']" class="candado"/>
+            <font-awesome-icon @click="cambiarPrivacidad(true)" v-if="!esPrivado" :icon="['fas', 'unlock']" class="candado" />
+          </div>
+          <div class="tu-sexo">
+            <label>Tu Sexo</label>
+            <select class="sexo" v-model="sexo" required>
+              <option value="hombre">Hombre</option>
+              <option value="mujer">Mujer</option>
+            </select>
+          </div>
+          <div class="tu-edad">
+            <label>Tu Edad</label>
+            <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required>
+          </div>
+          <div class="tu-peso">
+            <label>Tu peso (kg)</label>
+            <input type="number" class="peso" v-model="peso" min="1" max="300" step="0.01" required>
 
-          <label>Tu Edad</label>
-          <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required>
-
-          <label>Tu peso (kg)</label>
-          <input type="number" class="peso" v-model="peso" min="1" max="300" step="0.01" required>
-
-          <label>Tu altura (cm)</label>
-          <input type="number" class="altura" v-model="altura" min="1" max="300" step="1" required>
+          </div>
+          <div class="tu-altura">
+            <label>Tu altura (cm)</label>
+            <input type="number" class="altura" v-model="altura" min="1" max="300" step="1" required>
+          </div>
 
           <label>¿Cuál es tu nivel de actividad física diaria?</label>
           <select class="actividad" v-model="actividad">
@@ -359,7 +372,7 @@ function calcularCalorias() {
           <p>{{ resultado.mantenimiento }} kcal/día</p>
         </div>
 
-        <div v-if="resultado.superavit.length">
+        <div v-if="resultado.superavit.length > 0">
           <h3>Tus calorías para estar en superávit calórico:</h3>
           <table>
             <tr>
@@ -373,7 +386,7 @@ function calcularCalorias() {
           </table>
         </div>
 
-        <div v-if="resultado.deficit">
+        <div v-if="resultado.deficit.length > 0">
           <h3>Tus calorías para estar en déficit calórico:</h3>
           <table>
             <tr>
@@ -398,15 +411,7 @@ function calcularCalorias() {
       </div>
     </div>
   </div>
-  <div v-if="editando == true" class="edit">
-    <div class="edit-sobreMi">
-      <div @click="cerrar()" class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" /></div>
-      <div>
-        <textarea v-model="sobreMi" @input="checkInput"></textarea>
-        <button @click="obtenerDatos">Obtener Datos</button>
-      </div>
-    </div>
-  </div>
+
 </template>
 
 <style scoped>
@@ -593,10 +598,30 @@ function calcularCalorias() {
   /* Centra el contenido verticalmente */
 }
 
-.vista #publicacion {
+#publicacion {
   padding: 0;
 }
 
+.formulario-estadisticas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 2px solid black;
+  padding: 20px;
+}
+.candado{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.tu-sexo{
+  display: flex;
+  flex-direction: column;
+}
+.tu-sexo select{
+  width: 20%;
+}
 .edit {
   position: absolute;
   top: 0;

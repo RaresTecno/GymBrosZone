@@ -175,6 +175,74 @@ function checkInput() {
     sobreMi.value = text;
   }
 }
+
+const { edad, sexo, peso, altura, actividad, objetivo } = {
+  edad: ref(19),
+  sexo: ref("hombre"),
+  peso: ref(84),
+  altura: ref(180),
+  actividad: ref("sedentario"),
+  objetivo: ref("bajar")
+};
+
+const resultado = ref({
+  mantenimiento: null,
+  superavit: [],
+  deficit: []
+});
+
+function calcularCalorias() {
+  let tmb;
+
+  if (sexo.value === 'hombre') {
+    tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value + 5;
+  } else {
+    tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value - 161;
+  }
+
+  let factorActividad;
+  switch (actividad.value) {
+    case 'sedentario':
+      factorActividad = 1.2;
+      break;
+    case 'ligero':
+      factorActividad = 1.375;
+      break;
+    case 'moderado':
+      factorActividad = 1.55;
+      break;
+    case 'intenso':
+      factorActividad = 1.725;
+      break;
+    case 'muy_intenso':
+      factorActividad = 1.9;
+      break;
+  }
+
+  let caloriasMantenimiento = tmb * factorActividad;
+  resultado.value.mantenimiento = Math.round(caloriasMantenimiento);
+
+  if (objetivo.value === 'aumentar') {
+    resultado.value.superavit = [
+      { nivel: 'Superávit ligero', kcal: Math.round(caloriasMantenimiento * 1.10) },
+      { nivel: 'Superávit moderado', kcal: Math.round(caloriasMantenimiento * 1.15) },
+      { nivel: 'Superávit agresivo', kcal: Math.round(caloriasMantenimiento * 1.20) },
+      { nivel: 'Superávit muy agresivo', kcal: Math.round(caloriasMantenimiento * 1.25) }
+    ];
+    resultado.value.deficit = [];
+  } else if (objetivo.value === 'bajar') {
+    resultado.value.deficit = [
+    { nivel: 'Déficit ligero', kcal: Math.round(caloriasMantenimiento * 0.90) },
+    { nivel: 'Déficit moderado', kcal: Math.round(caloriasMantenimiento * 0.80) },
+    { nivel: 'Déficit agresivo', kcal: Math.round(caloriasMantenimiento * 0.70) },
+    { nivel: 'Déficit muy agresivo', kcal: Math.round(caloriasMantenimiento * 0.60) }
+  ];
+    resultado.value.superavit = [];
+  } else {
+    resultado.value.superavit = [];
+    resultado.value.deficit = [];
+  }
+}
 </script>
 
 <template>
@@ -220,8 +288,10 @@ function checkInput() {
     </div>
     <div id="contenido">
       <div id="botones">
-        <button @click="cambiarVista('Publicaciones')" :class="{ vistaBoton: vista === 'Publicaciones', vistaNormal: vista !== 'Publicaciones' }">Posts</button>
-        <button @click="cambiarVista('Estadisticas')" :class="{ vistaBoton: vista === 'Estadisticas', vistaNormal: vista !== 'Estadisticas' }">Estadisticas</button>
+        <button @click="cambiarVista('Publicaciones')"
+          :class="{ vistaBoton: vista === 'Publicaciones', vistaNormal: vista !== 'Publicaciones' }">Posts</button>
+        <button @click="cambiarVista('Estadisticas')"
+          :class="{ vistaBoton: vista === 'Estadisticas', vistaNormal: vista !== 'Estadisticas' }">Estadisticas</button>
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
@@ -229,21 +299,73 @@ function checkInput() {
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">
-        <form>
-          <input type="text" placeholder="Peso">
-          <input type="text" placeholder="Altura">
-          <select>
-            <option value="H">Hombre</option>
-            <option value="F">Mujer</option>
-            <option value="E">Enfermo Mental</option>
+        <form calss="formulario-estadisticas">
+          <label>Tu Sexo</label>
+          <select class="sexo" v-model="sexo" required>
+            <option value="hombre">Hombre</option>
+            <option value="mujer">Mujer</option>
           </select>
-          <input type="text" placeholder="Edad">
-          <select>
-            <option value="H">Hombre</option>
-            <option value="F">Mujer</option>
-            <option value="E">Enfermo Mental</option>
+
+          <label>Tu Edad</label>
+          <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required>
+
+          <label>Tu peso (kg)</label>
+          <input type="number" class="peso" v-model="peso" min="1" max="300" step="0.01" required>
+
+          <label>Tu altura (cm)</label>
+          <input type="number" class="altura" v-model="altura" min="1" max="300" step="1" required>
+
+          <label>¿Cuál es tu nivel de actividad física diaria?</label>
+          <select class="actividad" v-model="actividad">
+            <option value="sedentario">Sedentario: poco o ningún ejercicio</option>
+            <option value="ligero">Ligero: ejercicio ligero o deportes 1-3 días/semana</option>
+            <option value="moderado">Moderado: ejercicio moderado o deportes 3-5 días/semana</option>
+            <option value="intenso">Intenso: ejercicio intenso o deportes 6-7 días/semana</option>
+            <option value="muy_intenso">Muy intenso: ejercicio muy intenso o trabajo físico y ejercicio 2 veces/día
+            </option>
           </select>
+
+          <label>¿Cuál es tu objetivo?</label>
+          <select class="objetivo" v-model="objetivo">
+            <option value="mantener">Mantener el peso actual</option>
+            <option value="bajar">Bajar grasa corporal</option>
+            <option value="aumentar">Aumentar masa muscular</option>
+          </select>
+
+          <button type="button" @click="calcularCalorias()">Calcular</button>
         </form>
+        <div v-if="resultado.mantenimiento">
+          <h3>Tus calorías para estar en balance energético:</h3>
+          <p>{{ resultado.mantenimiento }} kcal/día</p>
+        </div>
+
+        <div v-if="resultado.superavit.length">
+          <h3>Tus calorías para estar en superávit calórico:</h3>
+          <table>
+            <tr>
+              <th>Nivel</th>
+              <th>kcal/día</th>
+            </tr>
+            <tr v-for="nivel in resultado.superavit" :key="nivel.nivel">
+              <td>{{ nivel.nivel }}</td>
+              <td>{{ nivel.kcal }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div v-if="resultado.deficit">
+          <h3>Tus calorías para estar en déficit calórico:</h3>
+          <table>
+            <tr>
+              <th>Nivel</th>
+              <th>kcal/día</th>
+            </tr>
+            <tr v-for="nivel in resultado.deficit" :key="nivel.nivel">
+              <td>{{ nivel.nivel }}</td>
+              <td>{{ nivel.kcal }}</td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -404,7 +526,7 @@ function checkInput() {
   width: 100%;
 }
 
-.vistaNormal{
+.vistaNormal {
   width: 50%;
   padding: 10px;
   font-weight: bold;
@@ -412,15 +534,17 @@ function checkInput() {
   background-color: var(--light-blue-text);
   border: 1px solid black;
 }
-.vistaBoton{
+
+.vistaBoton {
   width: 50%;
   padding: 10px;
   font-weight: bold;
-  color:var(--light-blue-text);
+  color: var(--light-blue-text);
   background-color: var(--blue-inputs);
   border: 1px solid rgb(255, 255, 255);
 
 }
+
 .vista {
   width: 100%;
   display: grid;
@@ -462,7 +586,7 @@ function checkInput() {
 
   #info {
     width: 100%;
-  padding-top: 60px;
+    padding-top: 60px;
 
   }
 
@@ -477,6 +601,7 @@ function checkInput() {
     height: 100px;
   }
 }
+
 @media (max-width: 1100px) {
   #forzar-publicacion {
     background-color: var(--black);
@@ -520,9 +645,11 @@ function checkInput() {
   #info-top {
     gap: 0px;
   }
+
   .gymTag {
     margin-left: 7px;
-}
+  }
+
   .info-basica {
     gap: 0px;
 
@@ -535,14 +662,16 @@ function checkInput() {
     min-height: 100px;
   }
 }
-@media(max-width: 350px){
-  .gymTag{
+
+@media(max-width: 350px) {
+  .gymTag {
     max-width: 220px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
+
 .usandoMovil {
   margin: 0;
 }

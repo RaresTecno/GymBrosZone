@@ -89,7 +89,8 @@ const router = createRouter({
     {
       path: '/recovery',
       name: 'recovery',
-      component: () => import("@/views/ChangePassword.vue")
+      component: () => import("@/views/ChangePassword.vue"),
+      meta: { requiresAuth: true }
     },
     /*Ruta comodín para manejar rutas no encontradas*/
     {

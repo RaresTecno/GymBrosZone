@@ -10,7 +10,6 @@ async function cambiarContra() {
         email: usuario.email,
         password: password.value
     })
-
 }
 
 </script>

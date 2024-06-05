@@ -1,11 +1,9 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
-import { usandoMovil, disponible } from "../main";
+import { disponible } from "../main";
 import { ref, onMounted, onUnmounted } from "vue"
 const todasPublicaciones = ref()
-const idPublicacion = ref()
-const cantidadPublicaciones = ref()
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 const mostrarDeshacer = ref(false);
@@ -121,11 +119,26 @@ disponible.value = true;
 <template>
   <main>
     <div v-if="mostrarDeshacer" class="deshacer-container">
-      <div class="deshacer-content">
-        <span>Deshacer</span>
-        <button @click="deshacerLike">Deshacer</button>
-      </div>
+  <div class="deshacer-content">
+    <!-- <span>Deshacer</span> -->
+    <button @click="deshacerLike">Deshacer</button>
+    <div class="contador-circulo">
+      <span>{{ contador }}</span>
+      <svg class="progress-circle" viewBox="0 0 36 36">
+        <path class="circle-bg"
+          d="M18 2.0845
+          a 15.9155 15.9155 0 0 1 0 31.831
+          a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="circle"
+          :stroke-dasharray="progress + ', 100'"
+          d="M18 2.0845
+          a 15.9155 15.9155 0 0 1 0 31.831
+          a 15.9155 15.9155 0 0 1 0 -31.831" />
+      </svg>
     </div>
+  </div>
+</div>
+
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
@@ -157,7 +170,8 @@ disponible.value = true;
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #ccc;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
   padding: 10px;
   border-radius: 5px;
 }
@@ -167,8 +181,39 @@ disponible.value = true;
   align-items: center;
 }
 
-.deshacer-content button {
+.contador-circulo {
+  position: relative;
+  width: 50px;
+  height: 50px;
   margin-left: 10px;
+}
+
+.contador-circulo span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: white;
+}
+
+.progress-circle {
+  width: 100%;
+  height: 100%;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 2.8;
+}
+
+.circle {
+  fill: none;
+  stroke: #3e98c7;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
 }
 
 

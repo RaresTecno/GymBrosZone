@@ -314,7 +314,7 @@ function calcularCalorias() {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="true" />
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">

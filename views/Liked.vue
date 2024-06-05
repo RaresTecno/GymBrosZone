@@ -2,11 +2,16 @@
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
-import { ref, reactive } from "vue"
+import { ref, onMounted, onUnmounted } from "vue"
 const todasPublicaciones = ref()
 const idPublicacion = ref()
 const cantidadPublicaciones = ref()
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
+
+const mostrarDeshacer = ref(false);
+const publicacionParaDeshacer = ref(null);
+const undoTimeout = ref(null);
+
 
 async function mostrarp() {
   try {
@@ -49,8 +54,53 @@ async function mostrarp() {
 mostrarp();
 
 
-async function obtenerTuFotoPerfil(){
-  if(userActive.value == true){
+onMounted(() => {
+  const likesSubscription = supabase.channel('public:likes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, (payload) => {
+      mostrarDeshacer.value = true;
+      publicacionParaDeshacer.value = payload.new.idpublicacion;
+      undoTimeout.value = setTimeout(async () => {
+        mostrarDeshacer.value = false;
+        await mostrarp();
+      }, 3500);
+    })
+    .subscribe();
+
+  onUnmounted(() => {
+    supabase.removeChannel(likesSubscription);
+  });
+});
+
+
+async function deshacerLike() {
+  clearTimeout(undoTimeout.value);
+  mostrarDeshacer.value = false;
+  if (publicacionParaDeshacer.value) {
+    const { error: insertError } = await supabase
+      .from('likes')
+      .insert([{ idusuario: userId.value, idpublicacion: publicacionParaDeshacer.value }]);
+
+    if (insertError) {
+      console.error('Error al deshacer el like:', insertError);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from('publicaciones')
+      .update({ contadorlikes: supabase.fn.increment(1) })
+      .eq('idpublicacion', publicacionParaDeshacer.value);
+
+    if (updateError) {
+      console.error('Error al actualizar el contador de likes:', updateError);
+    }
+
+    publicacionParaDeshacer.value = null;
+    await mostrarp();
+  }
+}
+
+async function obtenerTuFotoPerfil() {
+  if (userActive.value == true) {
     const { data: usuario, error } = await supabase
       .from('usuarios')
       .select("*")
@@ -70,10 +120,17 @@ disponible.value = true;
 </script>
 <template>
   <main>
+    <div v-if="mostrarDeshacer" class="deshacer-container">
+      <div class="deshacer-content">
+        <span>Deshacer</span>
+        <button @click="deshacerLike">Deshacer</button>
+      </div>
+    </div>
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
+            :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
         </template>
       </div>
     </div>
@@ -89,14 +146,34 @@ disponible.value = true;
   margin-bottom: 100px;
   padding-top: 80px;
 }
+
 .vista {
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
 }
 
+.deshacer-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.deshacer-content {
+  display: flex;
+  align-items: center;
+}
+
+.deshacer-content button {
+  margin-left: 10px;
+}
+
+
 @media (max-width: 1100px) {
-  .vista{
+  .vista {
     width: 100%;
   }
 }

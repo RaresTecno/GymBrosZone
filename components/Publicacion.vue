@@ -747,10 +747,8 @@ onUnmounted(() => {
 .comentarios {
   height: 240px;
   overflow-y: auto;
-  /* Habilitar el scroll vertical */
   overflow-x: hidden;
   border: 1px solid #ebebebd3;
-  /* Opcional: para visualizar mejor el contenedor */
   margin: 10px;
   position: absolute;
   bottom: 135px;
@@ -769,9 +767,7 @@ onUnmounted(() => {
 }
 
 .comentarios::-webkit-scrollbar-thumb {
-  /* border-radius: 20px; */
   background-color: var(--light-blue-text);
-
 }
 
 .comentario {

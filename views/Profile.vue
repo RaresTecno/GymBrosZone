@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, defineProps } from "vue";
+import { ref, onMounted, onUnmounted, defineProps } from "vue";
 import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
@@ -107,7 +107,6 @@ async function obtenerTuFotoPerfil() {
 }
 obtenerTuFotoPerfil();
 
-
 function arriba() {
   window.scrollTo(0, 0);
 }
@@ -122,8 +121,23 @@ onMounted(() => {
   if (!sessionStorage.getItem("vista")) {
     sessionStorage.setItem("vista", "Publicaciones"); // Establecer la vista predeterminada si no hay una vista almacenada
   }
+  window.addEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
 });
 
+onUnmounted(() => {
+  window.removeEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
+});
+
+function ocultarPublicacion(idPublicacion) {
+  const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
+  if (publicacionElement) {
+    publicacionElement.style.display = 'none';
+  }
+}
 
 async function seguir() {
   const { data: seguidores, errorSeguidores } = await supabase
@@ -343,7 +357,10 @@ function mostrarEditarStats(valor) {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="true" :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          <div :data-publicacion-id="publicacion.idpublicacion">
+            <Publicacion :publicacionUnica="publicacion" :ProfileView="true"
+              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          </div>
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" class="estadisticas">

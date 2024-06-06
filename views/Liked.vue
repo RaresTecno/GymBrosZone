@@ -1,17 +1,11 @@
 <script setup>
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
-import { usandoMovil, disponible } from "../main";
-import { ref, onMounted, onUnmounted } from "vue"
-const todasPublicaciones = ref()
-const idPublicacion = ref()
-const cantidadPublicaciones = ref()
+import { disponible } from "../main";
+import { ref, onMounted, onUnmounted } from "vue";
+
+const todasPublicaciones = ref();
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
-
-const mostrarDeshacer = ref(false);
-const publicacionParaDeshacer = ref(null);
-const undoTimeout = ref(null);
-
 
 async function mostrarp() {
   try {
@@ -31,7 +25,7 @@ async function mostrarp() {
     }
 
     // Obtener los IDs de las publicaciones a las que el usuario ha dado like
-    const publicacionesIds = likesData.map(like => like.idpublicacion);
+    const publicacionesIds = likesData.map(likes => likes.idpublicacion);
 
     // Realizar la consulta para obtener las publicaciones correspondientes a esos IDs
     const { data: publicaciones, error: publicacionesError } = await supabase
@@ -53,49 +47,22 @@ async function mostrarp() {
 
 mostrarp();
 
-
 onMounted(() => {
-  const likesSubscription = supabase.channel('public:likes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, (payload) => {
-      mostrarDeshacer.value = true;
-      publicacionParaDeshacer.value = payload.new.idpublicacion;
-      undoTimeout.value = setTimeout(async () => {
-        mostrarDeshacer.value = false;
-        await mostrarp();
-      }, 3500);
-    })
-    .subscribe();
-
-  onUnmounted(() => {
-    supabase.removeChannel(likesSubscription);
+  window.addEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
   });
 });
 
+onUnmounted(() => {
+  window.removeEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
+});
 
-async function deshacerLike() {
-  clearTimeout(undoTimeout.value);
-  mostrarDeshacer.value = false;
-  if (publicacionParaDeshacer.value) {
-    const { error: insertError } = await supabase
-      .from('likes')
-      .insert([{ idusuario: userId.value, idpublicacion: publicacionParaDeshacer.value }]);
-
-    if (insertError) {
-      console.error('Error al deshacer el like:', insertError);
-      return;
-    }
-
-    const { error: updateError } = await supabase
-      .from('publicaciones')
-      .update({ contadorlikes: supabase.fn.increment(1) })
-      .eq('idpublicacion', publicacionParaDeshacer.value);
-
-    if (updateError) {
-      console.error('Error al actualizar el contador de likes:', updateError);
-    }
-
-    publicacionParaDeshacer.value = null;
-    await mostrarp();
+function ocultarPublicacion(idPublicacion) {
+  const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
+  if (publicacionElement) {
+    publicacionElement.style.display = 'none';
   }
 }
 
@@ -118,19 +85,33 @@ obtenerTuFotoPerfil();
 
 disponible.value = true;
 </script>
+
 <template>
   <main>
-    <div v-if="mostrarDeshacer" class="deshacer-container">
+    <!-- <div v-if="mostrarDeshacer && mostrarFinalGlobal" class="deshacer-container" @click.stop>
       <div class="deshacer-content">
-        <span>Deshacer</span>
-        <button @click="deshacerLike">Deshacer</button>
+        <button @click="deshacerLike" class="deshacer">Deshacer</button>
+        <div class="contador-circulo">
+          <span>{{ contador }}</span>
+          <svg class="progress-circle" viewBox="0 0 36 36">
+            <path class="circle-bg" d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle" :stroke-dasharray="progress + ', 100'" d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+        </div>
       </div>
-    </div>
+    </div> -->
+
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
-            :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          <div :data-publicacion-id="publicacion.idpublicacion">
+            <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
+              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          </div>
         </template>
       </div>
     </div>
@@ -157,9 +138,17 @@ disponible.value = true;
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #ccc;
+  background: rgba(0, 0, 0, 0.8);
+  background-color: var(--dark-blue);
+  border: 2px solid black;
+  /* background-color: red; */
+  color: white;
   padding: 10px;
   border-radius: 5px;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .deshacer-content {
@@ -167,10 +156,59 @@ disponible.value = true;
   align-items: center;
 }
 
-.deshacer-content button {
-  margin-left: 10px;
+.contador-circulo {
+  position: relative;
+  width: 35px;
+  height: 35px;
+  margin-left: 15px;
 }
 
+.contador-circulo span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: white;
+}
+
+.progress-circle {
+  width: 100%;
+  height: 100%;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 2.8;
+}
+
+.circle {
+  fill: none;
+  stroke: #3e98c7;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.1s linear;
+}
+
+.deshacer {
+  cursor: pointer;
+  background-color: var(--blue-buttons);
+  /* width: 50px; */
+  border: solid var(--black) 2px;
+  border-radius: 2px;
+  font-size: 15px;
+  transition: background-color 0.5s, border 0.5s, color 0.5s;
+  height: 35px;
+  padding: 0 5px;
+}
+
+.deshacer:hover,
+.deshacer:active {
+  background-color: var(--very-dark-blue);
+  color: var(--light-blue-text);
+  border: 2px solid var(--grey-buttons-inputs-border);
+}
 
 @media (max-width: 1100px) {
   .vista {

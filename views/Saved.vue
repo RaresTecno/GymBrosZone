@@ -2,7 +2,7 @@
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
-import { ref, reactive } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 
 const todasPublicaciones = ref();
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
@@ -47,6 +47,24 @@ async function mostrarp() {
 
 mostrarp();
 
+onMounted(() => {
+  window.addEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
+});
+
+function ocultarPublicacion(idPublicacion) {
+  const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
+  if (publicacionElement) {
+    publicacionElement.style.display = 'none';
+  }
+}
 
 async function obtenerTuFotoPerfil(){
   if(userActive.value == true){
@@ -72,7 +90,10 @@ disponible.value = true;
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
+          <div :data-publicacion-id="publicacion.idpublicacion">
+            <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
+              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          </div>
         </template>
       </div>
     </div>

@@ -158,7 +158,7 @@ async function revisarFotoPerfil(user) {
   <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
-  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" />
+  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey"/>
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
 
   <!-- <Footer /> -->

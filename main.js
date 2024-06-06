@@ -5,11 +5,9 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { far } from '@fortawesome/free-regular-svg-icons';
-import { userActive, userState, obtenerId } from "./clients/supabase";
+import { userState } from "./clients/supabase";
 export const disponible = ref();
 disponible.value = true;
-
-const navegador = ref(navigator.userAgent);
 
 
 export const state = reactive({
@@ -37,7 +35,6 @@ async function init() {
   }
 
   await userState();
-  // await obtenerId();
   library.add(fas);
   library.add(fab);
   library.add(far);

@@ -616,7 +616,7 @@ function cerrarSesion() {
   width: 35px;
   top: 10px;
   left: 25px;
-  z-index: 200;
+  z-index: 10;
   cursor: pointer;
 }
 

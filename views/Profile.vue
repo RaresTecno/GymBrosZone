@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, defineProps } from "vue";
+import { ref, onMounted, onUnmounted, defineProps } from "vue";
 import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
@@ -89,8 +89,8 @@ mostrarp()
 disponible.value = true;
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
-async function obtenerTuFotoPerfil(){
-  if(userActive.value == true){
+async function obtenerTuFotoPerfil() {
+  if (userActive.value == true) {
     const { data: usuario, error } = await supabase
       .from('usuarios')
       .select("*")
@@ -120,8 +120,23 @@ onMounted(() => {
   if (!sessionStorage.getItem("vista")) {
     sessionStorage.setItem("vista", "Publicaciones"); // Establecer la vista predeterminada si no hay una vista almacenada
   }
+  window.addEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
 });
 
+onUnmounted(() => {
+  window.removeEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
+});
+
+function ocultarPublicacion(idPublicacion) {
+  const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
+  if (publicacionElement) {
+    publicacionElement.style.display = 'none';
+  }
+}
 
 async function seguir() {
   const { data: seguidores, errorSeguidores } = await supabase
@@ -251,11 +266,11 @@ function calcularCalorias() {
     resultado.value.deficit = [];
   } else if (objetivo.value === 'bajar') {
     resultado.value.deficit = [
-    { nivel: 'Déficit ligero', kcal: Math.round(caloriasMantenimiento * 0.90) },
-    { nivel: 'Déficit moderado', kcal: Math.round(caloriasMantenimiento * 0.80) },
-    { nivel: 'Déficit agresivo', kcal: Math.round(caloriasMantenimiento * 0.70) },
-    { nivel: 'Déficit muy agresivo', kcal: Math.round(caloriasMantenimiento * 0.60) }
-  ];
+      { nivel: 'Déficit ligero', kcal: Math.round(caloriasMantenimiento * 0.90) },
+      { nivel: 'Déficit moderado', kcal: Math.round(caloriasMantenimiento * 0.80) },
+      { nivel: 'Déficit agresivo', kcal: Math.round(caloriasMantenimiento * 0.70) },
+      { nivel: 'Déficit muy agresivo', kcal: Math.round(caloriasMantenimiento * 0.60) }
+    ];
     resultado.value.superavit = [];
   } else {
     resultado.value.superavit = [];
@@ -314,7 +329,10 @@ function calcularCalorias() {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
+          <div :data-publicacion-id="publicacion.idpublicacion">
+            <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
+              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          </div>
         </template>
       </div>
       <div v-if="vista == 'Estadisticas'" id="estadisticas" class="vista">

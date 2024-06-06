@@ -1,18 +1,27 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import { userId, supabase } from "../clients/supabase";
 
 const gymTag = ref();
 const fotoPerfil = ref();
+
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('id', userId.value);
   gymTag.value = usuario[0].gymtag;
-  fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + usuario[0].fotoperfil;
+  fotoPerfil.value = usuario[0].fotoperfil;
+
+  if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+  } else {
+    /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
+  }
 }
+
 cargarUsuario();
 const posicionAnt = ref(0);
 const altura = ref(80);
@@ -100,18 +109,13 @@ onMounted(() => {
   window.addEventListener("resize", updateWidth);
 });
 
-function reloadPage(event) {
-  event.preventDefault();
-  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
-  window.location.href = url;
-}
 </script>
 
 <template>
   <transition name="slide-fade" mode="out-in">
     <nav :style="{ top: altura + 'px' }">
       <div v-if="gymTag">
-        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink foto_barra">
           <div class="icono"><img :src="fotoPerfil" class="imgperfil" /></div>
           <h2>Perfil</h2>
         </RouterLink>
@@ -192,17 +196,37 @@ div .RouterLink {
   cursor: pointer;
 }
 
+div .RouterLink:hover, div .RouterLink:active{
+  text-shadow: 0 0 5px #eef2fa2d, 0 0 10px #eef2fa2d;
+}
+
+.RouterLink .icon {
+  transition: filter 0.3s, text-shadow 0.3s;
+}
+
+.RouterLink:hover .icon, 
+.RouterLink:active .icon {
+  filter: brightness(2);
+}
+
+
 .icon {
   color: var(--light-blue-text);
   width: 36px;
   height: 36px;
 }
+
 .imgperfil{
   border-radius: 50px;
-  border: 1px solid var(--light-blue-text);
+  border: 1px solid var(--black);
   width: 40px;
   height: 40px;
   margin: -2px;
   object-fit: cover;
+  transition: border 0.3s;
+}
+
+.foto_barra:hover .imgperfil, .foto_barra:active .imgperfil{
+  border-color: rgb(109, 109, 109);
 }
 </style>

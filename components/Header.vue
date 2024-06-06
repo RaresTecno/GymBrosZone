@@ -211,9 +211,12 @@ h1 {
   border-radius: 50%;
   border: 1px solid var(--black);
   object-fit: cover;
+  transition: border 0.3s;
 }
 
-
+.foto_usuario:hover img, .foto_usuario:active img{
+  border-color: rgb(109, 109, 109);
+}
 @media (max-width: 875px) {
   header {
     min-height: 94px;

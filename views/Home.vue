@@ -2,7 +2,7 @@
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
 import { usandoMovil, disponible } from "../main";
-import { ref, reactive , onMounted, onUnmounted} from "vue"
+import { ref, reactive, onMounted, onUnmounted } from "vue"
 // const todasPublicaciones = ref()
 const idPublicacion = ref()
 const cantidadPublicaciones = ref()
@@ -49,14 +49,27 @@ const handleScroll = () => {
 onMounted(() => {
   cargarPublicaciones();
   window.addEventListener('scroll', handleScroll);
+  window.addEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
 });
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('ocultar-publicacion', (event) => {
+    ocultarPublicacion(event.detail.idPublicacion);
+  });
 });
 
-async function obtenerTuFotoPerfil(){
-  if(userActive.value == true){
+function ocultarPublicacion(idPublicacion) {
+  const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
+  if (publicacionElement) {
+    publicacionElement.style.display = 'none';
+  }
+}
+
+async function obtenerTuFotoPerfil() {
+  if (userActive.value == true) {
     const { data: usuario, error } = await supabase
       .from('usuarios')
       .select("*")
@@ -118,7 +131,10 @@ disponible.value = true;
     <div v-if="userActive" class="publicaciones">
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
+          <div :data-publicacion-id="publicacion.idpublicacion">
+            <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
+              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+          </div>
         </template>
       </div>
     </div>
@@ -244,6 +260,7 @@ disponible.value = true;
   margin-bottom: 100px;
   padding-top: 80px;
 }
+
 .vista {
   /* margin-top: 10px; */
   width: 60%;
@@ -285,7 +302,7 @@ disponible.value = true;
   main {
     margin-top: 60px;
   }
-  
+
   .todo-section {
     margin-top: 17%;
   }
@@ -309,7 +326,7 @@ disponible.value = true;
     margin-bottom: 10px;
     font-size: 18px;
   }
-  
+
   .publicaciones {
     margin-left: 0;
     padding-top: 0;

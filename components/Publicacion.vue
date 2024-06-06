@@ -1,8 +1,9 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
 import { supabase, userId } from "@/clients/supabase";
-import fotoPredeterminada from "../assets/img/foto-predeterminada.avif"
+import fotoPredeterminada from "../assets/img/foto-predeterminada.avif";
+import { useRoute } from 'vue-router';
 
 const props = defineProps({
   publicacionUnica: {
@@ -18,6 +19,8 @@ const props = defineProps({
     required: false
   }
 });
+
+const route = useRoute();
 
 const perfilPropio = ref();
 const siguiendo = ref();
@@ -36,6 +39,7 @@ const animatingLike2 = ref({});
 const animatingSave = ref({});
 const likeAnimationStyle = ref({ top: '50%', left: '50%' });
 const numeroLikes = ref();
+const isProcessing = ref(false);
 
 const likeText = computed(() => {
   return numeroLikes.value === 1 ? ' Like' : ' Likes';
@@ -50,6 +54,13 @@ const mostrarFinal = ref(false);
 
 const isCover = ref(true);
 const esCover = ref(true);
+const tieneLikeInicial = ref(true);
+const tieneLikeFinal = ref();
+const tieneGuardadoInicial = ref(true);
+const tieneGuardadoFinal = ref();
+
+const mostrarPregunta = ref(false);
+const mensajePopUp = ref('');
 
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
@@ -223,10 +234,24 @@ async function darLike() {
 
 /*Función para quitar like a la publicación.*/
 async function quitarLike() {
+  if (isProcessing.value) return;
   const idpublicacion = props.publicacionUnica.idpublicacion;
+  isProcessing.value = true;
   /*Se quita el like de la publicación, de manera visual.*/
   likes.value[idpublicacion] = !likes.value[idpublicacion];
   numeroLikes.value--;
+  const { data: likeData, error: errorLike } = await supabase
+    .from('likes')
+    .select('*')
+    .eq('idusuario', userId.value)
+    .eq('idpublicacion', idpublicacion);
+
+  if (errorLike) {
+    numeroLikes.value++;
+    likes.value[idpublicacion] = !likes.value[idpublicacion];
+    isProcessing.value = false;
+    return;
+  }
   /*Hacemos la consulta para quitar el like.*/
   const { error: quitarLikeError } = await supabase
     .from('likes')
@@ -237,8 +262,10 @@ async function quitarLike() {
   if (quitarLikeError) {
     numeroLikes.value++;
     likes.value[idpublicacion] = !likes.value[idpublicacion];
+    isProcessing.value = false;
     return;
   }
+  isProcessing.value = false;
 }
 
 /*Función para guardar a una publicación.*/
@@ -382,6 +409,8 @@ onMounted(() => {
 });
 
 async function mostrar(bool) {
+  tieneLikeInicial.value = likes.value[props.publicacionUnica.idpublicacion] || false;
+  tieneGuardadoInicial.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
   if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
     document.body.style.overflow = "hidden";
     mostrarFinal.value = true;
@@ -390,9 +419,22 @@ async function mostrar(bool) {
 };
 
 function cerrar() {
+  tieneLikeFinal.value = likes.value[props.publicacionUnica.idpublicacion] || false;
+  tieneGuardadoFinal.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
+
+  if (route.path === '/liked' && tieneLikeInicial.value && !tieneLikeFinal.value) {
+    // Emitir un evento global para ocultar la publicación
+    window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
+  }
+
+  if (route.path === '/saved' && tieneGuardadoInicial.value !== tieneGuardadoFinal.value) {
+    // Emitir un evento global para actualizar Saved.vue
+    window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
+  }
+
   document.body.style.overflow = "visible";
   mostrarFinal.value = false;
-};
+}
 
 function quitarOverflow() {
   document.body.style.overflow = "visible";
@@ -426,6 +468,70 @@ async function publicar() {
   await obtenerComentarios(props.publicacionUnica.idpublicacion);
 }
 
+function confirmarBorrar() {
+  mostrarPregunta.value = true;
+  document.body.style.overflow = 'hidden';
+  mensajePopUp.value = '¿Seguro que quieres borrar esta publicación?';
+  nextTick(() => {
+    setTimeout(() => {
+      const divPregunta = document.querySelector('.div_pregunta');
+      if (divPregunta) {
+        divPregunta.classList.remove('shrink');
+        divPregunta.classList.add('expand');
+      }
+    }, 5);
+  });
+}
+
+/*El usuario confirma la eliminación de la foto de perfil.*/
+async function confirmar() {
+  const idPublicacion = props.publicacionUnica.idpublicacion;
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    setTimeout(() => {
+      mostrarPregunta.value = '';
+      document.body.style.overflow = '';
+      mensajePopUp.value = '';
+    }, 250);
+  }
+
+
+  const { data, error: deleteError } = await supabase
+    .from('publicaciones')
+    .delete()
+    .eq('idpublicacion', props.publicacionUnica.idpublicacion);
+
+  if (deleteError) {
+    console.log(deleteError);
+    return;
+  }
+  const { error: storageError } = await supabase
+    .storage
+    .from('files')
+    .remove([props.publicacionUnica.ruta]);
+
+  if (storageError) {
+    return;
+  }
+  window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
+  mostrarFinal.value = false;
+}
+
+/*El usuario cancela la eliminación de la foto de perfil.*/
+function cancelar() {
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+      mensajePopUp.value = '';
+    }, 250);
+  }
+}
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth);
@@ -433,6 +539,21 @@ onUnmounted(() => {
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
+    <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
+      <div class="div_pregunta div_pregunta_inicio" @click.stop>
+        <div class="pregunta">{{ mensajePopUp }}</div>
+        <div class="botones_pregunta">
+          <button v-if="mensajePopUp == '¿Seguro que quieres borrar esta publicación?'"
+            @click="confirmar">Eliminar</button>
+          <button v-if="mensajePopUp == '¿Seguro que quieres borrar esta publicación?'"
+            @click="cancelar">Cancelar</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
+            @click="cerrarSes">Si</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
+            @click="cancelar">No</button>
+        </div>
+      </div>
+    </div>
     <div class="header-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
       <!-- <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
@@ -514,6 +635,13 @@ onUnmounted(() => {
             <div class="botones_seguir">
               <button v-if="!siguiendo && perfilPropio == false" @click="seguir">Seguir</button>
               <button v-if="siguiendo && perfilPropio == false" @click="dejarSeguir">Siguiendo</button>
+              <button v-if="perfilPropio == true || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'" @click="confirmarBorrar" class="boton_quitar_imagen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="quitar_imagen"
+                  @click="confirmacion">
+                  <path
+                    d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" />
+                </svg>
+              </button>
             </div>
           </div>
           <div class="contenedor_tematica">
@@ -551,7 +679,8 @@ onUnmounted(() => {
             <div class="borde"></div>
             <div class="botones_publicacion_grande">
               <div class="megusta_comentario">
-                <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()">
+                <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()"
+                  ref="likeButton">
                   <font-awesome-icon :icon="['far', 'heart']" class="heart" />
                 </div>
                 <div class="megusta" v-if="likes[props.publicacionUnica.idpublicacion]" @click="quitarLike">
@@ -583,9 +712,11 @@ onUnmounted(() => {
               </div>
               <div class="input_anadir">
                 <textarea class="input" ref="comentarioInput" required autocomplete="off"
-                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario" v-if="windowWidth >= 875"></textarea>
+                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario"
+                  v-if="windowWidth >= 875"></textarea>
                 <input class="input" ref="comentarioInput" required autocomplete="off"
-                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario" v-if="windowWidth < 875" type="text">
+                  placeholder="Añade un comentario..." maxlength="100" @input="actualizarComentario"
+                  v-if="windowWidth < 875" type="text">
               </div>
             </div>
             <div class="publicar">
@@ -602,11 +733,67 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.div_pregunta {
+  color: var(--light-blue-text);
+  background-color: var(--dark-blue);
+  padding: 25px 30px;
+  border-radius: 5px;
+  border: var(--black) 2px solid;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 120px;
+  cursor: default;
+  margin-left: 60px;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.div_pregunta_inicio {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.shrink {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.expand {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.botones_pregunta {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botones_pregunta button {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
+  padding: 5px 10px;
+}
+
+.botones_pregunta button:hover,
+.botones_pregunta button:active {
+  border-color: #eef2fa81;
+}
+
 .contenido {
   cursor: default;
 }
 
-.header_cometario{
+.header_cometario {
   width: fit-content;
   padding-right: 5px;
 }
@@ -752,7 +939,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 135px;
   width: calc(100% - 20px);
-  
+
 }
 
 .comentarios::-webkit-scrollbar {
@@ -829,7 +1016,6 @@ onUnmounted(() => {
   margin-left: 12px;
   color: #999;
   margin-top: 5px;
-  /* text-align: end; */
 }
 
 .comentario:last-child {
@@ -1162,6 +1348,26 @@ onUnmounted(() => {
   display: flex;
 }
 
+.botones_seguir button.boton_quitar_imagen {
+  width: 24px !important;
+  height: 24px !important;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  background-color: transparent !important;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 12px;
+}
+
+.boton_quitar_imagen svg {
+  height: 24px !important;
+  width: 24px !important;
+  fill: var(--light-blue-text);
+}
+
 .megusta_comentario div {
   width: 55px;
 }
@@ -1422,25 +1628,43 @@ onUnmounted(() => {
     overflow: hidden;
   }
 
-  .cuerpo{
+  .cuerpo {
     height: 454px;
   }
-
-  /*.final {
-    display: none;
-  }*/
 
   .imagen {
     display: none;
   }
 
-
+  .div_pregunta {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 625px) {
   .publicacion {
     border-radius: 0;
     margin: 2px;
+  }
+}
+
+@media (max-width: 425px) {
+  .div_pregunta {
+    height: fit-content;
+    width: 80%;
+    min-width: 0;
+    padding: 15px 0;
+  }
+
+  .pregunta {
+    margin-bottom: 20px;
+    width: 70%;
+    text-align: center;
+  }
+
+  .botones_pregunta {
+
+    width: 90%;
   }
 }
 </style>

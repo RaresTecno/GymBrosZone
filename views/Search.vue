@@ -392,6 +392,13 @@ function mostrarScanner() {
     }
   }
 }
+window.addEventListener('popstate', function() {
+    if (vistaUnica.value == true && vistaBusqueda.value === 'Productos') {
+      cerrarProducto()
+    }else{
+      history.go(-1);
+    }
+});
 </script>
 
 <template>
@@ -878,7 +885,7 @@ function mostrarScanner() {
 }
 
 .producto-nutrientes {
-  margin-bottom: 200px;
+  margin-bottom: 80px;
   border-radius: 25px;
   background-color: #5984df;
   padding: 24px;

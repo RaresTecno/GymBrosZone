@@ -28,7 +28,7 @@ const seguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
 const esPrivado = ref(false)
 const router = useRouter();
-
+const edad = ref()
 async function mostrarp() {
 
   const { data: usuario, errorUsuario } = await supabase
@@ -48,6 +48,7 @@ async function mostrarp() {
   const apellido = usuario[0].apellidos !== null ? usuario[0].apellidos : "";
   nombreCompleto.value = nombre + " " + apellido
   profileId.value = usuario[0].id;
+  edad.value = calcularEdad(usuario[0].fechanacimiento);
 
   const { data: publicaciones, errorPublicaciones } = await supabase
     .from('publicaciones')
@@ -196,8 +197,7 @@ function checkInput() {
   }
 }
 
-const { edad, sexo, peso, altura, actividad, objetivo } = {
-  edad: ref(19),
+const { sexo, peso, altura, actividad, objetivo } = {
   sexo: ref("hombre"),
   peso: ref(84),
   altura: ref(180),
@@ -266,6 +266,31 @@ function calcularCalorias() {
 function cambiarPrivacidad(valor) {
   esPrivado.value = valor
 }
+function calcularEdad(fechaNacimiento) {
+  // Convertir la cadena de fecha de nacimiento a un objeto Date
+  const fechaNac = new Date(fechaNacimiento);
+  const hoy = new Date();
+
+  // Calcular la diferencia en años
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+
+  // Ajustar la edad si el cumpleaños de este año no ha sido aún
+  const mesActual = hoy.getMonth();
+  const diaActual = hoy.getDate();
+  const mesNacimiento = fechaNac.getMonth();
+  const diaNacimiento = fechaNac.getDate();
+
+  if (mesActual < mesNacimiento || (mesActual === mesNacimiento && diaActual < diaNacimiento)) {
+    edad--;
+  }
+
+  return edad;
+}
+const mostrarForm = ref(false)
+function mostrarEditarStats(valor) {
+  mostrarForm.value = valor
+}
+
 </script>
 
 <template>
@@ -318,37 +343,53 @@ function cambiarPrivacidad(valor) {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <Publicacion :publicacionUnica="publicacion" :ProfileView="false" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"/>
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="true" :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
         </template>
       </div>
-      <div v-if="vista == 'Estadisticas'" id="estadisticas">
-        <form class="formulario-estadisticas">
-          <div class="privacidad">
-            <font-awesome-icon @click="cambiarPrivacidad(false)" v-if="esPrivado" :icon="['fas', 'lock']" class="candado"/>
-            <font-awesome-icon @click="cambiarPrivacidad(true)" v-if="!esPrivado" :icon="['fas', 'unlock']" class="candado" />
+      <div v-if="vista == 'Estadisticas'" class="estadisticas">
+        <div v-if="perfilPropio" class="privacidad">
+          <div class="estadisticas-priv" v-if="esPrivado">
+            Tus estadísticas son PRIVADAS
+            <font-awesome-icon class="candado" @click="cambiarPrivacidad(false)" :icon="['fas', 'lock']" />
           </div>
-          <div class="tu-sexo">
-            <label>Tu Sexo</label>
-            <select class="sexo" v-model="sexo" required>
-              <option value="hombre">Hombre</option>
-              <option value="mujer">Mujer</option>
-            </select>
+          <div class="estadisticas-priv" v-if="!esPrivado">
+            Tus estadísticas son PÚBLICAS
+            <font-awesome-icon class="candado" @click="cambiarPrivacidad(true)" :icon="['fas', 'unlock']" />
           </div>
-          <div class="tu-edad">
-            <label>Tu Edad</label>
-            <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required>
+        </div>
+        <button v-if="perfilPropio" @click="mostrarEditarStats(true)" class="btn-editar-stats">Editar
+          estadísticas</button>
+        <form v-if="perfilPropio && mostrarForm" class="formulario-estadisticas">
+          <font-awesome-icon :icon="['fas', 'xmark']" @click="mostrarEditarStats(false)" class="cerrarForm" />
+          <div class="edad-sexo">
+
+            <div class="tu-edad datos-stats">
+              <label>Tu Edad</label>
+              <h4>{{ edad }} </h4>
+              <!-- <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required> -->
+            </div>
+            <div class="tu-sexo datos-stats">
+              <label>Tu Sexo</label>
+              <select class="sexo" v-model="sexo" required>
+                <option value="hombre">Hombre</option>
+                <option value="mujer">Mujer</option>
+              </select>
+            </div>
           </div>
-          <div class="tu-peso">
-            <label>Tu peso (kg)</label>
-            <input type="number" class="peso" v-model="peso" min="1" max="300" step="0.01" required>
+          <div class="peso-altura">
+            <div class="tu-peso datos-stats">
+              <label>Tu peso (kg)</label>
+              <input type="number" class="peso" v-model="peso" min="1" max="300" step="0.01" required>
+
+            </div>
+            <div class="tu-altura datos-stats">
+              <label>Tu altura (cm)</label>
+              <input type="number" class="altura" v-model="altura" min="1" max="300" step="1" required>
+            </div>
 
           </div>
-          <div class="tu-altura">
-            <label>Tu altura (cm)</label>
-            <input type="number" class="altura" v-model="altura" min="1" max="300" step="1" required>
-          </div>
 
-          <label>¿Cuál es tu nivel de actividad física diaria?</label>
+          <!-- <label>¿Cuál es tu nivel de actividad física diaria?</label>
           <select class="actividad" v-model="actividad">
             <option value="sedentario">Sedentario: poco o ningún ejercicio</option>
             <option value="ligero">Ligero: ejercicio ligero o deportes 1-3 días/semana</option>
@@ -363,41 +404,51 @@ function cambiarPrivacidad(valor) {
             <option value="mantener">Mantener el peso actual</option>
             <option value="bajar">Bajar grasa corporal</option>
             <option value="aumentar">Aumentar masa muscular</option>
-          </select>
+          </select> -->
 
-          <button type="button" @click="calcularCalorias()">Calcular</button>
+          <!-- <button type="button" @click="calcularCalorias()">Calcular</button> -->
+          <button type="button" @click="">Guardar</button>
         </form>
-        <div v-if="resultado.mantenimiento">
-          <h3>Tus calorías para estar en balance energético:</h3>
-          <p>{{ resultado.mantenimiento }} kcal/día</p>
+        <div class="datos-estadisticas">
+          <h3>Edad: {{ edad }} años</h3>
+          <h3>Sexo: {{ sexo }}</h3>
+          <h3>Altura: {{ altura }} cm</h3>
+          <h3>Peso: {{ peso }} kgs</h3>
         </div>
+        <div class="resultados-cal">
+          <div v-if="resultado.mantenimiento">
+            <h3>Tus calorías para estar en balance energético:</h3>
+            <p>{{ resultado.mantenimiento }} kcal/día</p>
+          </div>
 
-        <div v-if="resultado.superavit.length > 0">
-          <h3>Tus calorías para estar en superávit calórico:</h3>
-          <table>
-            <tr>
-              <th>Nivel</th>
-              <th>kcal/día</th>
-            </tr>
-            <tr v-for="nivel in resultado.superavit" :key="nivel.nivel">
-              <td>{{ nivel.nivel }}</td>
-              <td>{{ nivel.kcal }}</td>
-            </tr>
-          </table>
-        </div>
+          <div v-if="resultado.superavit.length > 0">
+            <h3>Tus calorías para estar en superávit calórico:</h3>
+            <table>
+              <tr>
+                <th>Nivel</th>
+                <th>kcal/día</th>
+              </tr>
+              <tr v-for="nivel in resultado.superavit" :key="nivel.nivel">
+                <td>{{ nivel.nivel }}</td>
+                <td>{{ nivel.kcal }}</td>
+              </tr>
+            </table>
+          </div>
 
-        <div v-if="resultado.deficit.length > 0">
-          <h3>Tus calorías para estar en déficit calórico:</h3>
-          <table>
-            <tr>
-              <th>Nivel</th>
-              <th>kcal/día</th>
-            </tr>
-            <tr v-for="nivel in resultado.deficit" :key="nivel.nivel">
-              <td>{{ nivel.nivel }}</td>
-              <td>{{ nivel.kcal }}</td>
-            </tr>
-          </table>
+          <div v-if="resultado.deficit.length > 0">
+            <h3>Tus calorías para estar en déficit calórico:</h3>
+            <table>
+              <tr>
+                <th>Nivel</th>
+                <th>kcal/día</th>
+              </tr>
+              <tr v-for="nivel in resultado.deficit" :key="nivel.nivel">
+                <td>{{ nivel.nivel }}</td>
+                <td>{{ nivel.kcal }}</td>
+              </tr>
+            </table>
+          </div>
+
         </div>
       </div>
     </div>
@@ -441,9 +492,8 @@ function cambiarPrivacidad(valor) {
 #info-top {
   display: flex;
   justify-content: center;
-  align-items: center;
   margin: 20px 0;
-  width: 100%;
+  /* width: 100%; */
   gap: 5%
 }
 
@@ -469,7 +519,10 @@ function cambiarPrivacidad(valor) {
   border-radius: 50%;
 }
 
-.informacion {}
+.informacion {
+  margin-top: 10px;
+  width: fit-content;
+}
 
 .div-nombre {
   margin-left: 4%;
@@ -485,7 +538,7 @@ function cambiarPrivacidad(valor) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(9px, 0.8em, 24px);
+  font-size: clamp(9px, 0.9em, 24px);
   font-weight: bold;
   gap: 5%;
 }
@@ -602,26 +655,108 @@ function cambiarPrivacidad(valor) {
   padding: 0;
 }
 
+.estadisticas {
+  display: flex;
+  flex-direction: column;
+}
+
+.privacidad {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  margin: 15px;
+}
+
+.estadisticas-priv {
+  display: flex;
+  align-items: center;
+  text-decoration: underline;
+  text-align: end
+}
+
+.candado {
+  padding: 5px;
+}
+
+.candado:hover {
+  cursor: pointer;
+}
+
 .formulario-estadisticas {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 2px solid black;
+  border: 2px solid rgb(0, 0, 0);
   padding: 20px;
 }
-.candado{
+
+.cerrarForm {
   position: absolute;
   top: 10px;
   right: 10px;
 }
-.tu-sexo{
+
+.btn-editar-stats {
+  width: 20%;
+  min-width: 150px;
+  margin: auto;
+  padding: 5px;
+  font-weight: bold;
+  color: var(--light-blue-text);
+  background-color: var(--dark-blue);
+  border: 2px solid black;
+  margin-bottom: 10px;
+}
+
+.btn-editar-stats:hover {
+  cursor: pointer;
+}
+
+.edad-sexo {
+  display: flex;
+  justify-content: space-around;
+}
+
+.datos-stats {
+  width: 50%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: left;
+  margin-bottom: 10px;
 }
-.tu-sexo select{
-  width: 20%;
+
+/* .datos-stats label{
+  width: 100%;
+} */
+.datos-stats * {
+  white-space: nowrap;
+  width: 50%;
+
 }
+
+.datos-stats input,
+.datos-stats h4,
+.datos-stats select {
+  margin-top: 5px;
+  padding: 5px;
+  min-width: 95px;
+  border: 2px solid var(--dark-blue);
+}
+
+.datos-stats label {
+  min-width: 95px;
+
+}
+
+.tu-sexo {}
+
+.peso-altura {
+  display: flex;
+  justify-content: center;
+}
+
 .edit {
   position: absolute;
   top: 0;
@@ -663,6 +798,17 @@ function cambiarPrivacidad(valor) {
     width: 100px;
     height: 100px;
   }
+
+  .gymTag {
+    margin-top: 10px;
+    margin-left: -10px;
+    font-size: clamp(8px, 1.4em, 40px);
+
+  }
+
+  .info-basica {
+    /* font-size: clamp(6px, .7em, 36px); */
+  }
 }
 
 @media (max-width: 1100px) {
@@ -670,33 +816,47 @@ function cambiarPrivacidad(valor) {
     background-color: var(--black);
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
+    /* height: 100%;
+    width: 100%; */
     aspect-ratio: 1;
     position: relative;
     max-height: fit-content;
-    /* max-width: 500px; */
     border: 1px solid black;
     border-radius: 0;
-    margin-top: 0;
-    /* overflow-clip-margin: content-box;
-  overflow: clip; */
+    margin: 0;
   }
 
   #forzar-inicial {
+
     display: flex;
-    /* background: rgb(255, 7, 7); */
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    /* height: 100%; */
+    height: 100%;
     width: 100%;
   }
 
   .nombre {
     font-size: clamp(22px, 4vw, 24px);
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* white-space: nowrap; */
   }
+
+  .info-basica {
+    font-size: clamp(10px, .6em, 40px);
+  }
+}
+
+@media(max-width:875px) {
+  .gymTag {
+    margin-top: 10px;
+    margin-left: -10px;
+    font-size: clamp(20px, 1.3em, 40px);
+  }
+
+  .info-basica {}
 }
 
 @media (max-width: 625px) {

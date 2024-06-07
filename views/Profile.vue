@@ -833,8 +833,8 @@ function mostrarEditarStats(valor) {
     background-color: var(--black);
     display: flex;
     flex-direction: column;
-    /* height: 100%;
-    width: 100%; */
+    height: 100%;
+    width: 100%;
     aspect-ratio: 1;
     position: relative;
     max-height: fit-content;

@@ -501,7 +501,7 @@ async function confirmar() {
   const { data, error: deleteError } = await supabase
     .from('publicaciones')
     .delete()
-    .eq('idpublicacion', props.publicacionUnica.idpublicacion);
+    .eq('idpublicacion', idPublicacion);
 
   if (deleteError) {
     console.log(deleteError);
@@ -515,7 +515,7 @@ async function confirmar() {
   if (storageError) {
     return;
   }
-  window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
+  window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: idPublicacion } }));
   mostrarFinal.value = false;
 }
 
@@ -536,6 +536,20 @@ function cancelar() {
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth);
 });
+
+function girar_imagen() {
+  const imgElement = document.querySelector('.final .imagen img');
+  if (imgElement) {
+    if (imgElement.classList.contains('cover')) {
+      imgElement.classList.remove('cover');
+      imgElement.classList.add('normal');
+    } else {
+      imgElement.classList.remove('normal');
+      imgElement.classList.add('cover');
+    }
+  }
+}
+
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
@@ -609,14 +623,21 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      <!-- <h2 class="tematica">{{ tematica }}</h2> -->
     </div>
     <div class="final" v-if="mostrarFinal" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
-          <img :src="ruta" class="cover" @dblclick="handleDoubleClick" />
+          <img :src="ruta" @dblclick="handleDoubleClick" class="cover"/>
           <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
             :style="likeAnimationStyle" />
+          <div class="div_girar_imagen" ref="div_girar_imagen" v-if="!esCover">
+            <svg width="600px" height="600px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+              class="girar_imagen" @click="girar_imagen" @click.stop>
+              <g id="Arrow / Expand">
+                <path id="Vector" d="M10 19H5V14M14 5H19V10" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+          </div>
         </div>
         <div class="cuerpo">
           <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" /></div>
@@ -733,6 +754,23 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+
+.div_girar_imagen {
+  height: 35px;
+  width: 35px;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+}
+
+svg.girar_imagen {
+  background-color: var(--light-blue-text);
+  border-radius: 50%;
+  width: 35px !important;
+  height: 35px !important;
+  cursor: pointer;
+}
+
 .div_pregunta {
   color: var(--light-blue-text);
   background-color: var(--dark-blue);
@@ -1169,14 +1207,18 @@ onUnmounted(() => {
   width: 600px;
   height: 600px;
   border-right: var(--black) 1px solid;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.imagen img {
+/* .imagen img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   cursor: pointer;
-}
+} */
 
 .cuerpo {
   position: relative;

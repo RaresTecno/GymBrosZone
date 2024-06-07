@@ -26,7 +26,7 @@ const numSeguidores = ref();
 const numSeguidos = ref();
 const seguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
-const esPrivado = ref(false)
+const esPrivado = ref()
 const router = useRouter();
 const edad = ref()
 async function mostrarp() {
@@ -175,12 +175,6 @@ function cerrar() {
   editando.value = false
   document.body.style.overflow = "hidden";
 }
-// const texto = ref()
-
-function obtenerDatos() {
-  console.log(sobreMi.value)
-  prueba()
-}
 
 const maxLines = 5;
 const maxCharsPerLine = 40;
@@ -212,11 +206,11 @@ function checkInput() {
 }
 
 const { sexo, peso, altura, actividad, objetivo } = {
-  sexo: ref("hombre"),
-  peso: ref(84),
-  altura: ref(180),
-  actividad: ref("sedentario"),
-  objetivo: ref("bajar")
+  sexo: ref(),
+  peso: ref(),
+  altura: ref(),
+  actividad: ref(),
+  objetivo: ref()
 };
 
 const resultado = ref({
@@ -225,6 +219,17 @@ const resultado = ref({
   deficit: []
 });
 
+async function cargarEstadisticas() {
+  const { data: estadisticas, errorEstadisticas } = await supabase
+    .from('estadisticas')
+    .select('*')
+    .eq('idusuario', userId.value);
+    esPrivado.value = estadisticas[0].esprivado;
+    peso.value = estadisticas[0].pesokg;
+    altura.value = estadisticas[0].alturacm;
+    sexo.value = estadisticas[0].sexo;
+}
+cargarEstadisticas();
 function calcularCalorias() {
   let tmb;
 
@@ -304,7 +309,12 @@ const mostrarForm = ref(false)
 function mostrarEditarStats(valor) {
   mostrarForm.value = valor
 }
-
+async function guardarEstadisticas() {
+  const { data, error } = await supabase
+      .from('usuarios')
+      .update(consulta)
+      .eq('id', id)
+}
 </script>
 
 <template>
@@ -396,7 +406,7 @@ function mostrarEditarStats(valor) {
           <div class="peso-altura">
             <div class="tu-peso datos-stats">
               <label>Tu peso (kg)</label>
-              <input type="number" class="peso" v-model="peso" min="1" max="300" step="0.01" required>
+              <input type="number" class="peso" v-model="peso" min="1" max="650" step="0.01" required>
 
             </div>
             <div class="tu-altura datos-stats">
@@ -704,8 +714,9 @@ function mostrarEditarStats(valor) {
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 2px solid rgb(0, 0, 0);
   padding: 20px;
+  background-color: var(--dark-blue);
+  color: var(--light-blue-text);
 }
 
 .cerrarForm {
@@ -713,7 +724,9 @@ function mostrarEditarStats(valor) {
   top: 10px;
   right: 10px;
 }
-
+.cerrarForm:hover {
+cursor: pointer;
+}
 .btn-editar-stats {
   width: 20%;
   min-width: 150px;
@@ -833,8 +846,8 @@ function mostrarEditarStats(valor) {
     background-color: var(--black);
     display: flex;
     flex-direction: column;
-    /* height: 100%;
-    width: 100%; */
+    height: 100%;
+    width: 100%;
     aspect-ratio: 1;
     position: relative;
     max-height: fit-content;

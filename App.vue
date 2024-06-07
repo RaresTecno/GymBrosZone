@@ -34,6 +34,7 @@ onMounted(async () => {
       await revisarCarpeta(user);
       await revisarGymtag(user);
       await revisarFotoPerfil(user);
+      await revisarEstadisticas(user);
     }
   }
 });
@@ -54,7 +55,7 @@ async function revisarCarpeta(user) {
     .storage
     .from('files')
     .list(ruta);
-    
+
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (errorCarpeta) {
     logOut();
@@ -151,14 +152,35 @@ async function revisarFotoPerfil(user) {
     }
   }
 }
+
+async function revisarEstadisticas(user) {
+  /*Comprobamos si el usuario que se ha logueado tiene gymtag.*/
+  const { data: estadisticas, error } = await supabase
+    .from('estadisticas')
+    .select('*')
+    .eq('idusuario', user.id);
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (error) {
+    logOut();
+    return false;
+  }
+
+  if (estadisticas.length < 1) {
+    console.log("si")
+    const { error: insertError } = await supabase
+    .from('estadisticas')
+    .insert([{ idusuario: user.id, esprivado: true}]);
+  }
+
+}
 </script>
 
 <template>
-  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey"/>
+  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey" />
   <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
   <RouterView />
   <!-- <router-link to="/account">Account</router-link> -->
-  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey"/>
+  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey" />
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
 
   <!-- <Footer /> -->

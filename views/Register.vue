@@ -289,13 +289,10 @@ function verPoliticas() {
                         <input type="text" id="gymtag" class="input" required autocomplete="off" v-model="gymtag"
                             ref="gymtagInput">
                         <label class="label" for="gymtag">GymTag</label>
-
                         <div class="tooltip">
-                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"
-                                @click="mostrar()" />
+                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"/>
                             <div class="tooltiptext">Este será tu nombre de usuario</div>
                         </div>
-
                     </div>
                 </div>
             </div>

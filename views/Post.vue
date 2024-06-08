@@ -25,6 +25,7 @@ const mostrarAviso = ref(false);
 const mostrarPregunta = ref(false);
 
 const deshabilitado = ref(false);
+const cargando = ref(false);
 
 const router = useRouter();
 
@@ -46,6 +47,7 @@ function avisoImagen(mensaje) {
 
 /*Función para realizar la publicación.*/
 async function publicar() {
+  cargando.value = true;
   mensajeAviso.value = '';
   mostrarAviso.value = false;
   /*Deshabilitamos el botón.*/
@@ -61,9 +63,11 @@ async function publicar() {
     } else {
       avisoImagen('Debes incluir una imagen.');
       deshabilitarBoton(false);
+      cargando.value = false;
     }
   } else {
     deshabilitarBoton(false);
+    cargando.value = false;
   }
 }
 
@@ -129,7 +133,7 @@ async function insertarImagen() {
     .from('usuarios')
     .update({ publicaciones: publicaciones[0].publicaciones + 1 })
     .eq('id', id);
-  if(errorUpdate){
+  if (errorUpdate) {
     /*Avisamos al usuario en caso de error.*/
     avisoImagen('Ha ocurrido un error al guardar la publicación.');
     return false;
@@ -173,7 +177,7 @@ function validarTematica() {
 
 /*Función para validar el contenido.*/
 function validarContenido() {
-  if (contenido.value.length <= 440) {
+  if (contenido.value.length <= 380) {
     return true;
   } else {
     /*Avisamos al usuario en caso de error.*/
@@ -229,6 +233,7 @@ function girar_imagen() {
 function resetInput(event) {
   hayImagen.value = false;
   event.target.value = null;
+  quitar_imagen();
 }
 
 /*Función para comprobar la imagen.*/
@@ -307,6 +312,7 @@ function aceptar() {
     }, 5);
   });
   deshabilitarBoton(false);
+  cargando.value = false;
 }
 
 function irHome() {
@@ -314,6 +320,7 @@ function irHome() {
   if (divPregunta) {
     divPregunta.classList.add('shrink');
     divPregunta.classList.remove('expand');
+    cargando.value = false;
     setTimeout(() => {
       mostrarPregunta.value = false;
       document.body.style.overflow = '';
@@ -333,6 +340,7 @@ function cancelar() {
   if (divPregunta) {
     divPregunta.classList.remove('expand');
     divPregunta.classList.add('shrink');
+    cargando.value = false;
     setTimeout(() => {
       mostrarPregunta.value = false;
       document.body.style.overflow = '';
@@ -346,6 +354,9 @@ function cancelar() {
 </script>
 <template>
   <div class="todo_publicar">
+    <div v-if="cargando" class="todo_mostrar_pregunta">
+      <div class="cargando"></div>
+    </div>
     <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
       <div class="div_pregunta div_pregunta_inicio" @click.stop>
         <div class="mensaje">¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
@@ -441,6 +452,26 @@ function cancelar() {
 </template>
 
 <style scoped>
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.cargando {
+  border: 6px solid var(--light-blue-text);
+  border-radius: 100%;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  width: 50px;
+  height: 50px;
+  animation: loading 1.5s infinite linear;
+}
+
 .todo_publicar {
   background-color: var(--bg-color);
   width: 100vw;
@@ -1058,39 +1089,39 @@ svg.girar_imagen {
     height: 200px;
   }
 
-  .mensaje{
+  .mensaje {
     width: 70%;
     text-align: center;
     margin-bottom: 20px;
   }
 
-  .div_pregunta{
+  .div_pregunta {
     height: 140px;
     width: 80%;
   }
 
-  .botones_pregunta{
+  .botones_pregunta {
     width: 100%;
   }
 }
 
 @media(max-width: 490px) {
-  .mensaje{
+  .mensaje {
     width: 85%;
   }
 
-  .botones_pregunta{
+  .botones_pregunta {
     flex-direction: column;
     width: 60%;
     justify-content: space-between;
     height: 100px;
   }
 
-  .botones_pregunta:first-child{
+  .botones_pregunta:first-child {
     margin-bottom: 20px;
   }
 
-  .div_pregunta{
+  .div_pregunta {
     height: 180px;
     width: 80%;
   }
@@ -1137,15 +1168,15 @@ svg.girar_imagen {
 }
 
 @media(max-width: 415px) {
-  .mensaje{
+  .mensaje {
     width: 85%;
   }
 
-  .botones_pregunta{
+  .botones_pregunta {
     width: 80%;
   }
 
-  .div_pregunta{
+  .div_pregunta {
     height: 200px;
     width: 80%;
   }
@@ -1204,7 +1235,9 @@ svg.girar_imagen {
 }
 
 @media(max-width: 315px) {
-  .mensaje, .botones_pregunta{
+
+  .mensaje,
+  .botones_pregunta {
     width: 100%;
   }
 }

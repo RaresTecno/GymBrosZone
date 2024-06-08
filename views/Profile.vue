@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, defineProps } from "vue";
+import { ref, onMounted, onUnmounted, defineProps, watch } from "vue";
 import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
@@ -29,8 +29,14 @@ const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/obje
 const esPrivado = ref(false)
 const router = useRouter();
 const edad = ref()
-async function mostrarp() {
 
+watch(() => props.gymtag, (newGymtag, oldGymtag) => {
+  if (newGymtag !== oldGymtag) {
+    mostrarp();
+  }
+});
+
+async function mostrarp() {
   const { data: usuario, errorUsuario } = await supabase
     .from('usuarios')
     .select("*")

@@ -9,43 +9,98 @@ const cantidadPublicaciones = ref()
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 const todasPublicaciones = ref([]);
-let offset = 0;
+let offsetSeguidos = 0;
+let offsetNoSeguidos = 0;
 const limit = 9;
 let loading = false;
+let noMorePublicacionesSeguidos = false;
+let noMorePublicacionesNoSeguidos = false;
 
-const cargarPublicaciones = async () => {
-  if (loading) return;
+async function cargarPublicaciones() {
+  if (loading || (noMorePublicacionesSeguidos && noMorePublicacionesNoSeguidos)) return;
   loading = true;
 
   try {
-    const { data: publicaciones, error } = await supabase
-      .from('publicaciones')
-      .select('*')
-      .order('fechapublicacion', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) {
-      console.error(error);
+    /*Obtenemos el Id de los usuarios a los que sigue el usuario.*/
+    const { data: seguidores, error: errorSeguidores } = await supabase
+      .from('seguidores')
+      .select('idseguido')
+      .eq('idseguidor', userId.value);
+    if (errorSeguidores) {
+      console.error(errorSeguidores);
       loading = false;
       return;
     }
 
-    // Añadir las nuevas publicaciones a las existentes
-    todasPublicaciones.value.push(...publicaciones);
-    offset += limit;
+    const seguidosIds = seguidores.map(seguidor => seguidor.idseguido);
+
+    /*Obtenemos las publicaciones de los usuarios que sigue el usuario.*/
+    let publicacionesSeguidos = [];
+    if (!noMorePublicacionesSeguidos) {
+      const { data, error } = await supabase
+        .from('publicaciones')
+        .select('*')
+        .in('idusuario', seguidosIds)
+        .order('fechapublicacion', { ascending: false })
+        .range(offsetSeguidos, offsetSeguidos + limit - 1);
+      if (error) {
+        console.error(error);
+        loading = false;
+        return;
+      }
+
+      publicacionesSeguidos = data;
+      if (data.length < limit) {
+        noMorePublicacionesSeguidos = true;
+      } else {
+        offsetSeguidos += limit;
+      }
+    }
+
+    /*Obtenemos las publicaciones de los usuarios que no seguimos.*/
+    let publicacionesNoSeguidos = [];
+    if (!noMorePublicacionesNoSeguidos) {
+      const { data, error } = await supabase
+        .from('publicaciones')
+        .select('*')
+        .not('idusuario', 'in', `(${seguidosIds.join(',')})`)
+        .order('fechapublicacion', { ascending: false })
+        .range(offsetNoSeguidos, offsetNoSeguidos + limit - 1);
+      if (error) {
+        console.error(error);
+        loading = false;
+        return;
+      }
+
+      publicacionesNoSeguidos = data;
+      if (data.length < limit) {
+        noMorePublicacionesNoSeguidos = true;
+      } else {
+        offsetNoSeguidos += limit;
+      }
+    }
+
+    /*Unimos las publicaciones de los usuarios seguidos con las de los no seguidos, sin duplicados.*/
+    const publicacionesMap = new Map();
+    publicacionesSeguidos.forEach(pub => publicacionesMap.set(pub.idpublicacion, pub));
+    publicacionesNoSeguidos.forEach(pub => publicacionesMap.set(pub.idpublicacion, pub));
+
+    /*Añadimos las nuevas publicaciones a las existentes.*/
+    todasPublicaciones.value.push(...Array.from(publicacionesMap.values()));
     loading = false;
   } catch (error) {
-    console.error(error);
     loading = false;
   }
-};
+}
 
-const handleScroll = () => {
+/*Detectamos si el usuario ha llegado casi al final de la página para mostrar otras 9 publicaciones.*/
+function handleScroll() {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
     cargarPublicaciones();
   }
-};
+}
 
+/*Añadimos los eventos trasmontarse la vista, eventos de detectar el final de la página y el de eliminación de una publicación.*/
 onMounted(() => {
   cargarPublicaciones();
   window.addEventListener('scroll', handleScroll);
@@ -262,11 +317,11 @@ disponible.value = true;
 }
 
 .vista {
-  /* margin-top: 10px; */
+  /* margin-top: 10px;*/
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  /* Centra el contenido verticalmente */
+  /* Centra el contenido verticalmente*/
 }
 
 @media (min-width: 1800px) {

@@ -4,7 +4,7 @@ import { supabase, userActive, userId } from "../clients/supabase";
 import { disponible } from "../main";
 import { ref, onMounted, onUnmounted } from "vue";
 
-const todasPublicaciones = ref();
+const todasPublicaciones = ref([]);
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 async function mostrarp() {
@@ -64,6 +64,20 @@ function ocultarPublicacion(idPublicacion) {
   if (publicacionElement) {
     publicacionElement.style.display = 'none';
   }
+  actualizarPublicaciones();
+}
+
+async function actualizarPublicaciones() {
+  await mostrarp();
+  if (todasPublicaciones.value.length === 0) {
+    if (document.querySelector('.no-publicaciones')) {
+      document.querySelector('.no-publicaciones').style.display = 'block';
+    }
+  } else {
+    if (document.querySelector('.no-publicaciones')) {
+      document.querySelector('.no-publicaciones').style.display = 'none';
+    }
+  }
 }
 
 async function obtenerTuFotoPerfil() {
@@ -88,26 +102,12 @@ disponible.value = true;
 
 <template>
   <main>
-    <!-- <div v-if="mostrarDeshacer && mostrarFinalGlobal" class="deshacer-container" @click.stop>
-      <div class="deshacer-content">
-        <button @click="deshacerLike" class="deshacer">Deshacer</button>
-        <div class="contador-circulo">
-          <span>{{ contador }}</span>
-          <svg class="progress-circle" viewBox="0 0 36 36">
-            <path class="circle-bg" d="M18 2.0845
-              a 15.9155 15.9155 0 0 1 0 31.831
-              a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="circle" :stroke-dasharray="progress + ', 100'" d="M18 2.0845
-              a 15.9155 15.9155 0 0 1 0 31.831
-              a 15.9155 15.9155 0 0 1 0 -31.831" />
-          </svg>
-        </div>
+    <div class="publicaciones">
+      <div v-if="todasPublicaciones.length === 0" class="no-publicaciones">
+        <h2>Todavía no has dado like a ninguna publicación.</h2>
       </div>
-    </div> -->
-
-    <div v-if="userActive" class="publicaciones">
-      <div class="vista">
-        <template v-for="publicacion in todasPublicaciones" :key="publicacion">
+      <div v-else class="vista">
+        <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
           <div :data-publicacion-id="publicacion.idpublicacion">
             <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
               :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
@@ -119,6 +119,16 @@ disponible.value = true;
 </template>
 
 <style scoped>
+.no-publicaciones {
+  text-align: center;
+  margin-top: 90px;
+}
+
+.no-publicaciones h2 {
+  font-size: 28px;
+  color: var(--black);
+}
+
 .publicaciones {
   display: flex;
   flex-direction: column;
@@ -232,6 +242,20 @@ disponible.value = true;
     flex-direction: column;
     width: 80%;
     align-items: center;
+  }
+}
+
+@media (max-width: 660px) {
+  .no-publicaciones {
+    margin-top: 60px;
+  }
+
+  .no-publicaciones h2 {
+    font-size: 24px;
+    color: var(--black);
+    display: block;
+    width: 80%;
+    margin: auto;
   }
 }
 

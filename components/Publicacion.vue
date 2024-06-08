@@ -61,9 +61,11 @@ const tieneGuardadoFinal = ref();
 
 const mostrarPregunta = ref(false);
 const mensajePopUp = ref('');
+const comentarioIdParaEliminar = ref(null);
 
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
+const mostrarMas = ref(false);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
@@ -78,6 +80,18 @@ if (props.publicacionUnica.resolucion == "cover") {
   if (windowWidth < 1100) {
     isCover.value = false;
   }
+}
+
+/*Función para dar formato a la fecha.*/
+function formatFecha(fecha) {
+  const options = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  return new Date(fecha).toLocaleString('es-ES', options);
 }
 
 /*Función para seguir a un usuario.*/
@@ -434,6 +448,7 @@ function cerrar() {
 
   document.body.style.overflow = "visible";
   mostrarFinal.value = false;
+  mostrarMas.value = false;
 }
 
 function quitarOverflow() {
@@ -468,10 +483,11 @@ async function publicar() {
   await obtenerComentarios(props.publicacionUnica.idpublicacion);
 }
 
-function confirmarBorrar() {
+function confirmarBorrar(mensaje, comentarioId = null) {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';
-  mensajePopUp.value = '¿Seguro que quieres borrar esta publicación?';
+  mensajePopUp.value = mensaje;
+  comentarioIdParaEliminar.value = comentarioId;
   nextTick(() => {
     setTimeout(() => {
       const divPregunta = document.querySelector('.div_pregunta');
@@ -481,6 +497,21 @@ function confirmarBorrar() {
       }
     }, 5);
   });
+}
+
+/*Función para eliminar un comentario.*/
+async function borrarComentario() {
+  const { error } = await supabase
+    .from('comentarios')
+    .delete()
+    .eq('id', comentarioIdParaEliminar.value);
+
+  if (error) {
+    return;
+  }
+
+  await obtenerComentarios(props.publicacionUnica.idpublicacion);
+  cancelar();
 }
 
 /*El usuario confirma la eliminación de la foto de perfil.*/
@@ -527,7 +558,6 @@ function cancelar() {
     divPregunta.classList.add('shrink');
     setTimeout(() => {
       mostrarPregunta.value = false;
-      document.body.style.overflow = '';
       mensajePopUp.value = '';
     }, 250);
   }
@@ -549,7 +579,89 @@ function girar_imagen() {
     }
   }
 }
+// /// //  ///  // ///
 
+function toggleVerMas() {
+  console.log(mostrarMas.value);
+  mostrarMas.value = !mostrarMas.value;
+  console.log(mostrarMas.value);
+}
+
+// const mostrarMas = ref(false);
+
+// function toggleVerMas(event) {
+//   const verMasButton = event.target;
+//   const contenedorDescripcion = verMasButton.closest('.contenedor_descripcion');
+//   const textoOculto = contenedorDescripcion.querySelector('.texto-oculto');
+
+//   if (verMasButton.textContent === '...más') {
+//     verMasButton.textContent = '...menos';
+//     textoOculto.style.display = 'inline';
+//   } else {
+//     verMasButton.textContent = '...más';
+//     textoOculto.style.display = 'none';
+//   }
+// }
+
+
+
+
+// function mostrarVerMas() {
+//   nextTick(() => {
+//     const contenedoresDescripcion = document.querySelectorAll('.contenedor_descripcion');
+
+//     contenedoresDescripcion.forEach((contenedorDescripcion) => {
+//       // Verificar si el contenedor de descripción existe
+//       if (contenedorDescripcion) {
+//         const descripcionTexto = contenedorDescripcion.innerText.trim();
+
+//         if (descripcionTexto.length > 65) {
+//           const textoVisible = descripcionTexto.slice(0, 65);
+//           const textoOculto = descripcionTexto.slice(65);
+
+//           contenedorDescripcion.innerHTML = `
+//             <span>${textoVisible}<span class="ver-mas">...más</span></span>
+//             <span class="texto-oculto" style="display: none;">${textoOculto}</span>
+//           `;
+
+//           const verMas = contenedorDescripcion.querySelector('.ver-mas');
+//           if (verMas) {
+//             verMas.addEventListener('click', toggleVerMas);
+//           }
+//         }
+//       }
+//     });
+//   });
+// }
+
+
+
+
+// onMounted(() => {
+//   mostrarVerMas();
+//   window.toggleVerMas = toggleVerMas;
+// });
+
+
+// async function mostrar(bool) {
+//   tieneLikeInicial.value = likes.value[props.publicacionUnica.idpublicacion] || false;
+//   tieneGuardadoInicial.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
+//   if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
+//     document.body.style.overflow = "hidden";
+//     mostrarFinal.value = true;
+//     await obtenerComentarios(props.publicacionUnica.idpublicacion);
+
+//     // Expandir los comentarios y la descripción si están en modo "ver más"
+//     const contenedorDescripcion = document.querySelector('.contenedor_descripcion');
+//     const comentarios = document.querySelector('.comentarios');
+//     if (mostrarMas.value) {
+//       contenedorDescripcion.classList.add('expanded');
+//       comentarios.classList.add('expanded');
+//     }
+//   }
+// };
+
+/////////// /// ////// /// /// ///
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
@@ -557,14 +669,14 @@ function girar_imagen() {
       <div class="div_pregunta div_pregunta_inicio" @click.stop>
         <div class="pregunta">{{ mensajePopUp }}</div>
         <div class="botones_pregunta">
-          <button v-if="mensajePopUp == '¿Seguro que quieres borrar esta publicación?'"
+          <button v-if="mensajePopUp == '¿Seguro que quieres eliminar esta publicación?'"
             @click="confirmar">Eliminar</button>
-          <button v-if="mensajePopUp == '¿Seguro que quieres borrar esta publicación?'"
+          <button v-if="mensajePopUp == '¿Seguro que quieres eliminar esta publicación?'"
             @click="cancelar">Cancelar</button>
-          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
-            @click="cerrarSes">Si</button>
-          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
-            @click="cancelar">No</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Seguro que quieres eliminar este comentario?'"
+            @click="borrarComentario()">Eliminar</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Seguro que quieres eliminar este comentario?'"
+            @click="cancelar">Cancelar</button>
         </div>
       </div>
     </div>
@@ -627,14 +739,15 @@ function girar_imagen() {
     <div class="final" v-if="mostrarFinal" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
-          <img :src="ruta" @dblclick="handleDoubleClick" class="cover"/>
+          <img :src="ruta" @dblclick="handleDoubleClick" class="cover" />
           <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
             :style="likeAnimationStyle" />
           <div class="div_girar_imagen" ref="div_girar_imagen" v-if="!esCover">
             <svg width="600px" height="600px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
               class="girar_imagen" @click="girar_imagen" @click.stop>
               <g id="Arrow / Expand">
-                <path id="Vector" d="M10 19H5V14M14 5H19V10" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path id="Vector" d="M10 19H5V14M14 5H19V10" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </g>
             </svg>
           </div>
@@ -656,7 +769,8 @@ function girar_imagen() {
             <div class="botones_seguir">
               <button v-if="!siguiendo && perfilPropio == false" @click="seguir">Seguir</button>
               <button v-if="siguiendo && perfilPropio == false" @click="dejarSeguir">Siguiendo</button>
-              <button v-if="perfilPropio == true || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'" @click="confirmarBorrar" class="boton_quitar_imagen">
+              <button v-if="perfilPropio == true || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'"
+                @click="confirmarBorrar('¿Seguro que quieres eliminar esta publicación?')" class="boton_quitar_imagen">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="quitar_imagen"
                   @click="confirmacion">
                   <path
@@ -665,15 +779,48 @@ function girar_imagen() {
               </button>
             </div>
           </div>
-          <div class="contenedor_tematica">
-            <div class="tematica">{{ tematica }}</div>
-          </div>
-          <div class="contenedor_descripcion">
+          <!-- <div class="tematica_contenido">
+
+            <div class="contenedor_tematica">
+              <div class="tematica">{{ tematica }}</div>
+            </div>
+             <div class="contenedor_descripcion">
             <div class="descripcion">{{ descripcion }}</div>
+            <div class="contenedor_descripcion">
+              <div class="descripcion" v-html="descripcion"></div>
+            </div>
+          </div> -->
+
+
+          <!-- <div class="tematica_contenido">
+            <div class="contenedor_tematica">
+              <div class="tematica">{{ tematica }}</div>
+            </div>
+            <div class="contenedor_descripcion">
+              <div class="descripcion">{{ descripcion }}</div>
+            </div>
+          </div> -->
+
+          <div class="tematica_contenido">
+            <div class="contenedor_tematica">
+              <div class="tematica">{{ tematica }}</div>
+            </div>
+            <div :class="['contenedor_descripcion', { 'quitarOverflow': !mostrarMas }]">
+              <div v-if="descripcion.length > 115 && !mostrarMas" class="div_esp">
+                <span class="span_esp">{{ descripcion.slice(0, 115) }}<span class="ver-mas" @click="toggleVerMas"> ...más</span></span>
+              </div>
+              <div v-if="descripcion.length < 115">
+                <span>{{ descripcion }}</span>
+              </div>
+              <div v-if="mostrarMas" class="descripcion-completa">
+                <span class="sin_top">{{ descripcion }}</span>
+                <span class="ver-menos" @click="toggleVerMas"> ...menos</span>
+              </div>
+            </div>
           </div>
 
 
-          <div class="comentarios">
+          <div :class="['comentarios', { 'hacerPequenosComentarios': mostrarMas }]">
             <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
               <div class="header_cometario">
                 <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: comentario.usuarios.gymtag } }"
@@ -685,12 +832,22 @@ function girar_imagen() {
                     <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
                   </div>
                 </RouterLink>
+                <button
+                  v-if="perfilPropio == true || comentario.idusuario === userId || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'"
+                  @click="confirmarBorrar('¿Seguro que quieres eliminar este comentario?', comentario.id)"
+                  class="boton_quitar_imagen boton_quitar_imagen_comentario">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="quitar_imagen"
+                    @click="confirmacion">
+                    <path
+                      d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" />
+                  </svg>
+                </button>
               </div>
               <div class="comentario-contenido">
                 {{ comentario.comentario }}
               </div>
               <div class="comentario-fecha">
-                {{ new Date(comentario.fechacreacion).toLocaleString() }}
+                {{ formatFecha(comentario.fechacreacion) }}
               </div>
             </div>
           </div>
@@ -754,7 +911,6 @@ function girar_imagen() {
 </template>
 
 <style scoped>
-
 .div_girar_imagen {
   height: 35px;
   width: 35px;
@@ -834,6 +990,10 @@ svg.girar_imagen {
 .header_cometario {
   width: fit-content;
   padding-right: 5px;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .custom-image-style {
@@ -901,6 +1061,9 @@ svg.girar_imagen {
 
 .botones_seguir {
   padding-right: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .botones_seguir button {
@@ -922,21 +1085,171 @@ svg.girar_imagen {
   border-color: #eef2fa81;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+.tematica_contenido {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 12px 0 10px;
+  /* background-color: grey; */
+}
+
+.contenedor_tematica,
+.contenedor_descripcion {
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  /* background-color: red; */
+  color: var(--light-blue-text);
+  position: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.tematica,
+.descripcion {
+  height: fit-content;
+  white-space: normal;
+  font-size: 19px;
+}
+
+.contenedor_descripcion {
+  font-size: 15px;
+  margin-top: 10px;
+  /* background-color: lightcoral; */
+  height: fit-content;
+  max-height: 190px;
+  padding-bottom: 10px;
+  overflow-y: auto;
+  padding: 10px 20px 0 20px;
+  border-top: 1px solid #ebebebd3;
+}
+
+.contenedor_descripcion span{
+  padding: 10px 0 10px;
+}
+
+.ver-mas,
+.ver-menos {
+  color: var(--light-blue-text);
+  /* Cambia el color según tu preferencia */
+  cursor: pointer;
+}
+
+.descripcion-completa {
+  height: 135px;
+  padding-top: 5px;
+}
+
+.descripcion-completa.show {
+  display: block;
+}
+
+.contenedor_descripcion.quitarOverflow {
+  overflow-y: hidden;
+  /* display: flex; */
+}
+
+.div_esp{
+  margin-top: 5px;
+}
+
+.sin_top{
+  padding-top: 0 !important;
+}
+/*
 .contenedor_tematica,
 .contenedor_descripcion {
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; 
   height: fit-content;
   background-color: green;
+  position: relative;
 }
 
 .contenedor_tematica {
   padding: 10px 20px;
 }
 
-.tematica {
+.contenedor_descripcion {
+  padding: 5px 20px 0;
+  max-height: 70px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  position: relative;
+}
+
+.contenedor_descripcion.expanded {
+  max-height: none;
+  padding: 0 20px;
+  padding-bottom: 30px;
+}
+
+.contenedor_descripcion.expanded .descripcion {
+  overflow-y: auto;
+  height: 100px;
+  overflow-y: auto;
+  padding-bottom: 30px;
+}
+
+.tematica,
+.descripcion {
+  width: 450px;
+  max-width: 450px;
+  background-color: red;
+  height: fit-content;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  font-size: 19px;
+  color: var(--light-blue-text);
+}
+
+.descripcion {
+  font-size: 15px;
+} */
+
+/* .ver-mas {
+  right: 20px;
+}
+
+.ver-mas,
+.ver-menos {
+  position: absolute;
+  bottom: 0;
+  background-color: var(--dark-blue);
+  color: #999;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.ver-menos {
+  bottom: 37px;
+  right: 40px;
+
+} */
+
+/* .texto-oculto {
+  display: none;
+}
+.ver-mas {
+  cursor: pointer;
+  color: blue; /* O cualquier color que desees 
+} */
+
+/* .tematica {
   width: 450px;
   max-width: 450px;
   background-color: red;
@@ -945,9 +1258,9 @@ svg.girar_imagen {
   overflow-wrap: break-word;
   font-size: 19px;
   color: var(--light-blue-text);
-}
+} */
 
-.descripcion {
+/* .descripcion {
   width: 450px;
   max-width: 450px;
   background-color: red;
@@ -956,7 +1269,27 @@ svg.girar_imagen {
   overflow-wrap: break-word;
   font-size: 15px;
   color: var(--light-blue-text);
-}
+  /* height: 70px; 
+  /* height: fit-content; 
+} */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -969,33 +1302,66 @@ svg.girar_imagen {
 
 
 .comentarios {
+  height: 235px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-top: 1px solid #ebebebd3;
+  position: absolute;
+  bottom: 135px;
+  width: 100%;
+  transform: translateY(4px);
+  background-color: var(--dark-blue);
+  transition: height 0.3s ease;
+}
+
+.hacerPequenosComentarios {
+  height: 167px;
+}
+
+/* .comentarios.expanded {
+  height: 120px;
+} */
+
+
+/* .comentarios {
   height: 240px;
   overflow-y: auto;
   overflow-x: hidden;
-  border: 1px solid #ebebebd3;
-  margin: 10px;
+  border-top: 1px solid #ebebebd3;
+  /* margin: 10px; 
   position: absolute;
   bottom: 135px;
-  width: calc(100% - 20px);
+  /* width: calc(100% - 20px); 
+  width: 100%;
+  transform: translateY(4px);
+  background-color: var(--dark-blue);
+} */
 
+.comentarios::-webkit-scrollbar, .contenedor_descripcion::-webkit-scrollbar {
+  width: 10px;
+  /* display: none; */
 }
 
-.comentarios::-webkit-scrollbar {
-  width: 8px;
-}
-
-.comentarios::-webkit-scrollbar-track {
+.comentarios::-webkit-scrollbar-track, .contenedor_descripcion::-webkit-scrollbar-track {
+  /* display: none; */
   background: var(--dark-blue);
   background: #b8c1d346;
-  border-left: var(--light-blue-text) solid 1px;
+  border: var(--light-blue-text) solid 1px;
+  border-bottom: none;
+  border-top: none;
 }
 
-.comentarios::-webkit-scrollbar-thumb {
+.contenedor_descripcion::-webkit-scrollbar-track{
+  border: var(--light-blue-text) solid 1px;
+}
+
+.comentarios::-webkit-scrollbar-thumb, .contenedor_descripcion::-webkit-scrollbar-thumb {
+  /* display: none; */
   background-color: var(--light-blue-text);
 }
 
 .comentario {
-  border-bottom: 1px solid #cccccc4d;
+  border-bottom: 1px solid #cccccc31;
   padding: 10px 5px;
 }
 
@@ -1003,14 +1369,16 @@ svg.girar_imagen {
   display: flex;
   align-items: center;
   color: var(--light-blue-text);
-  /* background-color: red; */
   width: fit-content;
   padding: 0 5px;
   cursor: pointer;
+  transition: text-shadow 0.3s;
 }
 
 .comentario-header:hover,
-.comentario-header:active {}
+.comentario-header:active {
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.575), 0 0 6px rgba(255, 255, 255, 0.301);
+}
 
 .comentario-foto {
   width: 40px;
@@ -1021,6 +1389,13 @@ svg.girar_imagen {
   margin-left: 5px;
   border: 1px solid black;
   transition: border 0.3s;
+  background-color: var(--black);
+  transition: border 0.3s;
+}
+
+.comentario-header:hover .comentario-foto,
+.comentario-header:active .comentario-foto {
+  border: 1px solid rgb(109, 109, 109);
 }
 
 .foto_encabezado img {
@@ -1028,11 +1403,6 @@ svg.girar_imagen {
   height: 100%;
   width: 100%;
   object-fit: cover;
-}
-
-.comentario-header .comentario-foto:hover,
-.comentario-header .comentario-foto:active {
-  border: 1px solid rgb(109, 109, 109);
 }
 
 .comentario-usuario {
@@ -1185,7 +1555,7 @@ svg.girar_imagen {
   display: flex;
   background-color: black;
   border-radius: 4px;
-  border: var(--black) 2px solid;
+  border: var(--black) 3px solid;
   overflow: hidden;
   position: relative;
 }
@@ -1390,7 +1760,7 @@ svg.girar_imagen {
   display: flex;
 }
 
-.botones_seguir button.boton_quitar_imagen {
+button.boton_quitar_imagen {
   width: 24px !important;
   height: 24px !important;
   display: flex;
@@ -1408,6 +1778,17 @@ svg.girar_imagen {
   height: 24px !important;
   width: 24px !important;
   fill: var(--light-blue-text);
+}
+
+button.boton_quitar_imagen_comentario {
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 12px;
+}
+
+.boton_quitar_imagen_comentario svg {
+  height: 20px !important;
+  width: 20px !important;
 }
 
 .megusta_comentario div {
@@ -1579,6 +1960,10 @@ svg.girar_imagen {
 }
 
 @media (max-width: 1200px) {
+  .comentarios {
+    height: 150px;
+  }
+
   .imagen {
     width: 500px;
     height: 500px;
@@ -1602,7 +1987,7 @@ svg.girar_imagen {
 
   .botones_seguir button {
     font-size: 12px;
-    padding: 4px 6px;
+    margin: 4px 6px;
   }
 
   .gymtag_encabezado {
@@ -1612,7 +1997,6 @@ svg.girar_imagen {
   .botones_seguir {
     padding-right: 10px;
     padding-left: 5px;
-
   }
 
   .input_anadir .input {
@@ -1626,6 +2010,38 @@ svg.girar_imagen {
   .input_anadir {
     margin-left: 12px;
   }
+
+  button.boton_quitar_imagen {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .boton_quitar_imagen svg {
+    height: 20px !important;
+    width: 20px !important;
+  }
+
+  /* .tematica {
+    width: 450px;
+    max-width: 450px;
+    background-color: red;
+    height: fit-content;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-size: 19px;
+    color: var(--light-blue-text);
+  }
+
+  .descripcion {
+    width: 450px;
+    max-width: 450px;
+    background-color: red;
+    height: fit-content;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-size: 15px;
+    color: var(--light-blue-text);
+  } */
 }
 
 @media (max-width: 985px) {

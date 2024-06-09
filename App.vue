@@ -166,7 +166,6 @@ async function revisarEstadisticas(user) {
   }
 
   if (estadisticas.length < 1) {
-    console.log("si")
     const { error: insertError } = await supabase
     .from('estadisticas')
     .insert([{ idusuario: user.id, esprivado: true}]);

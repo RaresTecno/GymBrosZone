@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, defineProps } from "vue";
+import { ref, watch, onMounted, onUnmounted, defineProps } from "vue";
 import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
@@ -26,9 +26,10 @@ const numSeguidores = ref();
 const numSeguidos = ref();
 const seguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
-const esPrivado = ref()
+const esPrivado = ref(true)
 const router = useRouter();
 const edad = ref()
+
 async function mostrarp() {
 
   const { data: usuario, errorUsuario } = await supabase
@@ -49,6 +50,9 @@ async function mostrarp() {
   nombreCompleto.value = nombre + " " + apellido
   profileId.value = usuario[0].id;
   edad.value = calcularEdad(usuario[0].fechanacimiento);
+
+  cargarEstadisticas();
+
 
   const { data: publicaciones, errorPublicaciones } = await supabase
     .from('publicaciones')
@@ -205,14 +209,52 @@ function checkInput() {
   }
 }
 
-const { sexo, peso, altura, actividad, objetivo } = {
+const mensajeAviso = ref(false);
+const mostrarAviso = ref();
+function mensaje(mensaje) {
+  mensajeAviso.value = mensaje;
+  mostrarAviso.value = true;
+}
+const { sexo, peso, altura, actividad, resActividad, resIMC, nivelIMC, pesoValido, alturaValida } = {
   sexo: ref(),
   peso: ref(),
   altura: ref(),
   actividad: ref(),
-  objetivo: ref()
+  resActividad: ref(),
+  resIMC: ref(),
+  nivelIMC: ref(),
+  pesoValido: ref(),
+  alturaValida: ref()
 };
 
+const validarPeso = () => {
+  const pesoValue = parseFloat(peso.value);
+
+  if (!isNaN(pesoValue) && pesoValue >= 30 && pesoValue <= 650 && (pesoValue * 100) % 1 === 0) {
+    pesoValido.value = true; // Valor válido
+    calcularIMC()
+    calcularCalorias()
+    mostrarAviso.value = false;
+
+  } else {
+    pesoValido.value = false;
+    mensaje('Por favor, ingrese un valor válido para el peso entre 30 y 650 kg (max 2 decimales).'); // Valor no válido
+  }
+};
+const validarAltura = () => {
+  const alturaValue = parseFloat(altura.value);
+
+  if (!isNaN(alturaValue) && alturaValue >= 30 && alturaValue <= 650 && (alturaValue * 100) % 1 === 0) {
+    alturaValida.value = true; // Valor válido
+    calcularIMC()
+    calcularCalorias()
+    mostrarAviso.value = false;
+
+  } else {
+    alturaValida.value = false;
+    mensaje('Por favor, ingrese un valor válido para la altura entre 30 y 300 cm.'); // Valor no válido
+  }
+};
 const resultado = ref({
   mantenimiento: null,
   superavit: [],
@@ -223,67 +265,115 @@ async function cargarEstadisticas() {
   const { data: estadisticas, errorEstadisticas } = await supabase
     .from('estadisticas')
     .select('*')
-    .eq('idusuario', userId.value);
-    esPrivado.value = estadisticas[0].esprivado;
-    peso.value = estadisticas[0].pesokg;
-    altura.value = estadisticas[0].alturacm;
-    sexo.value = estadisticas[0].sexo;
+    .eq('idusuario', profileId.value);
+
+  esPrivado.value = estadisticas[0].esprivado;
+  peso.value = estadisticas[0].pesokg;
+  altura.value = estadisticas[0].alturacm;
+  sexo.value = estadisticas[0].sexo;
+  actividad.value = estadisticas[0].actividad;
+
+  calcularIMC()
+  calcularCalorias()
 }
-cargarEstadisticas();
+function calcularIMC() {
+  let alturaMetros = altura.value / 100;
+  resIMC.value = parseFloat(peso.value) / (alturaMetros * alturaMetros);
+
+  if (resIMC.value < 16) {
+    nivelIMC.value = 'Delgadez severa';
+  } else if (resIMC.value >= 16 && resIMC.value < 17) {
+    nivelIMC.value = 'Delgadez moderada';
+  } else if (resIMC.value >= 17 && resIMC.value < 18.5) {
+    nivelIMC.value = 'Delgadez aceptable';
+  } else if (resIMC.value >= 18.5 && resIMC.value < 25) {
+    nivelIMC.value = 'Peso normal';
+  } else if (resIMC.value >= 25 && resIMC.value < 30) {
+    nivelIMC.value = 'Sobrepeso';
+  } else if (resIMC.value >= 30 && resIMC.value < 35) {
+    nivelIMC.value = 'Obesidad clase I';
+  } else if (resIMC.value >= 35 && resIMC.value < 40) {
+    nivelIMC.value = 'Obesidad clase II';
+  } else if (resIMC.value >= 40) {
+    nivelIMC.value = 'Obesidad clase III';
+  }
+}
 function calcularCalorias() {
-  let tmb;
+  if (alturaValida.value && pesoValido.value) {
 
-  if (sexo.value === 'hombre') {
-    tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value + 5;
-  } else {
-    tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value - 161;
-  }
+    let tmb;
 
-  let factorActividad;
-  switch (actividad.value) {
-    case 'sedentario':
-      factorActividad = 1.2;
-      break;
-    case 'ligero':
-      factorActividad = 1.375;
-      break;
-    case 'moderado':
-      factorActividad = 1.55;
-      break;
-    case 'intenso':
-      factorActividad = 1.725;
-      break;
-    case 'muy_intenso':
-      factorActividad = 1.9;
-      break;
-  }
+    if (sexo.value === 'hombre') {
+      tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value + 5;
+    } else {
+      tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value - 161;
+    }
 
-  let caloriasMantenimiento = tmb * factorActividad;
-  resultado.value.mantenimiento = Math.round(caloriasMantenimiento);
+    let factorActividad;
+    switch (actividad.value) {
+      case 'sedentario':
+        factorActividad = 1.2;
+        resActividad.value = "Poco o ningún ejercicio"
+        break;
+      case 'ligero':
+        factorActividad = 1.375;
+        resActividad.value = "Ejercicio ligero o deportes 1-3 días/semana"
+        break;
+      case 'moderado':
+        resActividad.value = "Ejercicio moderado o deportes 3-5 días/semana"
+        factorActividad = 1.55;
+        break;
+      case 'intenso':
+        factorActividad = 1.725;
+        resActividad.value = "Ejercicio intenso o deportes 6-7 días/semana"
+        break;
+      case 'muy_intenso':
+        factorActividad = 1.9;
+        resActividad.value = "Ejercicio muy intenso o trabajo físico y ejercicio 2 veces/día"
+        break;
+    }
 
-  if (objetivo.value === 'aumentar') {
+    let caloriasMantenimiento = tmb * factorActividad;
+    resultado.value.mantenimiento = Math.round(caloriasMantenimiento);
+
     resultado.value.superavit = [
       { nivel: 'Superávit ligero', kcal: Math.round(caloriasMantenimiento * 1.10) },
       { nivel: 'Superávit moderado', kcal: Math.round(caloriasMantenimiento * 1.15) },
       { nivel: 'Superávit agresivo', kcal: Math.round(caloriasMantenimiento * 1.20) },
       { nivel: 'Superávit muy agresivo', kcal: Math.round(caloriasMantenimiento * 1.25) }
     ];
-    resultado.value.deficit = [];
-  } else if (objetivo.value === 'bajar') {
+
     resultado.value.deficit = [
       { nivel: 'Déficit ligero', kcal: Math.round(caloriasMantenimiento * 0.90) },
       { nivel: 'Déficit moderado', kcal: Math.round(caloriasMantenimiento * 0.80) },
       { nivel: 'Déficit agresivo', kcal: Math.round(caloriasMantenimiento * 0.70) },
       { nivel: 'Déficit muy agresivo', kcal: Math.round(caloriasMantenimiento * 0.60) }
     ];
-    resultado.value.superavit = [];
-  } else {
-    resultado.value.superavit = [];
-    resultado.value.deficit = [];
   }
+
 }
-function cambiarPrivacidad(valor) {
-  esPrivado.value = valor
+async function cambiarPrivacidad(valor) {
+  try {
+    // Actualiza el estado de privacidad en el cliente
+    esPrivado.value = valor;
+
+    // Realiza la actualización en la base de datos de Supabase
+    const { data, error } = await supabase
+      .from('estadisticas')
+      .update({ esprivado: esPrivado.value })
+      .eq('idusuario', userId.value);
+
+    if (error) {
+      console.error('Error al cambiar la privacidad:', error.message);
+      // Maneja el error de acuerdo a tu lógica de aplicación
+    } else {
+      console.log('Se cambió la privacidad exitosamente:', data);
+      // Maneja la respuesta exitosa de la actualización, si es necesario
+    }
+  } catch (error) {
+    console.error('Error al cambiar la privacidad:', error.message);
+    // Maneja el error de acuerdo a tu lógica de aplicación
+  }
 }
 function calcularEdad(fechaNacimiento) {
   // Convertir la cadena de fecha de nacimiento a un objeto Date
@@ -310,11 +400,57 @@ function mostrarEditarStats(valor) {
   mostrarForm.value = valor
 }
 async function guardarEstadisticas() {
-  const { data, error } = await supabase
-      .from('usuarios')
+  let consulta = {};
+
+  const { data: estadisticas, errorEstadisticas } = await supabase
+    .from('estadisticas')
+    .select('*')
+    .eq('idusuario', userId.value);
+
+  if ((peso.value == estadisticas[0].pesokg) && (altura.value == estadisticas[0].alturacm) && (sexo.value == estadisticas[0].sexo) && (actividad.value == estadisticas[0].actividad)) {
+
+    mensaje('Debes modificar algún dato para guardar cambios');
+    return
+  }
+
+  if ((peso.value !== null && peso.value !== '') && (altura.value !== null && altura.value !== '') &&
+    (sexo.value !== null && sexo.value !== '') && (actividad.value !== null && actividad.value !== '')) {
+
+    if (peso.value != estadisticas[0].pesokg && pesoValido.value) {
+      consulta.pesokg = peso.value;
+    }
+    if (altura.value != estadisticas[0].alturacm && alturaValida.value) {
+      consulta.alturacm = altura.value;
+    }
+    if (sexo.value != estadisticas[0].sexo) {
+      consulta.sexo = sexo.value;
+    }
+    if (actividad.value != estadisticas[0].actividad) {
+      consulta.actividad = actividad.value;
+    }
+  } else {
+    mensaje('No puede haber campos vacíos');
+    return
+  }
+
+  /*Actualizamos la información del usuario.*/
+  if (Object.keys(consulta).length > 0) {
+    const { data, error } = await supabase
+      .from('estadisticas')
       .update(consulta)
-      .eq('id', id)
+      .eq('idusuario', userId.value)
+    if (error) {
+      mensaje('Ha ocurrido un error al actualizar tu información.');
+    } else {
+
+      mensaje('Tu información ha sido actualizada.');
+      cargarEstadisticas();
+    }
+  }
 }
+watch([sexo, actividad], [calcularCalorias, calcularIMC]);
+watch(peso, validarPeso);
+watch(altura, validarAltura);
 </script>
 
 <template>
@@ -373,7 +509,7 @@ async function guardarEstadisticas() {
           </div>
         </template>
       </div>
-      <div v-if="vista == 'Estadisticas'" class="estadisticas">
+      <div v-if="(vista == 'Estadisticas') && (!esPrivado || perfilPropio)" class="estadisticas">
         <div v-if="perfilPropio" class="privacidad">
           <div class="estadisticas-priv" v-if="esPrivado">
             Tus estadísticas son PRIVADAS
@@ -391,8 +527,16 @@ async function guardarEstadisticas() {
           <div class="edad-sexo">
 
             <div class="tu-edad datos-stats">
-              <label>Tu Edad</label>
-              <h4>{{ edad }} </h4>
+
+              <label>Tu actividad diaria</label>
+              <select class="actividad" v-model="actividad" required>
+                <option value="sedentario">Sedentario: poco o ningún ejercicio</option>
+                <option value="ligero">Ligero: ejercicio ligero o deportes 1-3 días/semana</option>
+                <option value="moderado">Moderado: ejercicio moderado o deportes 3-5 días/semana</option>
+                <option value="intenso">Intenso: ejercicio intenso o deportes 6-7 días/semana</option>
+                <option value="muy_intenso">Muy intenso: ejercicio muy intenso o trabajo físico y ejercicio 2 veces/día
+                </option>
+              </select>
               <!-- <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required> -->
             </div>
             <div class="tu-sexo datos-stats">
@@ -406,77 +550,122 @@ async function guardarEstadisticas() {
           <div class="peso-altura">
             <div class="tu-peso datos-stats">
               <label>Tu peso (kg)</label>
-              <input type="number" class="peso" v-model="peso" min="1" max="650" step="0.01" required>
+              <input type="number" class="peso" v-model="peso" min="30" max="650" step="0.01" required>
 
             </div>
             <div class="tu-altura datos-stats">
               <label>Tu altura (cm)</label>
-              <input type="number" class="altura" v-model="altura" min="1" max="300" step="1" required>
+              <input type="number" class="altura" v-model="altura" min="30" max="300" step="1" required>
             </div>
 
           </div>
 
-          <!-- <label>¿Cuál es tu nivel de actividad física diaria?</label>
-          <select class="actividad" v-model="actividad">
-            <option value="sedentario">Sedentario: poco o ningún ejercicio</option>
-            <option value="ligero">Ligero: ejercicio ligero o deportes 1-3 días/semana</option>
-            <option value="moderado">Moderado: ejercicio moderado o deportes 3-5 días/semana</option>
-            <option value="intenso">Intenso: ejercicio intenso o deportes 6-7 días/semana</option>
-            <option value="muy_intenso">Muy intenso: ejercicio muy intenso o trabajo físico y ejercicio 2 veces/día
-            </option>
-          </select>
-
-          <label>¿Cuál es tu objetivo?</label>
-          <select class="objetivo" v-model="objetivo">
-            <option value="mantener">Mantener el peso actual</option>
-            <option value="bajar">Bajar grasa corporal</option>
-            <option value="aumentar">Aumentar masa muscular</option>
-          </select> -->
-
           <!-- <button type="button" @click="calcularCalorias()">Calcular</button> -->
-          <button type="button" @click="">Guardar</button>
+          <button type="button" @click="guardarEstadisticas()" class="btn-guardar-stats">Guardar</button>
+          <div v-if="mostrarAviso" class="mensaje">{{ mensajeAviso }}</div>
         </form>
-        <div class="datos-estadisticas">
-          <h3>Edad: {{ edad }} años</h3>
-          <h3>Sexo: {{ sexo }}</h3>
-          <h3>Altura: {{ altura }} cm</h3>
-          <h3>Peso: {{ peso }} kgs</h3>
+        <div v-if="sexo && peso && altura && actividad" class="datos-estadisticas">
+          <h2>Estadísticas</h2>
+          <div class="res-edad-sexo">
+            <h3>Edad: {{ edad }} años</h3>
+            <h3>Sexo: {{ sexo }}</h3>
+          </div>
+          <div class="res-altura-peso">
+            <h3>Altura: {{ alturaValida !== false ? altura + " cm" : "Valor inválido" }}</h3>
+            <h3>Peso: {{ pesoValido !== false ? peso + " kg" : "Valor inválido" }}</h3>
+          </div>
+          <div class="res-actividad">
+            <h3>Ejercicio: {{ resActividad }}</h3>
+          </div>
         </div>
-        <div class="resultados-cal">
-          <div v-if="resultado.mantenimiento">
-            <h3>Tus calorías para estar en balance energético:</h3>
+        <div v-if="resultado.mantenimiento != null" class="resultados-cal">
+          <div class="mant" v-if="resultado.mantenimiento">
+            <h3>Calorías para estar en balance energético</h3>
             <p>{{ resultado.mantenimiento }} kcal/día</p>
           </div>
+          <div class="def-sup">
+            <div class="sup" v-if="resultado.superavit.length > 0">
+              <h3>Calorías para estar en superávit calórico</h3>
+              <table>
+                <tr>
+                  <th>Nivel</th>
+                  <th>kcal/día</th>
+                </tr>
+                <tr v-for="nivel in resultado.superavit" :key="nivel.nivel">
+                  <td>{{ nivel.nivel }}</td>
+                  <td>{{ nivel.kcal }}</td>
+                </tr>
+              </table>
+            </div>
 
-          <div v-if="resultado.superavit.length > 0">
-            <h3>Tus calorías para estar en superávit calórico:</h3>
-            <table>
-              <tr>
-                <th>Nivel</th>
-                <th>kcal/día</th>
-              </tr>
-              <tr v-for="nivel in resultado.superavit" :key="nivel.nivel">
-                <td>{{ nivel.nivel }}</td>
-                <td>{{ nivel.kcal }}</td>
-              </tr>
-            </table>
-          </div>
+            <div v-if="resultado.deficit.length > 0">
+              <h3>Calorías para estar en déficit calórico</h3>
+              <table>
+                <tr>
+                  <th>Nivel</th>
+                  <th>kcal/día</th>
+                </tr>
+                <tr v-for="nivel in resultado.deficit" :key="nivel.nivel">
+                  <td>{{ nivel.nivel }}</td>
+                  <td>{{ nivel.kcal }}</td>
+                </tr>
+              </table>
+            </div>
 
-          <div v-if="resultado.deficit.length > 0">
-            <h3>Tus calorías para estar en déficit calórico:</h3>
-            <table>
-              <tr>
-                <th>Nivel</th>
-                <th>kcal/día</th>
-              </tr>
-              <tr v-for="nivel in resultado.deficit" :key="nivel.nivel">
-                <td>{{ nivel.nivel }}</td>
-                <td>{{ nivel.kcal }}</td>
-              </tr>
-            </table>
           </div>
 
         </div>
+        <div class="resultado-imc">
+          <div class="res-imc">
+            <h3>IMC: {{ resIMC.toFixed(2) + " (" + nivelIMC+ ")"  }}</h3>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Clasificación</th>
+                <th>IMC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Delgadez severa</td>
+                <td>Menos de 16</td>
+              </tr>
+              <tr>
+                <td>Delgadez moderada</td>
+                <td>16 - 16.9</td>
+              </tr>
+              <tr>
+                <td>Delgadez aceptable</td>
+                <td>17 - 18.4</td>
+              </tr>
+              <tr>
+                <td>Peso normal</td>
+                <td>18.5 - 24.9</td>
+              </tr>
+              <tr>
+                <td>Sobrepeso</td>
+                <td>25 - 29.9</td>
+              </tr>
+              <tr>
+                <td>Obesidad clase I</td>
+                <td>30 - 34.9</td>
+              </tr>
+              <tr>
+                <td>Obesidad clase II</td>
+                <td>35 - 39.9</td>
+              </tr>
+              <tr>
+                <td>Obesidad clase III</td>
+                <td>40 o más</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div v-if="(esPrivado && !perfilPropio) && (vista == 'Estadisticas')" class="perfilPrivado">
+        <font-awesome-icon class="candado2" :icon="['fas', 'lock']" />
+        Las estadísticas este usuario son privadas
       </div>
     </div>
   </div>
@@ -724,9 +913,11 @@ async function guardarEstadisticas() {
   top: 10px;
   right: 10px;
 }
+
 .cerrarForm:hover {
-cursor: pointer;
+  cursor: pointer;
 }
+
 .btn-editar-stats {
   width: 20%;
   min-width: 150px;
@@ -780,7 +971,7 @@ cursor: pointer;
 
 }
 
-.tu-sexo {}
+
 
 .peso-altura {
   display: flex;
@@ -807,7 +998,218 @@ cursor: pointer;
   background-color: aqua
 }
 
-@media (max-width: 875px) {
+.btn-guardar-stats {
+  margin: auto;
+  margin-top: 10px;
+  cursor: pointer;
+  background-color: var(--blue-buttons);
+  width: 27%;
+  min-width: fit-content;
+  padding: 5px;
+  border: solid var(--black) 2px;
+  border-radius: 2px;
+  font-size: 18px;
+  transition: background-color 0.5s, border 0.5s, color 0.5s;
+  height: 100%;
+}
+
+.btn-guardar-stats:hover,
+.btn-guardar-stats:active {
+  background-color: var(--very-dark-blue);
+  color: var(--light-blue-text);
+  border: 2px solid var(--grey-buttons-inputs-border);
+}
+
+.mensaje {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.datos-estadisticas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 20px;
+  border: 3px solid black;
+  background-color: #5983df82;
+
+}
+
+.datos-estadisticas h2 {
+  width: 100%;
+  text-align: center;
+  border-bottom: 3px solid black;
+  padding: 10px;
+}
+
+.res-edad-sexo {
+  display: flex;
+  width: 100%;
+  border-bottom: 2px solid black;
+
+}
+
+.res-edad-sexo :first-child {
+  border-right: 2px solid black;
+}
+
+.res-edad-sexo * {
+  width: 50%;
+  padding: 10px;
+
+}
+
+.res-altura-peso {
+  display: flex;
+  width: 100%;
+  border-bottom: 2px solid black;
+}
+
+.res-altura-peso :first-child {
+  border-right: 2px solid black;
+}
+
+.res-altura-peso * {
+  width: 50%;
+  padding: 10px;
+}
+
+.res-actividad {
+  padding: 10px;
+}
+
+.resultados-cal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 20px;
+  border: 3px solid black;
+  background-color: #5983df82;
+}
+
+.mant {
+  width: 100%;
+  text-align: center;
+  border-bottom: 2px solid black;
+}
+
+.def-sup {
+  display: flex;
+  width: 100%;
+
+}
+
+.sup {
+  border-right: 2px solid black;
+
+}
+
+.def-sup>div {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.resultados-cal h3 {
+  padding: 10px;
+  width: 100%;
+  border-bottom: 2px solid black;
+
+}
+
+.def-sup h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 65px;
+
+}
+
+.resultados-cal table,
+.resultados-cal p {
+  padding: 10px;
+}
+
+.resultado-imc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 20px;
+  border: 3px solid black;
+  background-color: #5983df82;
+  margin-bottom: 70px;
+}
+
+.res-imc {
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  border-bottom: 3px solid black;
+}
+
+.resultado-imc table {
+  display: flex;
+  width: 60%;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  border: 2px solid black;
+}
+
+.resultado-imc table tbody {
+  width: 100%;
+}
+
+.resultado-imc table thead {
+  width: 100%;
+}
+
+.resultado-imc table tr {
+  width: 100%;
+  display: flex;
+  /* border: 2px solid black; */
+}
+
+.resultado-imc table thead tr th {
+  height: 100%;
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 10px;
+  width: 50%;
+}
+
+.resultado-imc table tr td {
+  height: 100%;
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 10px;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.perfilPrivado{
+  margin: 30px 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(20px, 2.2vw, 60px);
+  gap: 20px;
+}
+.candado2{
+  width: 20%;
+  height: 20%;
+  min-width: 100px;
+  color: var(--dark-blue);
+}
+@media (max-width: 875.5px) {
   .perfil {
     margin: 0;
   }
@@ -879,14 +1281,18 @@ cursor: pointer;
   }
 }
 
-@media(max-width:875px) {
+@media(max-width:875.5px) {
   .gymTag {
     margin-top: 10px;
     margin-left: -10px;
     font-size: clamp(20px, 1.3em, 40px);
   }
 
-  .info-basica {}
+  .resultado-imc table {
+    width: 100%;
+    margin: 0;
+    border: 0;
+  }
 }
 
 @media (max-width: 625px) {
@@ -907,6 +1313,32 @@ cursor: pointer;
     gap: 0px;
 
   }
+
+  .datos-estadisticas {
+    font-size: medium;
+  }
+
+  .resultados-cal {
+    font-size: medium;
+  }
+
+  .def-sup {
+    flex-direction: column;
+  }
+
+  .def-sup>div {
+    width: 100%;
+  }
+
+  .def-sup h3 {
+    min-height: fit-content;
+
+  }
+
+  .sup {
+    border-right: none;
+    border-bottom: 2px solid black;
+  }
 }
 
 @media (max-width: 450px) {
@@ -922,6 +1354,10 @@ cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .resultado-imc table tr td{
+    height: auto;
   }
 }
 

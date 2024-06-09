@@ -46,7 +46,10 @@ onMounted(() => {
   window.addEventListener("resize", updateWidth);
 });
 
-cargarUsuario();
+if (userActive.value) {
+  
+  cargarUsuario();
+}
 
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase

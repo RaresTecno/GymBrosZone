@@ -241,7 +241,6 @@ disponible.value = true;
     display: flex;
     flex-direction: column;
     width: 80%;
-    align-items: center;
   }
 }
 

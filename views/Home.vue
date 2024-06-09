@@ -343,7 +343,6 @@ disponible.value = true;
 }
 
 @media (max-width: 1100px) {
-
   .vista {
     width: 100%;
   }
@@ -393,7 +392,6 @@ disponible.value = true;
     display: flex;
     flex-direction: column;
     width: 80%;
-    align-items: center;
   }
 }
 

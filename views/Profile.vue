@@ -875,7 +875,9 @@ watch(altura, validarAltura);
 #publicacion {
   padding: 0;
 }
-
+#forzar-publicacion {
+    
+  }
 .estadisticas {
   display: flex;
   flex-direction: column;

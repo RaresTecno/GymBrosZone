@@ -1,10 +1,8 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import { supabase, logOut, userState, userActive } from '../clients/supabase';
-
-// import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
-// let [captchaToken, setCaptchaToken] = userState()
+import { supabase } from '../clients/supabase';
 
 const email = ref("");
 const password = ref("");
@@ -90,13 +88,7 @@ async function login() {
         if (usuarios.length > 0) {
             const { data, error: errorAuth } = await supabase.auth.signInWithPassword({
                 email: email.value,
-                password: password.value,
-                options: {
-                    // captchaToken,
-                }
-                // options: {
-                // emailRedirectTo: '/',
-                // }
+                password: password.value
             });
             /*Avisamos al usuario en caso de haber algún error.*/
             if (errorAuth) {
@@ -123,7 +115,6 @@ function mensaje(mensaje, Input) {
     mostrarMensaje.value = true;
     Input.value.focus();
 }
-
 </script>
 <template>
     <div class="todo_login" @keyup.enter="login">
@@ -150,9 +141,6 @@ function mensaje(mensaje, Input) {
                     </div>
                 </div>
             </div>
-            <!-- <VueHcaptcha
-            sitekey="0fecd1d6-14e7-4a54-9300-5664440506ef"
-            /> -->
             <div class="mensaje" :style="{ visibility: mostrarMensaje ? 'visible' : 'hidden' }">
                 <div class="mensaje_texto">
                     {{ mensajeError }}

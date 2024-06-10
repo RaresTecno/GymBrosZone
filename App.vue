@@ -157,7 +157,6 @@ async function revisarEstadisticas(user) {
   }
 }
 </script>
-
 <template>
   <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey" />
   <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
@@ -166,7 +165,6 @@ async function revisarEstadisticas(user) {
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
   <!-- <Footer /> -->
 </template>
-
 <style>
 * {
   padding: 0;

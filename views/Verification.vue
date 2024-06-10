@@ -12,7 +12,6 @@ onMounted(() => {
         url.value = "/login";
         redirigir();
     }, 20000);
-
     const route = useRoute();
     const email = route.query.email ? decodeURIComponent(route.query.email) : '';
     /*Si no hay email redirigimos al usuario a home.*/

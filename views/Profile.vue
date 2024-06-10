@@ -1,10 +1,10 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, defineProps, watch } from "vue";
+import { ref, onMounted, onUnmounted, defineProps, watch, watchEffect } from "vue";
 import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
-import editProfile from "../components/EditProfile.vue";
 import { supabase, userId, userActive } from "../clients/supabase";
 
 const props = defineProps({
@@ -24,12 +24,12 @@ const nombreCompleto = ref();
 const sobreMi = ref();
 const numSeguidores = ref();
 const numSeguidos = ref();
-const seguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
 const esPrivado = ref(true)
 const router = useRouter();
 const edad = ref()
 
+/**/
 watch(() => props.gymtag, (newGymtag, oldGymtag) => {
   if (newGymtag !== oldGymtag) {
     mostrarp();
@@ -106,6 +106,7 @@ async function obtenerTuFotoPerfil() {
       .select("*")
       .eq('id', userId.value);
     fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
+    /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
     if (fotoTuPerfilMostrar.value === '/predeterminada.png' || fotoTuPerfilMostrar.value === null || fotoTuPerfilMostrar.value === '') {
       fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     } else {
@@ -453,7 +454,7 @@ async function guardarEstadisticas() {
     }
   }
 }
-watch([sexo, actividad], [calcularCalorias, calcularIMC]);
+watchEffect([sexo, actividad], [calcularCalorias, calcularIMC]);
 watch(peso, validarPeso);
 watch(altura, validarAltura);
 </script>
@@ -714,7 +715,6 @@ watch(altura, validarAltura);
   display: flex;
   justify-content: center;
   margin: 20px 0;
-  /* width: 100%; */
   gap: 5%
 }
 
@@ -728,7 +728,6 @@ watch(altura, validarAltura);
   max-height: 250px;
   border: 2px solid black;
   border-radius: 50%;
-  /* width: 30%; */
 }
 
 .imagen {
@@ -770,7 +769,6 @@ watch(altura, validarAltura);
   align-items: center;
   justify-content: center;
   margin: 7px;
-
 }
 
 #imagen {
@@ -798,14 +796,6 @@ watch(altura, validarAltura);
   white-space: pre-line;
 
 }
-
-/* .texto-recortado {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-} */
 
 #sobre-mi .btn-edit {
   position: absolute;
@@ -867,9 +857,7 @@ watch(altura, validarAltura);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   justify-items: center;
-  /* Centra el contenido horizontalmente */
   justify-content: center;
-  /* Centra el contenido verticalmente */
 }
 
 #publicacion {

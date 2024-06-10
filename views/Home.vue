@@ -101,7 +101,7 @@ function handleScroll() {
   }
 }
 
-/*Añadimos los eventos tras montarse la vista: eventos de detectar el final de la página y el de eliminación de una publicación.*/
+/*Añadimos los eventos de escucha tras montarse la vista: eventos de detectar el final de la página y el de eliminación de una publicación.*/
 onMounted(() => {
   cargarPublicaciones();
   window.addEventListener('scroll', handleScroll);
@@ -148,7 +148,6 @@ async function obtenerTuFotoPerfil() {
 }
 obtenerTuFotoPerfil();
 </script>
-
 <template>
   <main>
     <div v-if="!userActive" class="home">
@@ -213,7 +212,6 @@ obtenerTuFotoPerfil();
     </div>
   </main>
 </template>
-
 <style scoped>
 main {
   display: flex;

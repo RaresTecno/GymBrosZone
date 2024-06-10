@@ -466,9 +466,6 @@ watch(busquedaUsuarios, cargarUsuarios);
         :class="{ filtroSeleccionado: vistaBusqueda === 'Productos', filtrosNoSeleccionado: vistaBusqueda !== 'Productos' }">Productos</button>
     </div>
   </div>
-  <!-- <div v-if="tiempoCarga !== null">
-    Tiempo de carga: {{ tiempoCarga }} ms
-  </div> -->
   <div v-if="vistaBusqueda === 'Usuarios'" class="usuarios">
     <div class="search-producto">
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
@@ -519,25 +516,21 @@ watch(busquedaUsuarios, cargarUsuarios);
             <div class="mini-img">
               <img :src="imagen(producto)" />
             </div>
-
             <div class="mini-scores">
               <img :src="urlNutriScore(producto)" class="mini-nutri" />
               <img :src="urlNovaScore(producto)" class="mini-nova" />
               <img :src="urlEcoScore(producto)" class="mini-eco" />
             </div>
           </div>
-
         </div>
       </template>
     </div>
-
     <div class="pagination-controls" v-if="buscado && vistaUnica == false">
       <button @click="paginaAnterior" :disabled="pagina === 1">Previous</button>
       <span>{{ pagina }} / {{ totalPaginas }}</span>
       <button @click="paginaSiguiente" :disabled="pagina === totalPaginas">Next</button>
     </div>
   </div>
-
   <div v-if="vistaUnica == true && vistaBusqueda === 'Productos'" class="productos">
     <div class="producto-arriba">
       <font-awesome-icon @click="cerrarProducto()" class="cross-interno" :icon="['fas', 'xmark']" />
@@ -547,11 +540,10 @@ watch(busquedaUsuarios, cargarUsuarios);
       <div class="producto-general">
         <div class="general-texto">
           <h2 class="producto-nombre">{{ ProductoNombre !== false ? ProductoNombre : codigo }}</h2>
-
           <p class="producto-cantidad">
-          <div>Cantidad: </div>{{ ProductoCantidad && ProductoCantidad.trim() !== '' ? ProductoCantidad : '?' }}.</p>
+          <div>Cantidad: </div>{{ ProductoCantidad && ProductoCantidad.trim() !== '' ? ProductoCantidad + '.' : '?' }}</p>
           <p class="producto-ingredientes">
-          <div>Ingredientes: </div>{{ ProductoIngredientes ?? '?' }}.</p>
+          <div>Ingredientes: </div>{{ ProductoIngredientes + '.' ?? '?' }}</p>
         </div>
         <div class="general-scores">
           <img class="producto-nutriscore" :src="ProductoNutriScore" alt="" />
@@ -560,7 +552,6 @@ watch(busquedaUsuarios, cargarUsuarios);
         </div>
       </div>
     </div>
-
     <div class="producto-nutrientes">
       <div class="tabla-nutrientes">
         <div class="tr">
@@ -625,16 +616,9 @@ watch(busquedaUsuarios, cargarUsuarios);
         <h3>Puntuación total: {{ ProductoNutriScorePoints ?? '?' }}</h3>
       </div>
     </div>
-
   </div>
 </template>
-
 <style scoped>
-/* img[alt="info icon"] {
-  width: 32px !important;  Cambiar el tamaño del ancho 
-  height: 32px !important; Cambiar el tamaño de la altura 
-} */
-
 .usuarios {
   display: flex;
   flex-direction: column;

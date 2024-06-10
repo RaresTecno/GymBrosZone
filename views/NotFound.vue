@@ -1,9 +1,9 @@
 <script setup>
+/*Imports.*/
 import { disponible } from '../main'
 import { userActive } from "../clients/supabase";
 disponible.value = false;
 </script>
-
 <template>
     <div :class="['todo_no_encontrado', { logued: userActive }]">
         <div class="no_encontrado">
@@ -27,7 +27,6 @@ disponible.value = false;
         </div>
     </div>
 </template>
-
 <style scoped>
 .todo_no_encontrado {
     width: 100%;

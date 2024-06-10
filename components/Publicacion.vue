@@ -1,10 +1,12 @@
 <script setup>
+/*Imports necesarios.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif";
 import { useRoute } from 'vue-router';
 
+/*Parámetros necesarios para mostrar publicación.*/
 const props = defineProps({
   publicacionUnica: {
     type: Object,
@@ -20,6 +22,7 @@ const props = defineProps({
   }
 });
 
+/*Creación de las variables necesarias.*/
 const route = useRoute();
 
 const perfilPropio = ref();
@@ -105,7 +108,7 @@ async function seguir() {
     .select('*')
     .eq('idseguidor', userId.value)
     .eq('idseguido', props.publicacionUnica.idusuario);
-  /*En caso de error no se sigue al usuario, se vuelve al estado anterior visualmente.*/
+  /*En caso de error no se sigue al usuario, se vuelve al estado visual anterior.*/
   if (errorSeguidores) {
     siguiendo.value = false;
     return;
@@ -115,7 +118,7 @@ async function seguir() {
     const { error: insertError } = await supabase
       .from('seguidores')
       .insert([{ idseguidor: userId.value, idseguido: props.publicacionUnica.idusuario }]);
-    /*En caso de error no se sigue al usuario, se vuelve al estado anterior visualmente.*/
+    /*En caso de error no se sigue al usuario, se vuelve al estado visual anterior.*/
     if (insertError) {
       siguiendo.value = false;
       return;
@@ -135,96 +138,95 @@ async function dejarSeguir() {
     .delete()
     .eq('idseguidor', userId.value)
     .eq('idseguido', props.publicacionUnica.idusuario);
-  /*En caso de error no deja de seguir al usuario, se vuelve al estado anterior visualmente.*/
+  /*En caso de error no deja de seguir al usuario, se vuelve al estado visual anterior.*/
   if (deleteError) {
     siguiendo.value = true;
     return;
   }
 }
 
-function handleDoubleClick(event) {
+/*Función para dar like con doble click a la publicación.*/
+function dobleClick(event) {
   const rect = event.target.getBoundingClientRect();
   likeAnimationStyle.value = {
     top: `${event.clientY - rect.top}px`,
     left: `${event.clientX - rect.left}px`,
   };
-
+  /*Mostramos la animación del like con doble click.*/
   if (!animatingLike.value) {
     animatingLike.value = true;
     setTimeout(() => {
       animatingLike.value = false;
-    }, 600); // Duración de la animación
+    }, 600);
   }
   darLike();
 }
 
+/*Función para obtener los comentarios de la publicación que se desea ver en grande.*/
 async function obtenerComentarios(idpublicacion) {
   const { data: comentariosData, error } = await supabase
     .from('comentarios')
     .select('*, usuarios(gymtag)')
     .eq('idpublicacion', idpublicacion)
     .order('fechacreacion', { ascending: false });
-
   if (error) {
-    console.error('Error al obtener los comentarios:', error);
     return;
   }
-
-  // Mapear sobre los datos de los comentarios para obtener la foto de perfil de cada usuario
+  /*Obtenemos la foto de perfil del usuario al que pertenece cada comentario.*/
   const comentariosConFotoPerfil = await Promise.all(comentariosData.map(async comentario => {
-    // Realizar una consulta adicional para obtener la foto de perfil del usuario
+    /*Cogemos la ruta de la foto de perfil del usuario al que pertenece el comentario.*/
     const { data: usuarioData, error: usuarioError } = await supabase
       .from('usuarios')
       .select('fotoperfil')
       .eq('id', comentario.idusuario);
-
-    // Manejar cualquier error que ocurra durante la consulta de la foto de perfil
     if (usuarioError) {
       console.error('Error al obtener la foto de perfil del usuario:', usuarioError);
       comentario.fotoPerfilComentarioMostrada = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     } else {
-      // Asignar la URL completa de la foto de perfil si está disponible, de lo contrario asignar la foto predeterminada
+      /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
       if (usuarioData[0].fotoperfil === '/predeterminada.png' || usuarioData[0].fotoperfil === null || usuarioData[0].fotoperfil === '') {
         comentario.fotoPerfilComentarioMostrada = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
       } else {
+        /*De lo contrario mostramos la foto de perfil actual del usuario.*/
         comentario.fotoPerfilComentarioMostrada = `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuarioData[0].fotoperfil}`;
       }
     }
     return comentario;
   }));
-
-  // Actualizar el estado de comentarios con los datos obtenidos
+  /*Actualizamos los comentarios con los datos.*/
   comentarios.value = comentariosConFotoPerfil;
 }
 
+/*Función para dar like a una publicación.*/
 async function darLike() {
   const idpublicacion = props.publicacionUnica.idpublicacion;
-
   if (likes.value[props.publicacionUnica.idpublicacion]) {
     return;
   }
   animatingLike2.value[props.publicacionUnica.idpublicacion] = true;
   setTimeout(() => animatingLike2.value[props.publicacionUnica.idpublicacion] = false, 600);
 
+  /*Actualizamos el like de manera visual, en caso de error en cualquier consultar, deshacemos esta acción de lo contrario permanece.*/
   likes.value[idpublicacion] = true;
   numeroLikes.value++;
+  /*Comprobamos si el usuario ya le había dado like anteriormente a la publicación.*/
   const { data, errorLike } = await supabase
     .from('likes')
     .select('*')
     .eq('idusuario', userId.value)
     .eq('idpublicacion', idpublicacion);
-
+  /*En caso de error no se da like a la publicación, se vuelve al estado visual anterior.*/
   if (errorLike) {
     likes.value[idpublicacion] = false;
     numeroLikes.value--;
     return;
   }
-
+  /*Insertamos el like si el usuario no le había dado like a la publicación anteriormente.*/
   if (data.length == 0) {
     const { error: insertError } = await supabase
       .from('likes')
       .insert([{ idusuario: userId.value, idpublicacion: idpublicacion }]);
-
+    /*En caso de error no se da like a la publicación, se vuelve al estado visual anterior.*/
     if (insertError) {
       likes.value[idpublicacion] = false;
       numeroLikes.value--;
@@ -248,7 +250,7 @@ async function quitarLike() {
     .select('*')
     .eq('idusuario', userId.value)
     .eq('idpublicacion', idpublicacion);
-
+  /*En caso de error no se quita el like a la publicación, se vuelve al estado visual anterior.*/
   if (errorLike) {
     numeroLikes.value++;
     likes.value[idpublicacion] = !likes.value[idpublicacion];
@@ -261,7 +263,7 @@ async function quitarLike() {
     .delete()
     .eq('idusuario', userId.value)
     .eq('idpublicacion', idpublicacion);
-  /*En caso de error no se quita el like a la publicación, se vuelve al estado anterior visualmente.*/
+  /*En caso de error no se quita el like a la publicación, se vuelve al estado visual anterior.*/
   if (quitarLikeError) {
     numeroLikes.value++;
     likes.value[idpublicacion] = !likes.value[idpublicacion];
@@ -273,22 +275,19 @@ async function quitarLike() {
 
 /*Función para guardar a una publicación.*/
 async function guardar() {
-  // const idpublicacion = props.publicacionUnica.idpublicacion;
-  // /*Se guarda la publicación, de manera visual.*/
-  // guardados.value[idpublicacion] = !guardados.value[idpublicacion];
-  // /*Comprobamos si el usuario ha guardado la publicación anteriormente.*/
   const idpublicacion = props.publicacionUnica.idpublicacion;
   if (guardados.value[idpublicacion]) return;
   animatingSave.value[idpublicacion] = true;
   setTimeout(() => animatingSave.value[idpublicacion] = false, 400);
-
+  /*Guardamos la publicación de manera visual.*/
   guardados.value[idpublicacion] = true;
+  /*Comprobamos si el usuario ha guardado la publicación anteriormente.*/
   const { data, errorGuardado } = await supabase
     .from('guardados')
     .select('*')
     .eq('idusuario', userId.value)
     .eq('idpublicacion', idpublicacion);
-  /*En caso de error no se guarda la publicación, se vuelve al estado anterior visualmente.*/
+  /*En caso de error no se guarda la publicación, se vuelve al estado visual anterior.*/
   if (errorGuardado) {
     guardados.value[idpublicacion] = !guardados.value[idpublicacion];
     return;
@@ -298,7 +297,7 @@ async function guardar() {
     const { error: insertError } = await supabase
       .from('guardados')
       .insert([{ idusuario: userId.value, idpublicacion: idpublicacion }]);
-    /*En caso de error no se guarda la publicación, se vuelve al estado anterior visualmente.*/
+    /*En caso de error no se guarda la publicación, se vuelve al estado visual anterior.*/
     if (insertError) {
       guardados.value[idpublicacion] = !guardados.value[idpublicacion];
       return;
@@ -319,18 +318,21 @@ async function eliminarGuardado() {
     .delete()
     .eq('idusuario', userId.value)
     .eq('idpublicacion', idpublicacion);
-  /*En caso de error no se quita el guardado a la publicación, se vuelve al estado anterior visualmente.*/
+  /*En caso de error no se quita el guardado a la publicación, se vuelve al estado visual anterior.*/
   if (quitarGuardadoError) {
     guardados.value[idpublicacion] = !guardados.value[idpublicacion];
     return;
   }
 }
 
-function combrobarImagen() {
+/*Función para establecer una imagen predeterminada en caso de error al mostrar la imagen de la publicación.*/
+function comprobarImagen() {
   ruta.value = fotoPredeterminada;
 }
 
+/*Función para cargar la publicación.*/
 async function cargarPublicacion() {
+  /*Obtenemos los datos del usuario para mostrarlos en la publicación.*/
   const { data: usuario, error: errorUsuario } = await supabase
     .from('usuarios')
     .select("*")
@@ -338,18 +340,21 @@ async function cargarPublicacion() {
   if (errorUsuario) {
     return;
   }
+  /*Guardamos en las variables los datos del usuario.*/
   gymTag.value = usuario[0].gymtag;
   fotoPerfil.value = usuario[0].fotoperfil;
+  /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
   if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
     fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
   } else {
     /*De lo contrario mostramos la foto de perfil actual del usuario.*/
     fotoPerfilMostrada.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
   }
-
+  /*Comprobamos si la publicación es del usuario que la está visualizando o no.*/
   if (props.publicacionUnica.idusuario === userId.value) {
     perfilPropio.value = true;
   } else {
+    /*Si la publicación no es del propio usuario, comprobamos si el usuario sigue al dueño de la publicación.*/
     perfilPropio.value = false;
     const { data: seguidores, error: errorSeguidores } = await supabase
       .from('seguidores')
@@ -359,10 +364,9 @@ async function cargarPublicacion() {
     if (errorSeguidores) {
       return;
     }
-
     siguiendo.value = seguidores.length !== 0;
   }
-
+  /*Obtenemos si el usuario que está viendo la publicación le ha dado like anteriormente o no.*/
   const { data: likeData, error: errorLike } = await supabase
     .from('likes')
     .select('*')
@@ -374,34 +378,34 @@ async function cargarPublicacion() {
   }
 
   likes.value[props.publicacionUnica.idpublicacion] = likeData.length !== 0;
-
+  /*Obtenemos si el usuario que está viendo la publicación la ha guardado anteriormente o no.*/
   const { data: guardadoData, error: errorGuardado } = await supabase
     .from('guardados')
     .select('*')
     .eq('idusuario', userId.value)
     .eq('idpublicacion', props.publicacionUnica.idpublicacion);
-
   if (errorGuardado) {
     return;
   }
   guardados.value[props.publicacionUnica.idpublicacion] = guardadoData.length !== 0;
-
+  /*Obtenemos la cantidad de likes para mostrarla.*/
   await obtenerCantidadLikes(props.publicacionUnica.idpublicacion);
 }
 
+/*Función para obtener la cantidad de likes de la publicación.*/
 async function obtenerCantidadLikes(idpublicacion) {
   const { count, error } = await supabase
     .from('likes')
     .select('idpublicacion', { count: 'exact', head: true })
     .eq('idpublicacion', idpublicacion);
-
   if (error) {
     return;
   }
-
+  /*Actualizamos la variable.*/
   numeroLikes.value = count;
 }
 
+/*Función para actualizar el ancho de la pantalla cuando esta se redimensiona.*/
 function updateWidth() {
   windowWidth.value = window.innerWidth;
   foto.value.style.cursor = 'pointer';
@@ -412,44 +416,51 @@ function updateWidth() {
   }
 }
 
+/*Función para mostrar la publicación que se hace click en grande.*/
 async function mostrar(bool) {
   if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
     document.body.style.overflow = "hidden";
     mostrarFinal.value = true;
   }
   updateWidth();
+  /*Si la pantalla es menor o igual a 875px, se muestran los comentarios desde abajo hacia arriba.*/
   if (windowWidth.value <= 875) {
     await nextTick();
     const contenidoElement = document.querySelector('.contenido');
-    contenidoElement.classList.add('no_mostrar');
+    if (contenidoElement) {
+      contenidoElement.classList.add('no_mostrar');
+    }
     setTimeout(() => {
       contenidoElement.classList.add('mostrar');
       contenidoElement.classList.remove('no_mostrar');
     }, 10);
   };
-
+  /*Guardamos si la publicación tiene like o está guardada inicialmente o no para poder eliminarla si corresponde o no en /liked o /saved.*/
   tieneLikeInicial.value = likes.value[props.publicacionUnica.idpublicacion] || false;
   tieneGuardadoInicial.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
   if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
+    /*Obtenemos los comentarios. */
     await obtenerComentarios(props.publicacionUnica.idpublicacion);
   }
 }
 
+/*Función de cerrar la publicación en vista ampliada o comentarios.*/
 function cerrar() {
   tieneLikeFinal.value = likes.value[props.publicacionUnica.idpublicacion] || false;
   tieneGuardadoFinal.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
 
+  /*Emitimos un evento global si estamos en /liked y se ha quitado el like que estaba dado originalmente. Tras esto se eliminara de la publicación de la vista.*/
   if (route.path === '/liked' && tieneLikeInicial.value && !tieneLikeFinal.value) {
-    // Emitir un evento global para ocultar la publicación
     window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
-  }
-
+    }
+    
+  /*Emitimos un evento global si estamos en /saved y se ha quitado el guardado original de la publicación. Tras esto se eliminara de la publicación de la vista.*/
   if (route.path === '/saved' && tieneGuardadoInicial.value !== tieneGuardadoFinal.value) {
-    // Emitir un evento global para actualizar Saved.vue
     window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
   }
 
   document.body.style.overflow = "visible";
+  /*Si la pantalla es menor o igual a 875px se hace la animación inversa a la de mostrar.*/
   if (windowWidth.value <= 875) {
     const contenidoElement = document.querySelector('.contenido');
     contenidoElement.classList.remove('mostrar');
@@ -459,33 +470,30 @@ function cerrar() {
       mostrarMas.value = false;
     }, 300);
   } else {
+    /*De lo contrario simplemente se oculta.*/
     mostrarFinal.value = false;
     mostrarMas.value = false;
   }
 }
 
-function handlePopState() {
-  if (mostrarFinal.value) {
-    cerrar();
-  } else {
-    history.go(-1);
-  }
-}
-
+/*Función para que ponga el OverFlow en visible.*/
 function quitarOverflow() {
   document.body.style.overflow = "visible";
 }
 
+/*Función para enfocar el input de comentar.*/
 function enfocarInput() {
   comentarioInput.value.focus();
 }
-
+/*Función para actualizar comentarios.*/
 function actualizarComentario(event) {
   comentarioTexto.value = event.target.value;
 }
 
+/*Función para publicar un comentario nuevo.*/
 async function publicar() {
   if (!deshabilitado.value) {
+    /*Guardamos el comentario ingresado.*/
     const { error } = await supabase
       .from('comentarios')
       .insert([{
@@ -501,9 +509,11 @@ async function publicar() {
     comentarioTexto.value = '';
     comentarioInput.value.value = '';
   }
+  /*Obtenemos todos los comentarios de nuevo.*/
   await obtenerComentarios(props.publicacionUnica.idpublicacion);
 }
 
+/*Se muestra un aviso de de borrar ya sea la publicación o el comentario.*/
 function confirmarBorrar(mensaje, comentarioId = null) {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';
@@ -526,19 +536,19 @@ async function borrarComentario() {
     .from('comentarios')
     .delete()
     .eq('id', comentarioIdParaEliminar.value);
-
   if (error) {
     return;
   }
-
+  /*Mostramos los comentarios de nuevo.*/
   await obtenerComentarios(props.publicacionUnica.idpublicacion);
   cancelar();
 }
 
-/*El usuario confirma la eliminación de la foto de perfil.*/
+/*El usuario confirma la eliminación de la publicación.*/
 async function confirmar() {
   const idPublicacion = props.publicacionUnica.idpublicacion;
   const divPregunta = document.querySelector('.div_pregunta');
+  /*Se oculta el mensaje de aviso.*/
   if (divPregunta) {
     divPregunta.classList.remove('expand');
     divPregunta.classList.add('shrink');
@@ -548,8 +558,7 @@ async function confirmar() {
       mensajePopUp.value = '';
     }, 250);
   }
-
-
+  /*Eliminamos la publicación de la tabla.*/
   const { error: deleteError } = await supabase
     .from('publicaciones')
     .delete()
@@ -559,19 +568,21 @@ async function confirmar() {
     console.log(deleteError);
     return;
   }
+  /*Eliminamos la imagen del storage.*/
   const { error: storageError } = await supabase
     .storage
     .from('files')
     .remove([props.publicacionUnica.ruta]);
-
   if (storageError) {
     return;
   }
+  /*Emitimos un evento global de que se ha eliminado la publicación. Tras esto se eliminara de la publicación de la vista.*/
   window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: idPublicacion } }));
+  /*Cerramos la visualización de la publicación en detalle.*/
   mostrarFinal.value = false;
 }
 
-/*El usuario cancela la eliminación de la foto de perfil.*/
+/*El usuario cancela la eliminación del comentario o publicación..*/
 function cancelar() {
   const divPregunta = document.querySelector('.div_pregunta');
   if (divPregunta) {
@@ -583,7 +594,7 @@ function cancelar() {
     }, 250);
   }
 }
-
+/*Cuando se monta añadimos los eventos de escucha para actualizar el ancho de la pantalla y ajustar la altura.*/
 onMounted(() => {
   window.addEventListener("resize", updateWidth);
   updateWidth();
@@ -591,13 +602,16 @@ onMounted(() => {
   window.addEventListener('resize', adjustHeights);
 });
 
+/*Cuando se desmonta eliminamos los eventos de escucha.*/
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth);
   window.removeEventListener('resize', adjustHeights);
 });
 
+/*Observamos los divs de temática, descripción y comentarios para ajustar sua alturas.*/
 watch([tematica, descripcion, comentarios], adjustHeights);
 
+/*Función para redimensionar la imagen en función de como el usuario la haya subido.*/
 function girar_imagen() {
   const imgElement = document.querySelector('.final .imagen img');
   if (imgElement) {
@@ -611,10 +625,12 @@ function girar_imagen() {
   }
 }
 
+/*Función para el botón de mostrar más y mostrar menos en la descripción de la publicación.*/
 function toggleVerMas() {
   mostrarMas.value = !mostrarMas.value;
 }
 
+/*Función para ajustar la altura de los divs de temática, descripción y comentarios.*/
 function adjustHeights() {
   nextTick(() => {
     const tematicaContenidoComentarios = document.querySelector('.tematica_contenido_comentarios');
@@ -630,7 +646,6 @@ function adjustHeights() {
     }
   });
 }
-
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
@@ -675,11 +690,10 @@ function adjustHeights() {
       </div>
     </div>
     <div @click="mostrar(false)" class="inicial" id="forzar-inicial">
-      <img :src="ruta" @error="combrobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto"
-        @dblclick="handleDoubleClick" />
+      <img :src="ruta" @error="comprobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto"
+        @dblclick="dobleClick" />
       <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
         :style="likeAnimationStyle" />
-      <!-- <img :src="ruta" @error="combrobarImagen" :class="true ? 'cover' : 'normal'" /> -->
     </div>
     <div class="footer-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
       <div class="todo_botones_publicacion_grande todo_botones_publicacion_p">
@@ -708,7 +722,7 @@ function adjustHeights() {
     <div class="final" v-if="mostrarFinal" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
-          <img :src="ruta" @dblclick="handleDoubleClick" class="cover" />
+          <img :src="ruta" @dblclick="dobleClick" class="cover" />
           <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
             :style="likeAnimationStyle" />
           <div class="div_girar_imagen" ref="div_girar_imagen" v-if="!esCover">
@@ -1088,7 +1102,7 @@ svg.girar_imagen {
   padding-bottom: 10px;
   overflow-y: auto;
   padding: 10px 20px 10px 20px;
-  border-top: 1px solid #ebebebd3;
+  border-top: 1px solid #ebebeb5d;
 }
 
 .ver-mas,
@@ -1131,7 +1145,7 @@ span.span_esp {
   overflow-y: auto;
   overflow-x: hidden;
   border-top: 1px solid #ebebebd3;
-  background-color: var(--dark-blue);
+  background-color: #0f3072;
   transition: height 0.3s ease;
   width: 100%;
 }
@@ -1494,9 +1508,9 @@ span.span_esp {
 
 .borde {
   width: 100%;
-  background-color: #eef2fa;
+  background-color: #ebebebd3;
   height: 1px;
-  transform: scaleY(0.4);
+  transform: scaleY(1);
   transform-origin: top;
   position: absolute;
   bottom: 130px;
@@ -1505,6 +1519,8 @@ span.span_esp {
 .borde2 {
   bottom: 58px;
   z-index: 100;
+  background-color: #eef2fa;
+  transform: scaleY(0.4);
 }
 
 .botones_publicacion_grande {

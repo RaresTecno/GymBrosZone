@@ -1,19 +1,25 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted } from "vue";
 import { userId, supabase } from "../clients/supabase";
 
 const gymTag = ref();
 const fotoPerfil = ref();
 
+/*Función para cargar y mostrar la foto de perfil del usuario.*/
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('id', userId.value);
+  if(error){
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    return;
+  }
   gymTag.value = usuario[0].gymtag;
   fotoPerfil.value = usuario[0].fotoperfil;
-
+  /*Mostramos la foto predeterminada si el usuario no tiene una ruta almacenada.*/
   if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
     fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
   } else {
@@ -21,7 +27,6 @@ async function cargarUsuario() {
     fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
   }
 }
-
 cargarUsuario();
 const posicionAnt = ref(0);
 const altura = ref(80);
@@ -29,7 +34,7 @@ const windowWidth = ref(window.innerWidth);
 
 const posicionActual = window.scrollY;
 
-//hacerlo tambien primero con el width
+/*Función para posicionar la barra lateral.*/
 if (windowWidth.value < 601) {
   if (posicionActual > 100) {
     altura.value = 0;
@@ -63,10 +68,9 @@ if (windowWidth.value < 601) {
 }
 posicionAnt.value = posicionActual;
 
+/*Función para reposicionar la barra lateral.*/
 function reposicionarBarra() {
   const posicionActual = window.scrollY;
-
-  //hacerlo tambien primero con el width
   if (windowWidth.value < 601) {
     if (posicionActual > 100) {
       altura.value = 0;
@@ -100,17 +104,17 @@ function reposicionarBarra() {
   }
   posicionAnt.value = posicionActual;
 }
+/*Función para actualizar el ancho de la pantalla.*/
 function updateWidth() {
   windowWidth.value = window.innerWidth;
   reposicionarBarra();
 }
+/*Añadimos el evento de escucha del scroll y de la redimensión.*/
 onMounted(() => {
   window.addEventListener("scroll", reposicionarBarra);
   window.addEventListener("resize", updateWidth);
 });
-
 </script>
-
 <template>
   <transition name="slide-fade" mode="out-in">
     <nav :style="{ top: altura + 'px' }">
@@ -153,7 +157,6 @@ onMounted(() => {
     </nav>
   </transition>
 </template>
-
 <style scoped>
 nav {
   background-color: var(--dark-blue);

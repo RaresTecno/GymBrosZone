@@ -7,58 +7,55 @@ import { ref, onMounted, onUnmounted } from "vue";
 const todasPublicaciones = ref([]);
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
+/*Función para mostrar las publicaciones a las que ha dado like el usuario. */
 async function mostrarp() {
   try {
-    // Realizar la consulta para obtener las publicaciones a las que el usuario ha dado like
+    /*Obtenemos las publicaciones a las que el usuario ha dado like.*/
     const { data: likesData, error: likesError } = await supabase
       .from('likes')
       .select('idpublicacion')
       .eq('idusuario', userId.value);
-
     if (likesError) {
       throw likesError;
     }
-
     if (likesData.length === 0) {
       todasPublicaciones.value = [];
       return;
     }
 
-    // Obtener los IDs de las publicaciones a las que el usuario ha dado like
+    /*Obtenemos los IDs de las publicaciones a las que el usuario ha dado like.*/
     const publicacionesIds = likesData.map(likes => likes.idpublicacion);
 
-    // Realizar la consulta para obtener las publicaciones correspondientes a esos IDs
+    /*Obtenemos las publicaciones a las que se ha dado like.*/
     const { data: publicaciones, error: publicacionesError } = await supabase
       .from('publicaciones')
       .select('*')
       .in('idpublicacion', publicacionesIds);
-
     if (publicacionesError) {
       throw publicacionesError;
     }
-
-    // Invertir las publicaciones para mostrar las más recientes primero
+    /*Mostramos las publicaciones más recientes primero.*/
     todasPublicaciones.value = publicaciones.reverse();
-
   } catch (error) {
-    console.log(error);
   }
 }
-
 mostrarp();
 
+/*Cuando se monta la vista añadimos un evento de escucha de ocultar la publicación.*/
 onMounted(() => {
   window.addEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
   });
 });
 
+/*Cuando se desmonta la vista eliminamos el evento de escucha de ocultar la publicación.*/
 onUnmounted(() => {
   window.removeEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
   });
 });
 
+/*Función que oculta una publicación cuando esta es eliminada por el usuario.*/
 function ocultarPublicacion(idPublicacion) {
   const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
   if (publicacionElement) {
@@ -67,6 +64,7 @@ function ocultarPublicacion(idPublicacion) {
   actualizarPublicaciones();
 }
 
+/*Función para actualizar la vista de la publicaciones.*/
 async function actualizarPublicaciones() {
   await mostrarp();
   if (todasPublicaciones.value.length === 0) {
@@ -80,13 +78,18 @@ async function actualizarPublicaciones() {
   }
 }
 
+/*Función para obtener la foto de perfil del usuario para que esta sea visible en las publicaciones a la hora de comentar.*/
 async function obtenerTuFotoPerfil() {
   if (userActive.value == true) {
     const { data: usuario, error } = await supabase
       .from('usuarios')
       .select("*")
       .eq('id', userId.value);
+    if(error){
+      return;
+    }
     fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
+    /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
     if (fotoTuPerfilMostrar.value === '/predeterminada.png' || fotoTuPerfilMostrar.value === null || fotoTuPerfilMostrar.value === '') {
       fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
     } else {
@@ -96,10 +99,8 @@ async function obtenerTuFotoPerfil() {
   }
 }
 obtenerTuFotoPerfil();
-
 disponible.value = true;
 </script>
-
 <template>
   <main>
     <div class="publicaciones">
@@ -117,7 +118,6 @@ disponible.value = true;
     </div>
   </main>
 </template>
-
 <style scoped>
 .no-publicaciones {
   text-align: center;

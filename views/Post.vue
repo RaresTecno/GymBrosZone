@@ -1,4 +1,5 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase, obtenerId } from '../clients/supabase';
@@ -71,6 +72,7 @@ async function publicar() {
   }
 }
 
+/*Función para deshabilitar el botón y que así no se pueden realizar varias veces la publicación.*/
 function deshabilitarBoton(deshabilitar) {
   const publicarBoton = document.querySelector('.publicar_boton');
 
@@ -299,6 +301,7 @@ function mostrarImagen(file) {
   reader.readAsDataURL(file);
 }
 
+/*Se muestra el PopUp de aviso tras realizar la publicación.*/
 function aceptar() {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';
@@ -315,6 +318,7 @@ function aceptar() {
   cargando.value = false;
 }
 
+/*Se redirige al usuario al Home y se oculta el PopUp de aviso.*/
 function irHome() {
   const divPregunta = document.querySelector('.div_pregunta');
   if (divPregunta) {
@@ -335,6 +339,7 @@ function irHome() {
   deshabilitarBoton(false);
 }
 
+/*Función para ocultar el PopUp de aviso tras realizar la publicación.*/
 function cancelar() {
   const divPregunta = document.querySelector('.div_pregunta');
   if (divPregunta) {

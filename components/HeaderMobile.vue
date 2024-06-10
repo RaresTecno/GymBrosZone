@@ -1,5 +1,5 @@
 <script setup>
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+/*Imports y declaración de variables. */
 import { ref, onMounted, watch } from "vue";
 import { useRoute } from 'vue-router';
 import { userId, supabase } from "../clients/supabase";
@@ -10,17 +10,22 @@ const route = useRoute();
 const posicionAnt = ref(0);
 const mostrar = ref(true);
 const fotoPerfil = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
+
 cargarUsuario();
 
+/*Función para cargar y mostrar la foto de perfil del usuario.*/
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('id', userId.value);
-
+  if(error){
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    return;
+  }
   gymTag.value = usuario[0].gymtag;
   fotoPerfil.value = usuario[0].fotoperfil;
-
+  /*Si la ruta de la foto de perfil es la predeterminada, null o empty; mostramos la imagen predeterminada en la previsualización de la foto de perfil.*/
   if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
     fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
   } else {
@@ -28,14 +33,14 @@ async function cargarUsuario() {
     fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
   }
 }
-
+/*Observamos los cambios en la ruta para actualizar el componente y así cambiar la foto del usuario tras un cambio de esta.*/
 watch(() => route.path, (newPath) => {
   mostrar.value = newPath !== '/post' && newPath !== '/account';
 }, { immediate: true });
 
+/*Función para mostrar el header en función del scroll, además lo actualizamos para cambiar la foto de perfil*/
 function mostrarHeader() {
   const posicionActual = window.scrollY;
-
   if (posicionActual > 100) {
     mostrar.value = false;
     if (posicionActual < posicionAnt.value) {
@@ -43,7 +48,6 @@ function mostrarHeader() {
       watch(() => route.path, (newPath) => {
         mostrar.value = newPath !== '/post' && newPath !== '/account';
       }, { immediate: true });
-
     }
   } else {
     mostrar.value = true;
@@ -53,17 +57,11 @@ function mostrarHeader() {
   }
   posicionAnt.value = posicionActual;
 }
+/*Cuando se monta añadimos el evento de escucha del scroll.*/
 onMounted(() => {
   window.addEventListener("scroll", mostrarHeader);
 });
-
-function reloadPage(event) {
-  event.preventDefault();
-  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
-  window.location.href = url;
-}
 </script>
-
 <template>
   <transition name="slide-fade" mode="out-in">
     <nav v-if="mostrar">
@@ -75,7 +73,7 @@ function reloadPage(event) {
         </div>
         <div v-if="gymTag">
           <div class="foto_usuario" v-if="route.path !== '/profile/' + gymTag">
-            <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
+            <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
               <img :src="fotoPerfil" class="imgperfil" />
             </RouterLink>
           </div>
@@ -92,7 +90,6 @@ function reloadPage(event) {
     </nav>
   </transition>
 </template>
-
 <style scoped>
 .slide-fade-enter-active {
   transition: all ease;

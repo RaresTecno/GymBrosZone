@@ -1,7 +1,5 @@
 <script setup>
-
 </script>
-
 <template>
   <footer>
     <div class="footer">
@@ -10,7 +8,6 @@
     </div>
   </footer>
 </template>
-
 <style scoped>
 footer {
   background-color: var(--dark-blue);

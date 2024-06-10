@@ -1,8 +1,7 @@
 <script setup>
+/*Import de los iconos.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted } from "vue";
 </script>
-
 <template>
   <nav>
     <div class="borde"></div>
@@ -29,16 +28,12 @@ import { ref, onMounted } from "vue";
       </div>
       <div>
         <RouterLink to="/saved" class="RouterLink">
-          <font-awesome-icon
-            class="icon"
-            :icon="['fas', 'bookmark']"
-          />
+          <font-awesome-icon class="icon" :icon="['fas', 'bookmark']" />
         </RouterLink>
       </div>
     </div>
   </nav>
 </template>
-
 <style scoped>
 nav {
   background-color: var(--dark-blue);
@@ -53,7 +48,7 @@ nav {
   flex-direction: column;
 }
 
-.borde{
+.borde {
   width: 100%;
   background-color: #eef2fa;
   height: 1px;
@@ -76,26 +71,27 @@ div .RouterLink {
   cursor: pointer;
 }
 
-nav > div {
+nav>div {
   height: fit-content;
   margin: 0 20px;
 }
 
-.icon{
+.icon {
   color: var(--light-blue-text);
   width: 30px;
   height: 30px;
 }
+
 @media (max-width: 600px) {
-  nav > div {
+  nav>div {
     margin: 0 10%;
   }
 }
 
-@media (max-width: 360px){
+@media (max-width: 360px) {
   nav .botonesNav {
-  justify-content: space-around;
-  width: 100%;
-}
+    justify-content: space-around;
+    width: 100%;
+  }
 }
 </style>

@@ -4,12 +4,12 @@ import { supabase } from '../clients/supabase';
 const password = ref()
 const password2 = ref()
 
+/*Función para cambiar la contraseña.*/
 async function cambiarContra() {
     const { data, error } = await supabase.auth.updateUser({
         password: password.value
     })
 }
-
 </script>
 <template>
     <div class="password">

@@ -1,4 +1,5 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { disponible } from "../main";
 import { userActive } from "../clients/supabase";
 import { ref, onMounted, onUnmounted } from "vue";
@@ -6,32 +7,33 @@ import { ref, onMounted, onUnmounted } from "vue";
 const windowWidth = ref(window.innerWidth);
 disponible.value = true;
 
+/*Función para actualizar el ancho de la pantalla cuando se redimensiona.*/
 function updateWidth() {
     windowWidth.value = window.innerWidth;
 };
 
+/*Cuando se monta la vista, añadimos el evento de escucha del ancho de la pantalla.*/
 onMounted(() => {
     window.addEventListener("resize", updateWidth);
 });
 
+/*Cuando se desmonta la vista, eliminamos el evento de escucha del ancho de la pantalla.*/
 onUnmounted(() => {
     window.removeEventListener('resize', updateWidth);
 });
 
-const getContainerClasses = () => {
+/*Función para añadir una clase u otra en función del tamaño de la pantalla y de si el usuario está logueado o no.*/
+function getContainerClasses() {
     let classes = 'todo';
     if (windowWidth.value > 875 && userActive.value) {
         classes += ' todo_margin';
     }
-    
     if (windowWidth.value < 875 && userActive.value) {
         classes += ' subir';
     }
-
     if (windowWidth.value < 875 && !userActive.value) {
         classes += ' subir_no_logued1';
     }
-
     if (windowWidth.value < 600 && !userActive.value) {
         classes += ' subir_no_logued2';
     }
@@ -88,19 +90,19 @@ const getContainerClasses = () => {
     </div>
 </template>
 <style scoped>
-.todo_margin{
+.todo_margin {
     padding-left: 60px;
 }
 
-.subir{
+.subir {
     margin-top: -15px;
 }
 
-.subir_no_logued1{
+.subir_no_logued1 {
     transform: translateY(14px);
 }
 
-.subir_no_logued2{
+.subir_no_logued2 {
     transform: translateY(92px);
 }
 

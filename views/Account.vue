@@ -1,4 +1,5 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase, obtenerId, logOut } from '../clients/supabase';
@@ -6,24 +7,30 @@ import { disponible, reloadHeader } from "../main";
 
 disponible.value = true;
 
-const hayImagen = ref(false);
+/*Variables inputs.*/
 const fileInput = ref(null);
 const gymtagInput = ref(null);
 const fecha_nacimientoInput = ref(null);
 const nombreInput = ref(null);
 const apellidosInput = ref(null);
+
+/*Variables imagen.*/
+const hayImagen = ref(false);
 const imagenPreview = ref(null);
 const fondo_imagen = ref(null);
 
+/*Variables datos.*/
 const gymtag = ref('');
 const fecha_nacimiento = ref('');
 const nombre = ref('');
 const apellidos = ref('');
 
+/*Variables aviso.*/
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
 const mensajePopUp = ref('');
 
+/*Variables PopUp */
 const mostrarPregunta = ref(false);
 const esPredeterminada = ref(true);
 const account_container = ref();
@@ -31,7 +38,7 @@ const account_container = ref();
 const router = useRouter();
 
 let id = ref('');
-
+/*Variables foto perfil.*/
 const foto = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 const fotoperfilActual = ref('');
 
@@ -41,7 +48,7 @@ let nombreActual;
 let apellidosActual;
 let fecha_nacimientoActual;
 
-/*Obtenemos la fecha y la hora*/
+/*Obtenemos la fecha y la hora.*/
 function obtenerFechaYHoraActual() {
   const ahora = new Date();
   const año = ahora.getFullYear();
@@ -452,6 +459,7 @@ function cancelar() {
   }
 }
 
+/*Función para ocultar el PopUp.*/
 function cerrarSes() {
   const divPregunta = document.querySelector('.div_pregunta');
   if (divPregunta) {
@@ -466,6 +474,7 @@ function cerrarSes() {
   logOut();
 }
 
+/*Función para mostrar el PopUp.*/
 function cerrarSesion() {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';

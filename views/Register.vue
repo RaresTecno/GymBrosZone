@@ -1,9 +1,10 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase } from '../clients/supabase';
+import { supabase, userActive } from '../clients/supabase';
 import { usandoMovil } from '@/main';
 import { useRouter } from 'vue-router';
+import Footer from '../components/Footer.vue'
 
 const nombre = ref('');
 const apellidos = ref('');
@@ -372,8 +373,14 @@ function verPoliticas() {
         </div>
         <!-- <button @click="$emit('irALogin')">Volver al Login</button> -->
     </div>
+  <Footer class="footer" v-if="!userActive" />
+
 </template>
 <style scoped>
+.footer{
+    position: absolute;
+    bottom: 0;
+}
 .todo_register {
     width: 100vw;
     height: fit-content;
@@ -395,7 +402,7 @@ function verPoliticas() {
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 70px;
+    margin-bottom: 120px;
     position: relative;
 }
 

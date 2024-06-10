@@ -1,7 +1,8 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import { supabase, logOut, userState, userActive } from '../clients/supabase';
+import { supabase, userActive } from '../clients/supabase';
+import Footer from '../components/Footer.vue'
 
 // import VueHcaptcha from '@hcaptcha/vue3-hcaptcha';
 // let [captchaToken, setCaptchaToken] = userState()
@@ -180,8 +181,14 @@ function mensaje(mensaje, Input) {
             </div>
         </div>
     </div>
+  <Footer class="footer"  v-if="!userActive" />
 </template>
 <style scoped>
+
+.footer{
+    position: absolute;
+    bottom: 0;
+}
 .todo_login {
     width: 100vw;
     height: fit-content;
@@ -202,7 +209,7 @@ function mensaje(mensaje, Input) {
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 88px;
+    margin-bottom: 100px;
 }
 
 button a {

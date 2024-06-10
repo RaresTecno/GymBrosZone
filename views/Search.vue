@@ -3,6 +3,7 @@ import { ref, watch, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { disponible } from "../main";
+import { supabase, userId } from "../clients/supabase";
 
 disponible.value = true;
 
@@ -307,7 +308,10 @@ function urlNovaScore(valor) {
 function borrar() {
   busquedaAlimento.value = ""
 }
+function borrarUsuario() {
+  busquedaUsuarios.value = ""
 
+}
 const paginaAnterior = () => {
   if (pagina.value > 1) {
     pagina.value--;
@@ -328,12 +332,7 @@ function cambiarVista(tipo) {
   vistaBusqueda.value = tipo;
   // sessionStorage.setItem("vistaBusqueda", tipo); // Guardar la vista seleccionada en el almacenamiento local
 }
-onMounted(() => {
-  buscarProductos()
-  // if (!sessionStorage.getItem("vistaBusqueda")) {
-  //   sessionStorage.setItem("vistaBusqueda", "Usuarios"); // Establecer la vista predeterminada si no hay una vista almacenada
-  // }
-});
+
 let html5QrcodeScanner = null;
 const mostrandoScanner = ref(false);
 function onScanSuccess(decodedText, decodedResult) {
@@ -392,13 +391,67 @@ function mostrarScanner() {
     }
   }
 }
-window.addEventListener('popstate', function() {
-    if (vistaUnica.value == true && vistaBusqueda.value === 'Productos') {
-      cerrarProducto()
-    }else{
-      history.go(-1);
-    }
+window.addEventListener('popstate', function () {
+  if (vistaUnica.value == true && vistaBusqueda.value === 'Productos') {
+    cerrarProducto()
+  } else {
+    history.go(-1);
+  }
 });
+
+
+const todosUsuarios = ref([]);
+const busquedaUsuarios = ref("")
+let offset = 0;
+const limit = 9;
+let loading = false;
+
+const cargarUsuarios = async () => {
+  if (loading) return;
+  loading = true;
+
+  try {
+    const { data: usuarios, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .ilike('nombre', `%${busquedaUsuarios.value}%`) // Filtrar por el nombre del usuario
+      .or('gymtag.ilike.*%', `%${busquedaUsuarios.value}%`)
+      .range(offset, offset + limit - 1);
+
+      console.log(usuarios)
+    if (error) {
+      console.error(error);
+      loading = false;
+      return;
+    }
+
+    // Añadir las nuevas usuarios a las existentes
+    todosUsuarios.value.push(...usuarios);
+    offset += limit;
+    loading = false;
+  } catch (error) {
+    console.error(error);
+    loading = false;
+  }
+};
+
+const handleScroll = () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    cargarUsuarios();
+  }
+};
+
+onMounted(() => {
+  buscarProductos()
+  cargarUsuarios();
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
+
+watch(busquedaUsuarios, cargarUsuarios);
 </script>
 
 <template>
@@ -416,7 +469,31 @@ window.addEventListener('popstate', function() {
   <!-- <div v-if="tiempoCarga !== null">
     Tiempo de carga: {{ tiempoCarga }} ms
   </div> -->
-
+  <div v-if="vistaBusqueda === 'Usuarios'" class="usuarios">
+    <div class="search-producto">
+      <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
+      <input type="text" v-model="busquedaUsuarios" />
+      <font-awesome-icon class="cross" :icon="['fas', 'xmark']" @click="borrarUsuario" />
+    </div>
+    <div class="vista-usuarios">
+      <template v-for="usuario in todosUsuarios" :key="usuario.id">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: usuario.gymtag } }" class="usuario-card-link">
+          <div class="usuario-card">
+            <img :src="usuario.fotoPerfil" alt="Foto de perfil" class="usuario-foto" />
+            <div class="usuario-info">
+              <h2>{{ usuario.gymtag }}</h2>
+              <p>{{ usuario.nombre }} {{ usuario.apellidos }}</p>
+            </div>
+            <div class="usuario-estadisticas">
+              <span>Seguidores: {{ usuario.numSeguidores }}</span>
+              <span>Seguidos: {{ usuario.numSeguidos }}</span>
+              <span>Publicaciones: {{ usuario.cantidadPublicaciones }}</span>
+            </div>
+          </div>
+        </RouterLink>
+      </template>
+    </div>
+  </div>
   <div class="productos-comun" v-if="vistaBusqueda === 'Productos'">
     <div class="search-producto">
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
@@ -432,8 +509,13 @@ window.addEventListener('popstate', function() {
       <template v-for="producto in productos" :key="producto.code">
         <div class="mini-producto-padre">
           <div class="mini-producto" @click="mostrarProducto(producto.id)">
-            <h2 class="mini-nombre">{{ (nombre(producto) && cantidad(producto)) ? (nombre(producto) +
-              cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
+            <h2 v-if="(nombre(producto) + cantidad(producto)).length > 50" class="mini-nombre">{{ (nombre(producto) &&
+          cantidad(producto)) ? (nombre(producto) +
+            cantidad(producto)).slice(0, 50) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}...
+            </h2>
+            <h2 v-if="(nombre(producto) + cantidad(producto)).length <= 50" class="mini-nombre">{{ (nombre(producto) &&
+          cantidad(producto)) ? (nombre(producto) +
+            cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
             <div class="mini-img">
               <img :src="imagen(producto)" />
             </div>
@@ -552,6 +634,95 @@ window.addEventListener('popstate', function() {
   width: 32px !important;  Cambiar el tamaño del ancho 
   height: 32px !important; Cambiar el tamaño de la altura 
 } */
+
+.usuarios {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.vista-usuarios {
+  width: 80%;
+  margin-left: 60px;
+  margin-top: -25px;
+}
+
+.usuario-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 3px solid black;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border-color: black;
+  background-color: var(--blue);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 1s ease, background-color 0.65s ease;
+}
+
+.usuario-foto {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border-style: inherit;
+  border-color: black;
+  margin-right: 20px;
+  object-fit: cover;
+  transition: transform 1s ease, border-color 0.65s ease;
+}
+
+.usuario-info {
+  flex: 1;
+}
+
+.usuario-info h2 {
+  margin: 0;
+  font-size: 1.3em;
+  font-style: bold;
+}
+
+.usuario-info p {
+  margin: 5px 0;
+}
+
+.usuario-estadisticas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.usuario-estadisticas span {
+  margin: 2px 0;
+  font-size: 1.1em;
+}
+
+.usuario-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.usuario-card:hover {
+  background-color: #0c1f49;
+  scale: 0.995;
+}
+
+.usuario-foto:hover,
+.usuario-info:hover,
+.usuario-info h2:hover,
+.usuario-info h2:hover,
+.usuario-info p:hover,
+.usuario-estadisticas:hover,
+.usuario-estadisticas span:hover,
+.usuario-card-link:hover {
+  color: aliceblue;
+}
+
+.usuario-foto:hover {
+  border-color: aliceblue;
+}
 
 .buscador {
   margin: 80px 0 0 60px;
@@ -750,6 +921,15 @@ window.addEventListener('popstate', function() {
 @media(max-width: 875.5px) {
   .buscador {
     margin: 60px 0 0 0px;
+  }
+
+  .vista-usuarios {
+    width: 95%;
+    margin-left: 0px
+  }
+
+  .usuario-card {
+    margin-left: 0px;
   }
 
   .search-producto {
@@ -1031,17 +1211,19 @@ window.addEventListener('popstate', function() {
   .points {
     margin: 20px 0;
   }
+
   .search-producto {
     width: 95%;
   }
 }
 
 @media (max-width: 450px) {
-  .btn-scanner{
+  .btn-scanner {
     width: 50%;
     min-width: 60px;
     font-size: 1em;
   }
+
   .tr {
     font-size: 0.8em;
 

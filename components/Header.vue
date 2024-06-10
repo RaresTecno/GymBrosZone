@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+/*Imports y declaración de variables.*/
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { userActive, userId, supabase } from "../clients/supabase";
 
@@ -12,6 +13,7 @@ const mostrar = ref(true);
 const mostrarLetras = ref(true);
 const windowWidth = ref(window.innerWidth);
 
+/*Función para mostrar el header o no cuando se hace scroll.*/
 function mostrarHeader() {
   const posicionActual = window.scrollY;
 
@@ -26,14 +28,16 @@ function mostrarHeader() {
   posicionAnt.value = posicionActual;
 }
 
+/*Función para ocultar o mostrar las letras del header.*/
 if (windowWidth.value < 601) {
   mostrarLetras.value = false;
 } else {
   mostrarLetras.value = true;
 }
+
+/*Función para actualizar el ancho de la pantalla cuando hay una redimensión y para ocultar las letras o no del header.*/
 function updateWidth() {
   windowWidth.value = window.innerWidth;
-
   if (windowWidth.value < 601) {
     mostrarLetras.value = false;
   } else {
@@ -41,23 +45,33 @@ function updateWidth() {
   }
 }
 
+/*Añadimos los eventos de escucha del scroll y de la redimensión de la pantalla.*/
 onMounted(() => {
   window.addEventListener("scroll", mostrarHeader);
   window.addEventListener("resize", updateWidth);
 });
 
-if(userActive.value){
+/*Si hay un usuario activo cargamos su información.*/
+if (userActive.value) {
   cargarUsuario();
 }
 
+/*Función para mostrar la foto de perfil del usuario y cargar su gymtag*/
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('id', userId.value);
+  /*En caso de error se mostrará la foto de perfil predeterminada.*/
+  if(error){
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    return;
+  }
+  /*Guardamos la información del usuario.*/
   gymTag.value = usuario[0].gymtag;
   fotoPerfil.value = usuario[0].fotoperfil;
 
+  /*Mostramos la foto de perfil del usuario.*/
   if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
     fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
   } else {
@@ -76,7 +90,6 @@ async function cargarUsuario() {
           </RouterLink>
         </div>
       </div>
-
       <div v-if="mostrarLetras" class="titulo_main_header">
         <RouterLink to="/" class="RouterLink">
           <h1>GymBros Zone</h1>
@@ -219,6 +232,7 @@ h1 {
 .foto_usuario:hover img, .foto_usuario:active img{
   border-color: rgb(109, 109, 109);
 }
+
 @media (max-width: 875px) {
   header {
     min-height: 94px;

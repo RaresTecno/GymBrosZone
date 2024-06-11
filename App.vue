@@ -5,7 +5,6 @@ import HeaderMobile from './components/HeaderMobile.vue'
 
 import NavLateral from './components/BarraLateral.vue'
 import NavInferior from './components/BarraInferior.vue'
-import Footer from './components/Footer.vue'
 import './assets/index.css'
 import { supabase, userActive, logOut } from './clients/supabase'
 import { usandoMovil, disponible, state } from './main'
@@ -162,7 +161,6 @@ async function revisarEstadisticas(user) {
   <RouterView />
   <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey" />
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
-  <!-- <Footer /> -->
 </template>
 <style>
 * {

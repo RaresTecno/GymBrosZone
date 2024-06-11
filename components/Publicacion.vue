@@ -431,8 +431,10 @@ async function mostrar(bool) {
       contenidoElement.classList.add('no_mostrar');
     }
     setTimeout(() => {
-      contenidoElement.classList.add('mostrar');
-      contenidoElement.classList.remove('no_mostrar');
+      if (contenidoElement) {
+        contenidoElement.classList.add('mostrar');
+        contenidoElement.classList.remove('no_mostrar');
+      }
     }, 10);
   };
   /*Guardamos si la publicación tiene like o está guardada inicialmente o no para poder eliminarla si corresponde o no en /liked o /saved.*/
@@ -452,8 +454,8 @@ function cerrar() {
   /*Emitimos un evento global si estamos en /liked y se ha quitado el like que estaba dado originalmente. Tras esto se eliminara de la publicación de la vista.*/
   if (route.path === '/liked' && tieneLikeInicial.value && !tieneLikeFinal.value) {
     window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
-    }
-    
+  }
+
   /*Emitimos un evento global si estamos en /saved y se ha quitado el guardado original de la publicación. Tras esto se eliminara de la publicación de la vista.*/
   if (route.path === '/saved' && tieneGuardadoInicial.value !== tieneGuardadoFinal.value) {
     window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
@@ -594,6 +596,7 @@ function cancelar() {
     }, 250);
   }
 }
+
 /*Cuando se monta añadimos los eventos de escucha para actualizar el ancho de la pantalla y ajustar la altura.*/
 onMounted(() => {
   window.addEventListener("resize", updateWidth);

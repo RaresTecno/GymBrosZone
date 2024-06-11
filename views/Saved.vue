@@ -1,4 +1,5 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
 import { disponible } from "../main";

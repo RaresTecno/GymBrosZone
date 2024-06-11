@@ -21,7 +21,6 @@ const todasPublicaciones = ref()
 const cantidadPublicaciones = ref()
 const gymTag = ref();
 const nombreCompleto = ref();
-const sobreMi = ref();
 const numSeguidores = ref();
 const numSeguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
@@ -29,73 +28,97 @@ const esPrivado = ref(true)
 const router = useRouter();
 const edad = ref()
 
-/**/
+/*Observamos los cambios en el gymtag.*/
 watch(() => props.gymtag, (newGymtag, oldGymtag) => {
   if (newGymtag !== oldGymtag) {
     mostrarp();
   }
 });
 
+/*Función para mostrar las publicaciones del usuario.*/
 async function mostrarp() {
+  /*Obtenemos el usuario actual.*/
   const { data: usuario, errorUsuario } = await supabase
     .from('usuarios')
     .select("*")
     .eq('gymtag', props.gymtag);
-
+  if (errorUsuario) {
+    return;
+  }
   if (usuario.length == 0) {
     router.push('/NotFound');
   }
-  if (usuario[0].fotoperfil != "/predeterminada.png") {
-    fotoPerfil.value = "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + usuario[0].fotoperfil;
-
+  /*Mostramos la foto de perfil del usuario.*/
+  if (usuario[0].fotoperfil === '/predeterminada.png' || usuario[0].fotoperfil === null || usuario[0].fotoperfil === '') {
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+  } else {
+    /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + usuario[0].fotoperfil;
   }
-  gymTag.value = usuario[0].gymtag
+  /*Guardamos los datos del usuario.*/
+  gymTag.value = usuario[0].gymtag;
   const nombre = usuario[0].nombre !== null ? usuario[0].nombre : "";
   const apellido = usuario[0].apellidos !== null ? usuario[0].apellidos : "";
-  nombreCompleto.value = nombre + " " + apellido
+  nombreCompleto.value = nombre + " " + apellido;
   profileId.value = usuario[0].id;
   edad.value = calcularEdad(usuario[0].fechanacimiento);
 
+  /*Llamamos a la función de cargar estadísticas.*/
   cargarEstadisticas();
 
-
+  /*Obtenemos las publicaciones del usuario.*/
   const { data: publicaciones, errorPublicaciones } = await supabase
     .from('publicaciones')
     .select('*')
     .eq('idusuario', usuario[0].id);
+  if (errorPublicaciones) {
+    return;
+  }
   todasPublicaciones.value = publicaciones.reverse()
-  cantidadPublicaciones.value = publicaciones.length
+  cantidadPublicaciones.value = publicaciones.length;
 
   if (profileId.value == userId.value) {
-    perfilPropio.value = true
+    perfilPropio.value = true;
   } else {
-    perfilPropio.value = false
+    perfilPropio.value = false;
   }
-
+  /*Obtenemos si el usuario sigue al usuario del perfil.*/
   const { data: seguidores, errorSeguidores } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguidor', userId.value)
     .eq('idseguido', profileId.value);
+  if (errorSeguidores) {
+    return;
+  }
 
   if (seguidores.length == 0) {
-    siguiendo.value = false
+    siguiendo.value = false;
   } else {
-    siguiendo.value = true
+    siguiendo.value = true;
   }
+
+  /*Obtenemos los seguidores del usuario.*/
   const { data: seguidoresPerfil, errorSeguidoresPerfil } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguido', profileId.value);
-  numSeguidores.value = seguidoresPerfil.length
+  if (errorSeguidoresPerfil) {
+    return;
+  }
+  numSeguidores.value = seguidoresPerfil.length;
+  /*Obtenemos los seguidos del usuario.*/
   const { data: seguidosPerfil, errorSeguidosPerfil } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguidor', profileId.value);
-  numSeguidos.value = seguidosPerfil.length
-
+  if (errorSeguidosPerfil) {
+    return;
+  }
+  numSeguidos.value = seguidosPerfil.length;
 }
-mostrarp()
+mostrarp();
+
 disponible.value = true;
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
@@ -122,26 +145,33 @@ function arriba() {
 }
 
 const vista = ref(sessionStorage.getItem("vista") || "Publicaciones");
+/*Función para cambiar la vista de publicaciones a estadísticas.*/
 function cambiarVista(tipo) {
   editando.value = false
   vista.value = tipo;
-  sessionStorage.setItem("vista", tipo); // Guardar la vista seleccionada en el almacenamiento local
+  /*Guardamos la vista actual en local.*/
+  sessionStorage.setItem("vista", tipo);
 }
+
 onMounted(() => {
+  /*Si no hay vista almacenada establecemos las publicaciones como principal.*/
   if (!sessionStorage.getItem("vista")) {
-    sessionStorage.setItem("vista", "Publicaciones"); // Establecer la vista predeterminada si no hay una vista almacenada
+    sessionStorage.setItem("vista", "Publicaciones");
   }
+  /*Añadimos el evento de escucha de ocultar publicación.*/
   window.addEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
   });
 });
 
+/*Cuando se desmonta eliminamos el evento de escucha.*/
 onUnmounted(() => {
   window.removeEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
   });
 });
 
+/*Función de ocultar la publicación.*/
 function ocultarPublicacion(idPublicacion) {
   const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
   if (publicacionElement) {
@@ -149,74 +179,63 @@ function ocultarPublicacion(idPublicacion) {
   }
 }
 
+/*Función para seguir al usuario al que estamos viendo el perfil.*/
 async function seguir() {
+  /*Se sigue al usuario, de manera visual.*/
+  siguiendo.value = true;
+  numSeguidores.value++;
+  /*Comprobamos si el usuario sigue al usuario que quiere seguir.*/
   const { data: seguidores, errorSeguidores } = await supabase
     .from('seguidores')
     .select('*')
     .eq('idseguidor', userId.value)
     .eq('idseguido', profileId.value);
-
+  /*En caso de error no se sigue al usuario, se vuelve al estado visual anterior.*/
+  if (errorSeguidores) {
+    numSeguidores.value--;
+    siguiendo.value = false;
+    return;
+  }
+  /*Se guarda en la tabla seguidores si no existe la relación.*/
   if (seguidores.length == 0) {
     const { error: insertError } = await supabase
       .from('seguidores')
       .insert([{ idseguidor: userId.value, idseguido: profileId.value }]);
+    /*En caso de error no se sigue al usuario, se vuelve al estado visual anterior.*/
+    if (insertError) {
+      numSeguidores.value--;
+      siguiendo.value = false;
+      return;
+    }
+  } else {
+    numSeguidores.value--;
     siguiendo.value = true;
-
-    mostrarp();
   }
 }
 
+/*Función para dejar de seguir a un usuario.*/
 async function dejarSeguir() {
+  /*Se deja de seguir al usuario, de manera visual.*/
+  siguiendo.value = false;
+  numSeguidores.value--;
+  /*Hacemos la consulta para eliminarle de seguidor.*/
   const { error: deleteError } = await supabase
     .from('seguidores')
     .delete()
     .eq('idseguidor', userId.value)
     .eq('idseguido', profileId.value);
-  siguiendo.value = false;
-  mostrarp();
-}
-
-function editandoPerfil() {
-  editando.value = true
-  document.body.style.overflow = "hidden";
-}
-
-function cerrar() {
-  editando.value = false
-  document.body.style.overflow = "hidden";
-}
-
-const maxLines = 5;
-const maxCharsPerLine = 40;
-const maxTotalChars = 200;
-
-function checkInput() {
-  let lines = sobreMi.value.split('\n');
-
-  // Limita el número de líneas
-  if (lines.length > maxLines) {
-    lines = lines.slice(0, maxLines);
-  }
-
-  // Limita los caracteres por línea
-  // lines = lines.map(line => {
-  //   if (line.length > maxCharsPerLine) {
-  //     return line.slice(0, maxCharsPerLine);
-  //   }
-  //   return line;
-  // });
-
-  // Concatenar las líneas y limitar el total de caracteres
-  const text = lines.join('\n');
-  if (text.length > maxTotalChars) {
-    sobreMi.value = text.slice(0, maxTotalChars);
-  } else {
-    sobreMi.value = text;
+  /*En caso de error no deja de seguir al usuario, se vuelve al estado visual anterior.*/
+  if (deleteError) {
+    numSeguidores.value++;
+    siguiendo.value = true;
+    return;
   }
 }
 
 const mensajeAviso = ref(false);
 const mostrarAviso = ref();
+
+/*Mensaje aviso.*/
 function mensaje(mensaje) {
   mensajeAviso.value = mensaje;
   mostrarAviso.value = true;
@@ -233,55 +252,61 @@ const { sexo, peso, altura, actividad, resActividad, resIMC, nivelIMC, pesoValid
   alturaValida: ref()
 };
 
+/*Validamos el peso ingresado.*/
 const validarPeso = () => {
   const pesoValue = parseFloat(peso.value);
-
-  if (!isNaN(pesoValue) && pesoValue >= 30 && pesoValue <= 650 && (pesoValue * 100) % 1 === 0) {
-    pesoValido.value = true; // Valor válido
-    calcularIMC()
-    calcularCalorias()
+  if (!isNaN(pesoValue) && pesoValue >= 35 && pesoValue <= 300 && (pesoValue * 100) % 1 === 0) {
+    /*Si el valor es válido realizamos los cálculos.*/
+    pesoValido.value = true;
+    calcularIMC();
+    calcularCalorias();
     mostrarAviso.value = false;
-
   } else {
     pesoValido.value = false;
-    mensaje('Por favor, ingrese un valor válido para el peso entre 30 y 650 kg (max 2 decimales).'); // Valor no válido
+    mensaje('Por favor, ingrese un valor válido para el peso entre 35 y 300 kg (max 2 decimales).'); // Valor no válido
   }
 };
+
+/*Validamos la altura ingresada*/
 const validarAltura = () => {
   const alturaValue = parseFloat(altura.value);
-
-  if (!isNaN(alturaValue) && alturaValue >= 30 && alturaValue <= 650 && (alturaValue * 100) % 1 === 0) {
-    alturaValida.value = true; // Valor válido
-    calcularIMC()
-    calcularCalorias()
+  if (!isNaN(alturaValue) && alturaValue >= 120 && alturaValue <= 250 && (alturaValue * 100) % 1 === 0) {
+    /*Si el valor es válido realizamos los cálculos.*/
+    alturaValida.value = true;
+    calcularIMC();
+    calcularCalorias();
     mostrarAviso.value = false;
-
   } else {
     alturaValida.value = false;
-    mensaje('Por favor, ingrese un valor válido para la altura entre 30 y 300 cm.'); // Valor no válido
+    mensaje('Por favor, ingrese un valor válido para la altura entre 120 y 250 cm.');
   }
 };
+
 const resultado = ref({
   mantenimiento: null,
   superavit: [],
   deficit: []
 });
 
+/*Función para cargar las estadísticas del usuario.*/
 async function cargarEstadisticas() {
   const { data: estadisticas, errorEstadisticas } = await supabase
     .from('estadisticas')
     .select('*')
     .eq('idusuario', profileId.value);
-
+  if (errorEstadisticas) {
+    return;
+  }
   esPrivado.value = estadisticas[0].esprivado;
   peso.value = estadisticas[0].pesokg;
   altura.value = estadisticas[0].alturacm;
   sexo.value = estadisticas[0].sexo;
   actividad.value = estadisticas[0].actividad;
-
-  calcularIMC()
-  calcularCalorias()
+  calcularIMC();
+  calcularCalorias();
 }
+
+/*Función para calcular el IMC del usuario con la información ingresada y mostrar el resultado.*/
 function calcularIMC() {
   let alturaMetros = altura.value / 100;
   resIMC.value = parseFloat(peso.value) / (alturaMetros * alturaMetros);
@@ -304,17 +329,16 @@ function calcularIMC() {
     nivelIMC.value = 'Obesidad clase III';
   }
 }
+
+/*Función para calcular las calorías del usuario con la información ingresada y mostrar el resultado.*/
 function calcularCalorias() {
   if (alturaValida.value && pesoValido.value) {
-
     let tmb;
-
     if (sexo.value === 'hombre') {
       tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value + 5;
     } else {
       tmb = 10 * peso.value + 6.25 * altura.value - 5 * edad.value - 161;
     }
-
     let factorActividad;
     switch (actividad.value) {
       case 'sedentario':
@@ -358,38 +382,31 @@ function calcularCalorias() {
   }
 
 }
+
+/*Función para cambiar la privacidad de las estadísticas del usuario.*/
 async function cambiarPrivacidad(valor) {
-  try {
-    // Actualiza el estado de privacidad en el cliente
-    esPrivado.value = valor;
-
-    // Realiza la actualización en la base de datos de Supabase
-    const { data, error } = await supabase
-      .from('estadisticas')
-      .update({ esprivado: esPrivado.value })
-      .eq('idusuario', userId.value);
-
-    if (error) {
-      console.error('Error al cambiar la privacidad:', error.message);
-      // Maneja el error de acuerdo a tu lógica de aplicación
-    } else {
-      console.log('Se cambió la privacidad exitosamente:', data);
-      // Maneja la respuesta exitosa de la actualización, si es necesario
-    }
-  } catch (error) {
-    console.error('Error al cambiar la privacidad:', error.message);
-    // Maneja el error de acuerdo a tu lógica de aplicación
+  /*Actualizamos la privacidad de manera visual.*/
+  esPrivado.value = valor;
+  /*Actualizamos la privacidad en la tabla.*/
+  const { data, error } = await supabase
+    .from('estadisticas')
+    .update({ esprivado: esPrivado.value })
+    .eq('idusuario', userId.value);
+  if (error) {
+    /*En caso de error dejamos la privacidad como estaba originalmente.*/
+    esPrivado.value = !valor;
+    return;
   }
 }
+
+/*Función para calcular la edad.*/
 function calcularEdad(fechaNacimiento) {
-  // Convertir la cadena de fecha de nacimiento a un objeto Date
+  /*Convertimos la cadena de fecha de nacimiento a un objeto Date.*/
   const fechaNac = new Date(fechaNacimiento);
   const hoy = new Date();
-
-  // Calcular la diferencia en años
+  /*Calculamos la diferencia en años*/
   let edad = hoy.getFullYear() - fechaNac.getFullYear();
-
-  // Ajustar la edad si el cumpleaños de este año no ha sido aún
+  /*Ajustamos la edad si el cumpleaños de este año no ha sido aún*/
   const mesActual = hoy.getMonth();
   const diaActual = hoy.getDate();
   const mesNacimiento = fechaNac.getMonth();
@@ -398,30 +415,34 @@ function calcularEdad(fechaNacimiento) {
   if (mesActual < mesNacimiento || (mesActual === mesNacimiento && diaActual < diaNacimiento)) {
     edad--;
   }
-
   return edad;
 }
-const mostrarForm = ref(false)
-function mostrarEditarStats(valor) {
-  mostrarForm.value = valor
-}
-async function guardarEstadisticas() {
-  let consulta = {};
 
+const mostrarForm = ref(false);
+
+/*Función para mostrar las estadísticas.*/
+function mostrarEditarStats(valor) {
+  mostrarForm.value = valor;
+}
+
+/*Función para guardar las estadísticas.*/
+async function guardarEstadisticas() {
   const { data: estadisticas, errorEstadisticas } = await supabase
     .from('estadisticas')
     .select('*')
     .eq('idusuario', userId.value);
-
-  if ((peso.value == estadisticas[0].pesokg) && (altura.value == estadisticas[0].alturacm) && (sexo.value == estadisticas[0].sexo) && (actividad.value == estadisticas[0].actividad)) {
-
-    mensaje('Debes modificar algún dato para guardar cambios');
-    return
+  if (errorEstadisticas) {
+    return;
   }
-
+  /*Comprobamos si se ha modificado algún dato.*/
+  if ((peso.value == estadisticas[0].pesokg) && (altura.value == estadisticas[0].alturacm) && (sexo.value == estadisticas[0].sexo) && (actividad.value == estadisticas[0].actividad)) {
+    mensaje('Debes modificar algún dato para guardar cambios');
+    return;
+  }
+  /*Objeto para realizar la consulta.*/
+  let consulta = {};
   if ((peso.value !== null && peso.value !== '') && (altura.value !== null && altura.value !== '') &&
     (sexo.value !== null && sexo.value !== '') && (actividad.value !== null && actividad.value !== '')) {
-
     if (peso.value != estadisticas[0].pesokg && pesoValido.value) {
       consulta.pesokg = peso.value;
     }
@@ -438,7 +459,6 @@ async function guardarEstadisticas() {
     mensaje('No puede haber campos vacíos');
     return
   }
-
   /*Actualizamos la información del usuario.*/
   if (Object.keys(consulta).length > 0) {
     const { data, error } = await supabase
@@ -454,6 +474,8 @@ async function guardarEstadisticas() {
     }
   }
 }
+
+/*Observamos los cambios para llamar a las diferentes funciones.*/
 watchEffect([sexo, actividad], [calcularCalorias, calcularIMC]);
 watch(peso, validarPeso);
 watch(altura, validarAltura);
@@ -468,7 +490,6 @@ watch(altura, validarAltura);
           <img :src="fotoPerfil" class="imagen" />
         </div>
         <div class="informacion">
-
           <h2 class="gymTag">@{{ gymTag }}</h2>
           <div class="info-basica">
             <div id="seguidores">
@@ -483,21 +504,15 @@ watch(altura, validarAltura);
               <h2>Posts</h2>
               <h3>{{ cantidadPublicaciones }}</h3>
             </div>
-
           </div>
-          <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
-          <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Dejar de seguir</button>
+          <div class="botones_seguir">
+            <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
+            <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
+          </div>
         </div>
       </div>
       <div class="div-nombre">
         <h2 class="nombre">{{ nombreCompleto }}</h2>
-      </div>
-      <div id="info-bot">
-        <div id="sobre-mi">
-          <p>{{ sobreMi }}</p>
-          <button class="btn-edit" v-if="perfilPropio == true" @click="editandoPerfil()">Editar
-            Descripción<font-awesome-icon :icon="['fas', 'pen']" class="icono-pen" /></button>
-        </div>
       </div>
     </div>
     <div id="contenido">
@@ -531,9 +546,7 @@ watch(altura, validarAltura);
         <form v-if="perfilPropio && mostrarForm" class="formulario-estadisticas">
           <font-awesome-icon :icon="['fas', 'xmark']" @click="mostrarEditarStats(false)" class="cerrarForm" />
           <div class="edad-sexo">
-
             <div class="tu-edad datos-stats">
-
               <label>Tu actividad diaria</label>
               <select class="actividad" v-model="actividad" required>
                 <option value="sedentario">Sedentario: poco o ningún ejercicio</option>
@@ -557,15 +570,12 @@ watch(altura, validarAltura);
             <div class="tu-peso datos-stats">
               <label>Tu peso (kg)</label>
               <input type="number" class="peso" v-model="peso" min="30" max="650" step="0.01" required>
-
             </div>
             <div class="tu-altura datos-stats">
               <label>Tu altura (cm)</label>
               <input type="number" class="altura" v-model="altura" min="30" max="300" step="1" required>
             </div>
-
           </div>
-
           <!-- <button type="button" @click="calcularCalorias()">Calcular</button> -->
           <button type="button" @click="guardarEstadisticas()" class="btn-guardar-stats">Guardar</button>
           <div v-if="mostrarAviso" class="mensaje">{{ mensajeAviso }}</div>
@@ -603,7 +613,6 @@ watch(altura, validarAltura);
                 </tr>
               </table>
             </div>
-
             <div v-if="resultado.deficit.length > 0">
               <h3>Calorías para estar en déficit calórico</h3>
               <table>
@@ -617,13 +626,11 @@ watch(altura, validarAltura);
                 </tr>
               </table>
             </div>
-
           </div>
-
         </div>
         <div class="resultado-imc">
           <div class="res-imc">
-            <h3>IMC: {{ resIMC.toFixed(2) + " (" + nivelIMC+ ")"  }}</h3>
+            <h3>IMC: {{ resIMC.toFixed(2) + " (" + nivelIMC + ")" }}</h3>
           </div>
           <table>
             <thead>
@@ -675,18 +682,7 @@ watch(altura, validarAltura);
       </div>
     </div>
   </div>
-  <div v-if="editando == true" class="edit">
-    <div class="edit-sobreMi">
-      <div @click="cerrar()" class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" /></div>
-      <div>
-        <textarea v-model="sobreMi" @input="checkInput"></textarea>
-        <button @click="obtenerDatos">Obtener Datos</button>
-      </div>
-    </div>
-  </div>
-
 </template>
-
 <style scoped>
 #arriba {
   position: fixed;
@@ -780,37 +776,6 @@ watch(altura, validarAltura);
   border-radius: 50%;
 }
 
-#sobre-mi {
-  position: relative;
-  margin-right: 10px;
-  width: 90%;
-  max-width: 500px;
-  height: fit-content;
-  padding-bottom: 20px;
-}
-
-#sobre-mi p {
-  margin-top: 10px;
-  word-wrap: break-word;
-  text-align: left;
-  white-space: pre-line;
-
-}
-
-#sobre-mi .btn-edit {
-  position: absolute;
-  right: 0;
-  margin: 0;
-  background-color: transparent;
-  border: 0;
-  color: white;
-}
-
-#sobre-mi .btn-edit .icono-pen {
-  width: 20px;
-  height: 20px;
-}
-
 .gymTag {
   margin-top: 10px;
   margin-left: -10px;
@@ -818,11 +783,31 @@ watch(altura, validarAltura);
 
 }
 
-#info-bot {
+.botones_seguir {
+  padding-right: 22px;
   display: flex;
-  justify-content: space-evenly;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+}
+
+.botones_seguir button {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
   text-align: center;
-  margin-bottom: 20px;
+  transition: border 0.5s;
+  padding: 5px 8px;
+  width: 84.44px;
+}
+
+.botones_seguir button:hover,
+.botones_seguir button:active {
+  border-color: #eef2fa81;
 }
 
 #contenido {
@@ -834,6 +819,7 @@ watch(altura, validarAltura);
 }
 
 .vistaNormal {
+  cursor: pointer;
   width: 50%;
   padding: 10px;
   font-weight: bold;
@@ -843,13 +829,13 @@ watch(altura, validarAltura);
 }
 
 .vistaBoton {
+  cursor: pointer;
   width: 50%;
   padding: 10px;
   font-weight: bold;
   color: var(--light-blue-text);
   background-color: var(--blue-inputs);
   border: 1px solid rgb(255, 255, 255);
-
 }
 
 .vista {
@@ -964,31 +950,9 @@ watch(altura, validarAltura);
 
 }
 
-
-
 .peso-altura {
   display: flex;
   justify-content: center;
-}
-
-.edit {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  background-color: rgba(174, 174, 174, 0.294);
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.edit-sobreMi {
-  z-index: 501;
-  margin-top: 200px;
-  width: 200px;
-  background-color: aqua
 }
 
 .btn-guardar-stats {
@@ -1186,7 +1150,8 @@ watch(altura, validarAltura);
   align-items: center;
   justify-content: center;
 }
-.perfilPrivado{
+
+.perfilPrivado {
   margin: 30px 5px;
   text-align: center;
   display: flex;
@@ -1196,12 +1161,14 @@ watch(altura, validarAltura);
   font-size: clamp(20px, 2.2vw, 60px);
   gap: 20px;
 }
-.candado2{
+
+.candado2 {
   width: 20%;
   height: 20%;
   min-width: 100px;
   color: var(--dark-blue);
 }
+
 @media (max-width: 875.5px) {
   .perfil {
     margin: 0;
@@ -1349,7 +1316,7 @@ watch(altura, validarAltura);
     white-space: nowrap;
   }
 
-  .resultado-imc table tr td{
+  .resultado-imc table tr td {
     height: auto;
   }
 }

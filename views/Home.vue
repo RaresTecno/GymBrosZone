@@ -97,13 +97,13 @@ async function cargarPublicaciones() {
 /*Detectamos si el usuario ha llegado casi al final de la página para mostrar otras 9 publicaciones.*/
 function handleScroll() {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-    cargarPublicaciones();
+    // cargarPublicaciones();
   }
 }
 
 /*Añadimos los eventos de escucha tras montarse la vista: eventos de detectar el final de la página y el de eliminación de una publicación.*/
 onMounted(() => {
-  cargarPublicaciones();
+  // cargarPublicaciones();
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);

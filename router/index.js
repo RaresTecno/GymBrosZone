@@ -66,14 +66,7 @@ const router = createRouter({
       name: "profile",
       component: () => import("@/views/Profile.vue"),
       props: true,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: "editProfile",
-          name: "editProfile",
-          component: () => import("@/components/EditProfile.vue"),
-        },
-      ],
+      meta: { requiresAuth: true }
     },
     {
       path: '/post',
@@ -84,7 +77,8 @@ const router = createRouter({
     {
       path: '/recoverPassword',
       name: 'password',
-      component: () => import("@/views/Password.vue")
+      component: () => import("@/views/Password.vue"),
+      meta: { requiresAuth: false }
     },
     {
       path: '/recovery',
@@ -105,7 +99,7 @@ router.beforeEach(async (to, from, next) => {
     const userToken = userActive.value;
     if (requiresAuth && !userToken) {
       next({ name: 'login' });
-    } else if (!requiresAuth && userToken && (to.name === 'login' || to.name === 'register')) {
+    } else if (!requiresAuth && userToken && (to.name === 'login' || to.name === 'register' || to.name === 'password' || to.name === 'waiting-verification')) {
       next({ name: 'home' });
     } else {
       next();

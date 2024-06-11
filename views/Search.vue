@@ -1,4 +1,5 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -17,7 +18,7 @@ const totalPaginas = ref(1);
 const productosPorPagina = 10;
 const tiempoCarga = ref(null);
 const paginasParaMostrar = ref([]);
-const codigo = ref()
+const codigo = ref();
 
 const ProductoFoto = ref("");
 const ProductoNombre = ref("");
@@ -57,34 +58,37 @@ const ProductoSodiumPoints = ref("");
 const ProductoNutriScorePoints = ref("");
 
 watch([busquedaAlimento, pagina], buscarProductos);
-// Observar cambios en busquedaAlimento
+
+/*Observamos los cambios en busquedaAlimento.*/
 watch(busquedaAlimento, () => {
-  // Cuando busquedaAlimento cambia, establecer pagina a 1
+  /*Cuando busquedaAlimento cambia, establecemos la página a 1.*/
   codigo.value = undefined
   pagina.value = 1;
 });
+
 const esCodigoBarras = /^[0-9]{4,}$/;
+
+/*Función para buscar un producto.*/
 async function buscarProductos() {
-
   let url;
-  console.log(codigo.value);
-  const startTime = performance.now();
-
+  /*Comprobamos si lo ingresado en el input es un código de barras o no.*/
   if (esCodigoBarras.test(busquedaAlimento.value.trim()) || codigo.value != undefined) {
-
+    /*Buscamos la publicación por su código de barras.*/
     if (codigo.value === undefined) {
       url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value.trim();
       codigo.value = busquedaAlimento.value.trim()
     } else {
+      /*URL para la búsqueda con el código de barras guardado.*/
       url = "https://world.openfoodfacts.org/api/v3/product/" + codigo.value;
     }
     vistaUnica.value = true;
-
+    /*Hacemos la petición a la API y obtenemos la respuesta.*/
     const response = await fetch(url);
     let result = await response.json();
+    /*Extraemos los resultados.*/
     const producto = result.product;
 
-
+    /*Asignamos los valores del producto a las variables correspondientes.*/
     productos.value = result.products;
     ProductoFat_100.value = producto.nutriments["fat_100g"];
     ProductoFoto.value = imagen(producto);
@@ -113,6 +117,7 @@ async function buscarProductos() {
     ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
     ProductoCantidad.value = producto.quantity;
 
+    /*Asignamos los puntos del NutriScore del producto a las variables correspondientes.*/
     ProductoNegativePoints.value = producto.nutriscore_data ? producto.nutriscore_data.negative_points : "?";
     ProductoPositivePoints.value = producto.nutriscore_data ? producto.nutriscore_data.positive_points : "?";
     ProductoProteinsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.proteins_points : "?";
@@ -123,45 +128,46 @@ async function buscarProductos() {
     ProductoSugarsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sugars_points : "?";
     ProductoSodiumPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sodium_points : "?";
     ProductoNutriScorePoints.value = producto.nutriscore_data ? producto.nutriscore_score_opposite : "?";
-
-
-    // console.log(ProductoNegativePoints.value)
-
   } else {
+    /*Si no es un código de barras, buscamos productos por su información como su nombre.*/
     url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value.trim())}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
     vistaUnica.value = false;
 
     try {
+      /*Hacemos la petición a la API y obtenemos la respuesta.*/
       const response = await fetch(url);
-      // console.log(response.code)
       let result = await response.json();
-
-
+      /*Extraemos los resultados.*/
       const resultado = result.products;
       productos.value = resultado;
+      /*Calculamos el número de páginas.*/
       totalPaginas.value = Math.ceil(result.count / productosPorPagina);
       buscado.value = true;
     } catch (error) {
-      console.log(error);
+      return;
     }
-
-
   }
-  const endTime = performance.now(); // Fin del tiempo
-  tiempoCarga.value = (endTime - startTime).toFixed(2);
 }
+
+/*Función para mostrar un producto más en detalle.*/
 function mostrarProducto(codigoP) {
   codigo.value = codigoP
   buscarProductos()
 }
+
+/*Función para cerrar el producto que se está visualizando.*/
 function cerrarProducto() {
   codigo.value = undefined
   buscarProductos()
   vistaUnica.value = false
 }
+
+/*Función para poner la primera letra en mayúscula.*/
 function toCapitalize(texto) {
   return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
 }
+
+/*Función para mostrar el nombre del producto, en su defecto se devuelve false.*/
 function nombre(producto) {
   const idiomas = [
     'product_name_es',
@@ -208,6 +214,7 @@ function nombre(producto) {
     'product_name_zh_tw'
   ];
   for (const idioma of idiomas) {
+    /*Devolvemos la información en función del idioma.*/
     if (producto[idioma] && producto[idioma].trim() !== '' && producto.brands_tags && producto.brands_tags.length > 0) {
       return producto[idioma] + " - " + toCapitalize(producto.brands_tags[0]);
     }
@@ -215,18 +222,22 @@ function nombre(producto) {
       return producto[idioma]
     }
   }
+  /*Si no se devuelve un nombre, devolvemos la marca.*/
   if (producto.brands_tags && producto.brands_tags.length > 0) {
-    console.log(producto.brands_tags)
     return toCapitalize(producto.brands_tags[0]);
   }
-  return false; //Retorna una cadena vacía si no se encuentra ningún nombre de producto
+  return false;
 }
+
+/*Función para mostrar la cantidad del producto, en su defecto se devuelve una cadena vacía.*/
 function cantidad(producto) {
   if (producto.quantity) {
     return ` - ${producto.quantity}`;
   }
-  return ''; // Retorna una cadena vacía si no hay cantidad
+  return '';
 }
+
+/*Guardamos para mostrar la imagen del producto o en su defecto una imagen predeterminada.*/
 function imagen(producto) {
   if (producto.image_url != null) {
     return producto.image_url;
@@ -234,6 +245,8 @@ function imagen(producto) {
     return "https://world.openfoodfacts.org/images/icons/dist/packaging.svg";
   }
 }
+
+/*Función para mostrar los ingredientes en función de los datos obtenidos.*/
 function ingredients(producto) {
   if (
     producto.ingredients_text_es != null &&
@@ -259,6 +272,8 @@ function ingredients(producto) {
     return "No disponible"
   }
 }
+
+/*Función para mostrar el NutriScore en función de los datos obtenidos.*/
 function urlNutriScore(valor) {
   switch (valor.nutriscore_grade) {
     case "a":
@@ -275,6 +290,8 @@ function urlNutriScore(valor) {
       return "https://static.openfoodfacts.org/images/attributes/dist/nutriscore-unknown-new-en.svg";
   }
 }
+
+/*Función para mostrar el EcoScore en función de los datos obtenidos.*/
 function urlEcoScore(valor) {
   switch (valor.ecoscore_grade) {
     case "a":
@@ -291,6 +308,8 @@ function urlEcoScore(valor) {
       return "https://static.openfoodfacts.org/images/attributes/dist/ecoscore-unknown.svg";
   }
 }
+
+/*Función para mostrar el NovaScore en función de los datos obtenidos.*/
 function urlNovaScore(valor) {
   switch (valor.nova_group) {
     case 1:
@@ -305,13 +324,18 @@ function urlNovaScore(valor) {
       return "https://static.openfoodfacts.org/images/attributes/dist/nova-group-unknown.svg";
   }
 }
+
+/*Función para borrar el filtro de alimentos.*/
 function borrar() {
   busquedaAlimento.value = ""
 }
+
+/*Función para borrar el filtro de usuarios.*/
 function borrarUsuario() {
   busquedaUsuarios.value = ""
-
 }
+
+/*Función para ir a la página anterior.*/
 const paginaAnterior = () => {
   if (pagina.value > 1) {
     pagina.value--;
@@ -319,6 +343,7 @@ const paginaAnterior = () => {
   }
 };
 
+/*Función para ir a la página siguiente.*/
 const paginaSiguiente = () => {
   if (pagina.value < totalPaginas.value) {
     pagina.value++;
@@ -326,17 +351,17 @@ const paginaSiguiente = () => {
   }
 };
 
-// const vistaBusqueda = ref(sessionStorage.getItem("vistaBusqueda") || "Usuarios");
 const vistaBusqueda = ref("Usuarios");
+/*Función para cambiar la vista.*/
 function cambiarVista(tipo) {
   vistaBusqueda.value = tipo;
-  // sessionStorage.setItem("vistaBusqueda", tipo); // Guardar la vista seleccionada en el almacenamiento local
 }
 
 let html5QrcodeScanner = null;
 const mostrandoScanner = ref(false);
+
+/*Función de cuando el escaneo ha sido exitoso.*/
 function onScanSuccess(decodedText, decodedResult) {
-  console.log(`Code matched = ${decodedText}`, decodedResult);
   busquedaAlimento.value = decodedText;
   if (html5QrcodeScanner) {
     html5QrcodeScanner.clear();
@@ -344,10 +369,14 @@ function onScanSuccess(decodedText, decodedResult) {
   }
 }
 
+/*Controlamos el error del escáner.*/
 function onScanError(errorMessage) {
-  console.log(`Error = ${errorMessage}`);
+  if (errorMessage) {
+    return;
+  }
 }
 
+/*Función para mostrar el escáner.*/
 function mostrarScanner() {
   mostrandoScanner.value = !mostrandoScanner.value
   if (mostrandoScanner.value == false) {
@@ -370,27 +399,27 @@ function mostrarScanner() {
             Html5QrcodeSupportedFormats.EAN_13,
           ],
         },
-        false // Esto previene múltiples instancias del escáner
+        /*Esto previene múltiples instancias del escáner.*/
+        false
       );
       html5QrcodeScanner.render(onScanSuccess, onScanError);
 
-      // Verifica si el elemento existe
+      /*Verificamos si el elemento existe.*/
       if (readerElement) {
-        // Crea un nuevo div
+        /*Creamos un nuevo div.*/
         var newDiv = document.createElement("div");
-
-        // Añade la clase 'ocultar-i' al nuevo div
+        /*Añadimos la clase 'ocultar-i' al nuevo div*/
         newDiv.classList.add('ocultar-i');
-
-        // Opcional: Añadir contenido al nuevo div
+        /*Añadimos contenido al nuevo div*/
         newDiv.innerHTML = "<div style='position: absolute !important; background-color: rgb(181, 57, 57) !important; height: 50px !important; width: 50px !important; right: 0 !important; top: 0 !important; z-index: 100 !important; background: var(--bg-color) !important;'></div>"
-
-        // Añade el nuevo div como hijo del elemento "reader"
+        /*Añadimos el nuevo div como hijo del elemento "reader"*/
         readerElement.appendChild(newDiv);
       }
     }
   }
 }
+
+/*Añadimos el evento de escucha de volver atrás.*/
 window.addEventListener('popstate', function () {
   if (vistaUnica.value == true && vistaBusqueda.value === 'Productos') {
     cerrarProducto()
@@ -399,17 +428,17 @@ window.addEventListener('popstate', function () {
   }
 });
 
-
+/*Variables para mostrar los usuarios.*/
 const todosUsuarios = ref([]);
 const busquedaUsuarios = ref("")
 let offset = 0;
 const limit = 9;
 let loading = false;
 
+/*Función para cargar los usuarios.*/
 const cargarUsuarios = async () => {
   if (loading) return;
   loading = true;
-
   try {
     const { data: usuarios, error } = await supabase
       .from('usuarios')
@@ -417,43 +446,43 @@ const cargarUsuarios = async () => {
       .ilike('nombre', `%${busquedaUsuarios.value}%`) // Filtrar por el nombre del usuario
       .or('gymtag.ilike.*%', `%${busquedaUsuarios.value}%`)
       .range(offset, offset + limit - 1);
-
-      console.log(usuarios)
     if (error) {
-      console.error(error);
       loading = false;
       return;
     }
 
-    // Añadir las nuevas usuarios a las existentes
+    /*Añadimos  los nuevos usuarios a los ya existentes.*/
     todosUsuarios.value.push(...usuarios);
     offset += limit;
     loading = false;
   } catch (error) {
-    console.error(error);
     loading = false;
+    return;
   }
 };
 
-const handleScroll = () => {
+/*Función para cargar os usuarios dinámicamente.*/
+function handleScroll() {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
     cargarUsuarios();
   }
 };
 
+/*Cuando se monta la vista, llamamos a las funciones y añadimos el evento de escucha del scroll.*/
 onMounted(() => {
   buscarProductos()
   cargarUsuarios();
   window.addEventListener('scroll', handleScroll);
 });
 
+/*Cuando se desmonta la vista eliminamos el evento de escucha del scroll.*/
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
 });
 
+/*Observamos los cambios en busquedaUsuarios y cargamos los usuarios.*/
 watch(busquedaUsuarios, cargarUsuarios);
 </script>
-
 <template>
   <div class="buscador">
     <div class="filtros">
@@ -507,12 +536,12 @@ watch(busquedaUsuarios, cargarUsuarios);
         <div class="mini-producto-padre">
           <div class="mini-producto" @click="mostrarProducto(producto.id)">
             <h2 v-if="(nombre(producto) + cantidad(producto)).length > 50" class="mini-nombre">{{ (nombre(producto) &&
-          cantidad(producto)) ? (nombre(producto) +
-            cantidad(producto)).slice(0, 50) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}...
+              cantidad(producto)) ? (nombre(producto) +
+                cantidad(producto)).slice(0, 50) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}...
             </h2>
             <h2 v-if="(nombre(producto) + cantidad(producto)).length <= 50" class="mini-nombre">{{ (nombre(producto) &&
-          cantidad(producto)) ? (nombre(producto) +
-            cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
+              cantidad(producto)) ? (nombre(producto) +
+                cantidad(producto)) : (nombre(producto) !== false ? nombre(producto) : producto.id) }}</h2>
             <div class="mini-img">
               <img :src="imagen(producto)" />
             </div>
@@ -541,7 +570,8 @@ watch(busquedaUsuarios, cargarUsuarios);
         <div class="general-texto">
           <h2 class="producto-nombre">{{ ProductoNombre !== false ? ProductoNombre : codigo }}</h2>
           <p class="producto-cantidad">
-          <div>Cantidad: </div>{{ ProductoCantidad && ProductoCantidad.trim() !== '' ? ProductoCantidad + '.' : '?' }}</p>
+          <div>Cantidad: </div>{{ ProductoCantidad && ProductoCantidad.trim() !== '' ? ProductoCantidad + '.' : '?' }}
+          </p>
           <p class="producto-ingredientes">
           <div>Ingredientes: </div>{{ ProductoIngredientes + '.' ?? '?' }}</p>
         </div>

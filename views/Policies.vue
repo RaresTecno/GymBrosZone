@@ -84,7 +84,7 @@ function getContainerClasses() {
                 cualquier disputa será resuelta en los tribunales competentes de dicho país.</p>
             <h2>8. Contacto</h2>
             <p>Para cualquier consulta o inquietud relacionada con esta información
-                legal, por favor contacta con nosotros en legal@gymbroszone.com.</p>
+                legal, por favor contacta con nosotros en support@gymbroszone.com.</p>
         </div>
         <div class="todo_boton"> <button onclick="window.location.href='/'">Volver</button></div>
     </div>

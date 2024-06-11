@@ -80,14 +80,15 @@ async function cargarPublicaciones() {
 }
 
 /*Detectamos si el usuario ha llegado casi al final de la página para mostrar otras 9 publicaciones.*/
-let maxScrollReached = 0; // Variable para almacenar el máximo desplazamiento alcanzado
+let maxScrollReached = 0; /*Variable para almacenar el máximo desplazamiento alcanzado.*/
 
+/*Función para manejar el scroll.*/
 function handleScroll() {
-  // Obtener la altura total de la ventana y la cantidad desplazada actualmente
+  /*Obtenemos la altura total de la ventana y la cantidad desplazada actualmente.*/
   const currentScroll = window.scrollY + window.innerHeight;
   const scrollThreshold = document.body.offsetHeight - 100;
 
-  // Verificar si el desplazamiento actual es mayor al máximo desplazamiento alcanzado anteriormente
+  /*Verificamos si el desplazamiento actual es mayor al máximo desplazamiento alcanzado anteriormente.*/
   if (currentScroll > maxScrollReached && currentScroll > scrollThreshold) {
     cargarPublicaciones();
     maxScrollReached = currentScroll; // Actualizar el máximo desplazamiento alcanzado
@@ -96,7 +97,7 @@ function handleScroll() {
 
 /*Añadimos los eventos de escucha tras montarse la vista: eventos de detectar el final de la página y el de eliminación de una publicación.*/
 onMounted(() => {
-  // cargarPublicaciones();
+  cargarPublicaciones();
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
@@ -224,7 +225,6 @@ h1 img {
   left: 0;
   width: 100%;
   transform: rotate(2deg) scaleY(0.5);
-
 }
 
 .home {
@@ -285,6 +285,10 @@ h1 img {
 .dieta .bienvenida_izq {
   display: flex;
   flex-direction: column;
+}
+
+.dieta{
+  margin-bottom: 90px;
 }
 
 .dieta h3,

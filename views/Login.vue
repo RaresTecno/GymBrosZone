@@ -172,11 +172,11 @@ function mensaje(mensaje, Input) {
   <Footer class="footer"  v-if="!userActive" />
 </template>
 <style scoped>
-
 .footer{
     position: absolute;
     bottom: 0;
 }
+
 .todo_login {
     width: 100vw;
     height: fit-content;
@@ -184,7 +184,7 @@ function mensaje(mensaje, Input) {
     display: flex;
     align-items: center;
     flex-direction: column;
-    padding-top: 165px;
+    padding-top: 155px;
 }
 
 .login {

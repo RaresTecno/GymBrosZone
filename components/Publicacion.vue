@@ -1,7 +1,7 @@
 <script setup>
 /*Imports necesarios.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick, watch, defineEmits  } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif";
 import { useRoute } from 'vue-router';
@@ -70,9 +70,16 @@ const comentarioIdParaEliminar = ref(null);
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
 const mostrarMas = ref(false);
+const publicacionId = ref(null);
+const mostrarHeaderFooter = ref(false);
+const emit = defineEmits(['mostrar-todo-perfil']);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
+
+const isProfileRoute = computed(() => {
+  return route.name === 'profile';
+});
 
 cargarPublicacion();
 
@@ -649,6 +656,30 @@ function adjustHeights() {
     }
   });
 }
+
+/*Cuando se llama esta función es porque el usuario se encuentra en /profile y la pantalla es menor a 875px.*/
+function clickImagen() {
+  if (isProfileRoute.value && windowWidth.value < 875) {
+    mostrarTodoPerfil(props.publicacionUnica.idpublicacion);
+  } else {
+    mostrar(false);
+  }
+}
+
+const publicacionesContainer = ref(null);
+
+
+/*Mostraremos las imágenes una debajo de la otra y se ocultarán los divs necesarios.*/
+function mostrarTodoPerfil(id) {
+  if (windowWidth.value < 875) {
+    publicacionId.value = id;
+    document.getElementById('info').style.display = 'none';
+    document.getElementById('botones').style.display = 'none';
+    mostrarHeaderFooter.value = true;
+    /*Emitimos un evento para poder acceder al id de la publicación pulsada.*/
+    emit('mostrar-todo-perfil', id);
+  }
+}
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
@@ -667,7 +698,7 @@ function adjustHeights() {
         </div>
       </div>
     </div>
-    <div class="header-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
+    <div class="header-publicacion" v-if="(windowWidth <= 875 && (!isProfile || mostrarHeaderFooter))">
       <!-- <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
           
@@ -694,11 +725,11 @@ function adjustHeights() {
     </div>
     <div @click="mostrar(false)" class="inicial" id="forzar-inicial">
       <img :src="ruta" @error="comprobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto"
-        @dblclick="dobleClick" />
+        @dblclick="dobleClick" @click="clickImagen"/>
       <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
         :style="likeAnimationStyle" />
     </div>
-    <div class="footer-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
+    <div class="footer-publicacion" v-if="(windowWidth <= 875 && (!isProfile || mostrarHeaderFooter))">
       <div class="todo_botones_publicacion_grande todo_botones_publicacion_p">
         <div class="botones_publicacion_grande">
           <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()">
@@ -722,7 +753,7 @@ function adjustHeights() {
         </div>
       </div>
     </div>
-    <div class="final" v-if="mostrarFinal" @click="cerrar">
+    <div class="final" v-if="mostrarFinal && (!isProfileRoute || windowWidth >= 875)" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
           <img :src="ruta" @dblclick="dobleClick" class="cover" />
@@ -889,7 +920,6 @@ function adjustHeights() {
     </div>
   </div>
 </template>
-
 <style scoped>
 .div_girar_imagen {
   height: 35px;
@@ -1335,6 +1365,15 @@ span.span_esp {
   height: 100%;
   width: 100%;
   object-fit: cover;
+}
+
+.encabezado,
+.footer-publicacion {
+  cursor: default;
+}
+
+.final .cover {
+  cursor: pointer;
 }
 
 .normal {

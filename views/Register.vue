@@ -401,7 +401,7 @@ function verPoliticas() {
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 120px;
+    margin-bottom: 160px;
     position: relative;
 }
 

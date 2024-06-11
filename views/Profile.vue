@@ -13,12 +13,12 @@ const props = defineProps({
   }
 });
 
-const profileId = ref()
-const siguiendo = ref()
-const perfilPropio = ref()
-const editando = ref(false)
-const todasPublicaciones = ref()
-const cantidadPublicaciones = ref()
+const profileId = ref();
+const siguiendo = ref();
+const perfilPropio = ref();
+const editando = ref(false);
+const todasPublicaciones = ref();
+const cantidadPublicaciones = ref();
 const gymTag = ref();
 const nombreCompleto = ref();
 const numSeguidores = ref();
@@ -26,7 +26,14 @@ const numSeguidos = ref();
 const fotoPerfil = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg");
 const esPrivado = ref(true)
 const router = useRouter();
-const edad = ref()
+const edad = ref();
+const publicacionesContainer = ref(null);
+const windowWidth = ref(window.innerWidth);
+
+/*Cambio el valor del ancho de la pantalla cuando cambia de tamaño.*/
+const updateWidth = () => {
+    windowWidth.value = window.innerWidth;
+};
 
 /*Observamos los cambios en el gymtag.*/
 watch(() => props.gymtag, (newGymtag, oldGymtag) => {
@@ -162,13 +169,17 @@ onMounted(() => {
   window.addEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
   });
+  /*Añadimos el evento de escucha de la redimensión de la pantalla.*/
+  window.addEventListener("resize", updateWidth);
+  updateWidth();
 });
 
-/*Cuando se desmonta eliminamos el evento de escucha.*/
+/*Cuando se desmonta eliminamos los eventos de escucha.*/
 onUnmounted(() => {
   window.removeEventListener('ocultar-publicacion', (event) => {
     ocultarPublicacion(event.detail.idPublicacion);
   });
+  window.removeEventListener("resize", updateWidth);
 });
 
 /*Función de ocultar la publicación.*/
@@ -479,8 +490,20 @@ async function guardarEstadisticas() {
 watchEffect([sexo, actividad], [calcularCalorias, calcularIMC]);
 watch(peso, validarPeso);
 watch(altura, validarAltura);
-</script>
 
+function MostrarTodoPerfil(id) {
+  if (windowWidth.value < 875) {
+    if (publicacionesContainer.value) {
+      publicacionesContainer.value.style.display = 'flex';
+      publicacionesContainer.value.style.flexDirection = 'column';
+      const targetElement = document.querySelector(`[data-publicacion-id="${id}"]`);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }
+}
+</script>
 <template>
   <!-- <button @click="arriba" id="arriba">Volver arriba</button> -->
   <div class="perfil" :class="{ usandoMovil: usandoMovil }">
@@ -522,11 +545,11 @@ watch(altura, validarAltura);
         <button @click="cambiarVista('Estadisticas')"
           :class="{ vistaBoton: vista === 'Estadisticas', vistaNormal: vista !== 'Estadisticas' }">Estadisticas</button>
       </div>
-      <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista">
+      <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista" ref="publicacionesContainer">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
           <div :data-publicacion-id="publicacion.idpublicacion">
             <Publicacion :publicacionUnica="publicacion" :ProfileView="true"
-              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" @mostrar-todo-perfil="MostrarTodoPerfil"/>
           </div>
         </template>
       </div>
@@ -849,9 +872,7 @@ watch(altura, validarAltura);
 #publicacion {
   padding: 0;
 }
-#forzar-publicacion {
-    
-  }
+
 .estadisticas {
   display: flex;
   flex-direction: column;
@@ -929,13 +950,9 @@ watch(altura, validarAltura);
   margin-bottom: 10px;
 }
 
-/* .datos-stats label{
-  width: 100%;
-} */
 .datos-stats * {
   white-space: nowrap;
   width: 50%;
-
 }
 
 .datos-stats input,
@@ -949,7 +966,6 @@ watch(altura, validarAltura);
 
 .datos-stats label {
   min-width: 95px;
-
 }
 
 .peso-altura {
@@ -1006,7 +1022,6 @@ watch(altura, validarAltura);
   display: flex;
   width: 100%;
   border-bottom: 2px solid black;
-
 }
 
 .res-edad-sexo :first-child {
@@ -1057,12 +1072,10 @@ watch(altura, validarAltura);
 .def-sup {
   display: flex;
   width: 100%;
-
 }
 
 .sup {
   border-right: 2px solid black;
-
 }
 
 .def-sup>div {
@@ -1070,14 +1083,12 @@ watch(altura, validarAltura);
   display: flex;
   flex-direction: column;
   align-items: center;
-
 }
 
 .resultados-cal h3 {
   padding: 10px;
   width: 100%;
   border-bottom: 2px solid black;
-
 }
 
 .def-sup h3 {
@@ -1085,7 +1096,6 @@ watch(altura, validarAltura);
   align-items: center;
   justify-content: center;
   min-height: 65px;
-
 }
 
 .resultados-cal table,
@@ -1131,7 +1141,6 @@ watch(altura, validarAltura);
 .resultado-imc table tr {
   width: 100%;
   display: flex;
-  /* border: 2px solid black; */
 }
 
 .resultado-imc table thead tr th {
@@ -1199,10 +1208,6 @@ watch(altura, validarAltura);
     font-size: clamp(8px, 1.4em, 40px);
 
   }
-
-  .info-basica {
-    /* font-size: clamp(6px, .7em, 36px); */
-  }
 }
 
 @media (max-width: 1100px) {
@@ -1235,7 +1240,6 @@ watch(altura, validarAltura);
     text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* white-space: nowrap; */
   }
 
   .info-basica {

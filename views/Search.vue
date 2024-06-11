@@ -1,10 +1,12 @@
 <script setup>
 /*Imports y declaración de variables.*/
-import { ref, watch, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted, computed } from "vue";
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { disponible } from "../main";
-import { supabase, userId } from "../clients/supabase";
+import { supabase, userActive, userId } from "../clients/supabase";
+import Publicacion from "../components/Publicacion.vue";
+
 
 disponible.value = true;
 
@@ -56,6 +58,8 @@ const ProductoSugarsPoints = ref("");
 const ProductoSaturatedPoints = ref("");
 const ProductoSodiumPoints = ref("");
 const ProductoNutriScorePoints = ref("");
+
+const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 watch([busquedaAlimento, pagina], buscarProductos);
 
@@ -327,12 +331,16 @@ function urlNovaScore(valor) {
 
 /*Función para borrar el filtro de alimentos.*/
 function borrar() {
-  busquedaAlimento.value = ""
+  busquedaAlimento.value = "";
 }
 
 /*Función para borrar el filtro de usuarios.*/
 function borrarUsuario() {
-  busquedaUsuarios.value = ""
+  busquedaUsuarios.value = "";
+  todosUsuarios.value = [];
+  offset = 0;
+  noMoreUsuarios = false;
+  cargarUsuarios();
 }
 
 /*Función para ir a la página anterior.*/
@@ -355,6 +363,10 @@ const vistaBusqueda = ref("Usuarios");
 /*Función para cambiar la vista.*/
 function cambiarVista(tipo) {
   vistaBusqueda.value = tipo;
+  if (tipo === 'Publicaciones') {
+    buscarPublicaciones();
+    obtenerTuFotoPerfil();
+  }
 }
 
 let html5QrcodeScanner = null;
@@ -428,50 +440,149 @@ window.addEventListener('popstate', function () {
   }
 });
 
+/*Función para cargar usuarios.*/
+function buscarUsuarios() {
+  todosUsuarios.value = [];
+  offset = 0;
+  noMoreUsuarios = false;
+  cargarUsuarios();
+};
+
 /*Variables para mostrar los usuarios.*/
 const todosUsuarios = ref([]);
-const busquedaUsuarios = ref("")
+const busquedaUsuarios = ref("");
 let offset = 0;
-const limit = 9;
-let loading = false;
+const limit = 8;
+const loading = ref(false);
+const loadingP = ref(false);
+let noMoreUsuarios = false;
+const mostrarBotonBuscar = ref(true);
+
 
 /*Función para cargar los usuarios.*/
-const cargarUsuarios = async () => {
-  if (loading) return;
-  loading = true;
+async function cargarUsuarios() {
+  if (loading.value || noMoreUsuarios) return;
+  loading.value = true;
   try {
+    /*Buscamos los usuarios filtrando por su nombre, apellidos y GymTag.*/
     const { data: usuarios, error } = await supabase
       .from('usuarios')
       .select('*')
-      .ilike('nombre', `%${busquedaUsuarios.value}%`) // Filtrar por el nombre del usuario
-      .or('gymtag.ilike.*%', `%${busquedaUsuarios.value}%`)
+      .or(`nombre.ilike.%${busquedaUsuarios.value}%,gymtag.ilike.%${busquedaUsuarios.value}%,apellidos.ilike.%${busquedaUsuarios.value}%`)
       .range(offset, offset + limit - 1);
     if (error) {
-      loading = false;
+      loading.value = false;
       return;
     }
+    /*Obtenemos la foto de perfil.*/
+    for (const usuario of usuarios) {
+      usuario.fotoPerfil = usuario.fotoperfil && usuario.fotoperfil !== "/predeterminada.png"
+        ? `https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/${usuario.fotoperfil}`
+        : "https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg";
 
-    /*Añadimos  los nuevos usuarios a los ya existentes.*/
+      /*Obtenemos el número de seguidores del usuario cargado.*/
+      const { data: seguidoresPerfil, error: errorSeguidores } = await supabase
+        .from('seguidores')
+        .select('*')
+        .eq('idseguido', usuario.id);
+      if (errorSeguidores) {
+        loading.value = false;
+        return;
+      }
+      usuario.numSeguidores = seguidoresPerfil.length;
+      /*Obtenemos el número de seguidos del usuario cargado.*/
+      const { data: seguidosPerfil, error: errorSeguidos } = await supabase
+        .from('seguidores')
+        .select('*')
+        .eq('idseguidor', usuario.id);
+      if (errorSeguidos) {
+        loading.value = false;
+        return;
+      }
+      usuario.numSeguidos = seguidosPerfil.length;
+    }
+
+    if (usuarios.length < limit) {
+      noMoreUsuarios = true;
+    } else {
+      offset += limit;
+    }
+    /*Añadimos los usuarios.*/
     todosUsuarios.value.push(...usuarios);
-    offset += limit;
-    loading = false;
   } catch (error) {
-    loading = false;
-    return;
+  } finally {
+    loading.value = false;
   }
 };
 
+const todasPublicaciones = ref([]);
+const busquedaPublicaciones = ref("");
+const offsetPublicaciones = ref(0);
+const limitPublicaciones = 12;
+const noMorePublicaciones = ref(false);
+
+/*Función para cargar las publicaciones.*/
+async function cargarPublicaciones() {
+  if (loadingP.value || noMorePublicaciones.value) return;
+  loadingP.value = true;
+  try {
+    /*Buscamos las publicaciones filtrando por su temática y contenido.*/
+    const { data: publicaciones, error } = await supabase
+      .from('publicaciones')
+      .select('*')
+      .or(`tematica.ilike.%${busquedaPublicaciones.value}%,contenido.ilike.%${busquedaPublicaciones.value}%`)
+      .range(offsetPublicaciones.value, offsetPublicaciones.value + limitPublicaciones - 1);
+    if (error) {
+      loadingP.value = false;
+      return;
+    }
+    /*Comprobamos el número de publicaciones que ya hemos cargado.*/
+    if (publicaciones.length < limitPublicaciones) {
+      noMorePublicaciones.value = true;
+    } else {
+      offsetPublicaciones.value += limitPublicaciones;
+    }
+    /*Añadimos las publicaciones.*/
+    todasPublicaciones.value.push(...publicaciones);
+  } catch (error) {
+  } finally {
+    loadingP.value = false;
+  }
+};
+
+/*Función para buscar publicaciones.*/
+function buscarPublicaciones() {
+  todasPublicaciones.value = [];
+  offsetPublicaciones.value = 0;
+  noMorePublicaciones.value = false;
+  cargarPublicaciones();
+}
+
+/*Función para borrar el filtro de usuarios.*/
+function borrarFiltroPublicaciones() {
+  busquedaPublicaciones.value = "";
+  todasPublicaciones.value = [];
+  offsetPublicaciones.value = 0;
+  noMorePublicaciones.value = false;
+  cargarPublicaciones();
+}
+
+let maxScrollReached = 0;
 /*Función para cargar os usuarios dinámicamente.*/
 function handleScroll() {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+  const currentScroll = window.scrollY + window.innerHeight;
+  const scrollThreshold = document.body.offsetHeight - 100;
+
+  if (currentScroll > maxScrollReached && currentScroll > scrollThreshold) {
     cargarUsuarios();
+    maxScrollReached = currentScroll;
   }
-};
+}
 
 /*Cuando se monta la vista, llamamos a las funciones y añadimos el evento de escucha del scroll.*/
 onMounted(() => {
   buscarProductos()
-  cargarUsuarios();
+  // cargarUsuarios(); //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   window.addEventListener('scroll', handleScroll);
 });
 
@@ -480,15 +591,42 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
 });
 
-/*Observamos los cambios en busquedaUsuarios y cargamos los usuarios.*/
-watch(busquedaUsuarios, cargarUsuarios);
+/*En función de si hay publicaciones o no añadimos una clase u otra al div de cargando.*/
+const claseUsuarios = computed(() => {
+  return todosUsuarios.value.length === 0 ? 'vacio' : 'lleno';
+});
+
+/*En función de si hay publicaciones o no añadimos una clase u otra al div de cargando.*/
+const clasePublicaciones = computed(() => {
+  return todasPublicaciones.value.length === 0 ? 'vacio' : 'lleno';
+});
+
+/*Función para obtener la foto de perfil del usuario para que esta sea visible en las publicaciones a la hora de comentar.*/
+async function obtenerTuFotoPerfil() {
+  if (userActive.value == true) {
+    const { data: usuario, error } = await supabase
+      .from('usuarios')
+      .select("*")
+      .eq('id', userId.value);
+    if (error) {
+      fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+      return;
+    }
+    fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
+    if (fotoTuPerfilMostrar.value === '/predeterminada.png' || fotoTuPerfilMostrar.value === null || fotoTuPerfilMostrar.value === '') {
+      fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    } else {
+      /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+      fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoTuPerfilMostrar.value;
+    }
+  }
+}
 </script>
 <template>
   <div class="buscador">
     <div class="filtros">
       <button @click="cambiarVista('Usuarios')"
-        :class="{ filtroSeleccionado: vistaBusqueda === 'Usuarios', filtrosNoSeleccionado: vistaBusqueda !== 'Usuarios' }">Gym
-        Bros</button>
+        :class="{ filtroSeleccionado: vistaBusqueda === 'Usuarios', filtrosNoSeleccionado: vistaBusqueda !== 'Usuarios' }">GymBros</button>
       <button @click="cambiarVista('Publicaciones')"
         :class="{ filtroSeleccionado: vistaBusqueda === 'Publicaciones', filtrosNoSeleccionado: vistaBusqueda !== 'Publicaciones' }">Publicaciones</button>
       <button @click="cambiarVista('Productos')"
@@ -496,10 +634,11 @@ watch(busquedaUsuarios, cargarUsuarios);
     </div>
   </div>
   <div v-if="vistaBusqueda === 'Usuarios'" class="usuarios">
-    <div class="search-producto">
+    <div class="search-producto buscar_usuario">
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
       <input type="text" v-model="busquedaUsuarios" />
-      <font-awesome-icon class="cross" :icon="['fas', 'xmark']" @click="borrarUsuario" />
+      <font-awesome-icon class="cross quitar_filtro_usuario" :icon="['fas', 'xmark']" @click="borrarUsuario" />
+      <button @click="buscarUsuarios" v-if="mostrarBotonBuscar" class="publicar_boton">Buscar</button>
     </div>
     <div class="vista-usuarios">
       <template v-for="usuario in todosUsuarios" :key="usuario.id">
@@ -507,17 +646,39 @@ watch(busquedaUsuarios, cargarUsuarios);
           <div class="usuario-card">
             <img :src="usuario.fotoPerfil" alt="Foto de perfil" class="usuario-foto" />
             <div class="usuario-info">
-              <h2>{{ usuario.gymtag }}</h2>
+              <h2>@{{ usuario.gymtag }}</h2>
               <p>{{ usuario.nombre }} {{ usuario.apellidos }}</p>
             </div>
             <div class="usuario-estadisticas">
               <span>Seguidores: {{ usuario.numSeguidores }}</span>
               <span>Seguidos: {{ usuario.numSeguidos }}</span>
-              <span>Publicaciones: {{ usuario.cantidadPublicaciones }}</span>
             </div>
           </div>
         </RouterLink>
       </template>
+      <div v-if="loading" :class="['div_cargando', claseUsuarios]">
+        <div class="cargando"></div>
+      </div>
+    </div>
+  </div>
+  <div v-if="vistaBusqueda === 'Publicaciones'" class="publicaciones">
+    <div class="search-producto buscar_usuario">
+      <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
+      <input type="text" v-model="busquedaPublicaciones" />
+      <font-awesome-icon class="cross quitar_filtro_usuario" :icon="['fas', 'xmark']"
+        @click="borrarFiltroPublicaciones" />
+      <button @click="buscarPublicaciones" v-if="mostrarBotonBuscar" class="publicar_boton">Buscar</button>
+    </div>
+    <div class="vista">
+      <template v-for="publicacion in todasPublicaciones" :key="publicacion.idpublicacion">
+        <div :data-publicacion-id="publicacion.idpublicacion">
+          <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
+            :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
+        </div>
+      </template>
+    </div>
+    <div v-if="loadingP" :class="['div_cargando2', clasePublicaciones]">
+      <div class="cargando"></div>
     </div>
   </div>
   <div class="productos-comun" v-if="vistaBusqueda === 'Productos'">
@@ -649,6 +810,25 @@ watch(busquedaUsuarios, cargarUsuarios);
   </div>
 </template>
 <style scoped>
+.publicar_boton {
+  cursor: pointer;
+  background-color: var(--blue-buttons);
+  border: solid var(--black) 2px;
+  border-radius: 2px;
+  font-size: 16px;
+  transition: background-color 0.5s, border 0.5s, color 0.5s;
+  height: 28px;
+  padding: 0 10px;
+  transform: translateX(3px);
+}
+
+.publicar_boton:hover,
+.publicar_boton:active {
+  background-color: var(--very-dark-blue);
+  color: var(--light-blue-text);
+  border: 2px solid var(--grey-buttons-inputs-border);
+}
+
 .usuarios {
   display: flex;
   flex-direction: column;
@@ -672,20 +852,36 @@ watch(busquedaUsuarios, cargarUsuarios);
   margin: 10px 0;
   border-radius: 10px;
   border-color: black;
-  background-color: var(--blue);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 1s ease, background-color 0.65s ease;
+  background-color: var(--blue-inputs);
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.607);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  color: var(--light-blue-text);
 }
 
 .usuario-foto {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border-style: inherit;
-  border-color: black;
+  border: 2px solid var(--black);
   margin-right: 20px;
   object-fit: cover;
-  transition: transform 1s ease, border-color 0.65s ease;
+  transition: border-color 0.3s ease;
+  background-color: var(--black);
+  object-fit: cover;
+  transition: border 0.3s;
+}
+
+.usuario-card:hover,
+.usuario-card:active {
+  scale: 1.001;
+  background-color: #1c356c;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.848);
+  color: white;
+}
+
+.usuario-card:hover .usuario-foto,
+.usuario-card:active .usuario-foto {
+  border: 2px solid black;
 }
 
 .usuario-info {
@@ -694,7 +890,7 @@ watch(busquedaUsuarios, cargarUsuarios);
 
 .usuario-info h2 {
   margin: 0;
-  font-size: 1.3em;
+  font-size: 1.5em;
   font-style: bold;
 }
 
@@ -710,17 +906,12 @@ watch(busquedaUsuarios, cargarUsuarios);
 
 .usuario-estadisticas span {
   margin: 2px 0;
-  font-size: 1.1em;
+  font-size: 1.3em;
 }
 
 .usuario-card-link {
   text-decoration: none;
   color: inherit;
-}
-
-.usuario-card:hover {
-  background-color: #0c1f49;
-  scale: 0.995;
 }
 
 .usuario-foto:hover,
@@ -747,7 +938,8 @@ watch(busquedaUsuarios, cargarUsuarios);
   padding: 10px;
   font-weight: bold;
   border: 1px solid black;
-  height: 37px;
+  height: 42px;
+  font-size: 18px;
 }
 
 .filtroSeleccionado {
@@ -775,8 +967,8 @@ watch(busquedaUsuarios, cargarUsuarios);
   height: 30px;
   display: flex;
   align-items: center;
-  margin-top: 10px;
-  margin-bottom: 30px;
+  margin-top: 35px;
+  margin-bottom: 45px;
   margin-left: 60px;
 }
 
@@ -817,7 +1009,7 @@ watch(busquedaUsuarios, cargarUsuarios);
   align-items: center;
   justify-content: center;
   margin-left: 60px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .btn-scanner {
@@ -836,10 +1028,7 @@ watch(busquedaUsuarios, cargarUsuarios);
 .btn-scanner:hover {
   cursor: pointer;
   box-shadow: 0 2px 10px 2px rgba(0, 0, 0, 0.8);
-
 }
-
-#result {}
 
 #reader {
   position: relative;
@@ -921,6 +1110,93 @@ watch(busquedaUsuarios, cargarUsuarios);
   max-width: 25.33%;
 }
 
+.quitar_filtro_usuario {
+  transform: translateX(-77px);
+}
+
+@keyframes heartbeat {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.boton_header {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
+}
+
+.boton_header:hover,
+.boton_header:active {
+  border-color: #eef2fa81;
+}
+
+.publicaciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 60px;
+  margin-bottom: 100px;
+}
+
+.vista {
+  margin-top: 0px;
+  width: 60%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.div_cargando {
+  display: flex;
+  justify-content: center;
+}
+
+.div_cargando2 {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.cargando {
+  border: 6px solid rgba(0, 0, 0, 0.898);
+  border-radius: 100%;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  width: 60px;
+  height: 60px;
+  animation: loading 1.5s infinite linear;
+}
+
+.vacio {
+  margin-top: 300px;
+}
+
+.lleno {
+  margin-top: 8px;
+}
+
 @media(max-width: 1100px) {
   .reja-productos {
     width: 90%;
@@ -991,7 +1267,6 @@ watch(busquedaUsuarios, cargarUsuarios);
   border-radius: 25px;
   border: 2px solid black;
   margin-bottom: 20px;
-
 }
 
 .cross-interno {

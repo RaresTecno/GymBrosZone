@@ -8,7 +8,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export const userActive = ref(false);
 export const userId = ref();
-// console.log(supabase.auth.user())
 
 /*Función para obtener el id del usuario.*/
 export async function obtenerId() {
@@ -34,16 +33,13 @@ export async function userState(){
 
 export async function seeCurrentUser() {
     const localUser = await supabase.auth.getSession();
-    console.log(localUser.data.session.user);
     return localUser.data.session.user
 }
 
 export async function logOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
-        console.log(error);
     }else{
-        console.log("Logged out");
         window.location.href="/";
     }
     // export async function userState(event){

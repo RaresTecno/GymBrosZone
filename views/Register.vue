@@ -244,7 +244,6 @@ async function creaCuenta() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
     if (validarNombre() && validarApellidos() && await validarGymtag() && await validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
-        console.log('supa');
         createAccount();
     } else {
         return;

@@ -59,7 +59,6 @@ async function revisarCarpeta(user) {
     .storage
     .from('files')
     .list(ruta);
-
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (errorCarpeta) {
     logOut();

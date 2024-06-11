@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, computed, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif";
 import { useRoute } from 'vue-router';
@@ -51,6 +51,7 @@ const comentarioInput = ref(null);
 const comentarios = ref([]);
 
 const mostrarFinal = ref(false);
+const contenidoTransform = ref('translateY(0)');
 
 const isCover = ref(true);
 const esCover = ref(true);
@@ -61,9 +62,11 @@ const tieneGuardadoFinal = ref();
 
 const mostrarPregunta = ref(false);
 const mensajePopUp = ref('');
+const comentarioIdParaEliminar = ref(null);
 
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
+const mostrarMas = ref(false);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
@@ -78,6 +81,18 @@ if (props.publicacionUnica.resolucion == "cover") {
   if (windowWidth < 1100) {
     isCover.value = false;
   }
+}
+
+/*Función para dar formato a la fecha.*/
+function formatFecha(fecha) {
+  const options = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  return new Date(fecha).toLocaleString('es-ES', options);
 }
 
 /*Función para seguir a un usuario.*/
@@ -143,19 +158,7 @@ function handleDoubleClick(event) {
   darLike();
 }
 
-
-
-
-
-
-
 async function obtenerComentarios(idpublicacion) {
-  // const { data: comentariosData, error } = await supabase
-  //   .from('comentarios')
-  //   .select('*')
-  //   .eq('idpublicacion', idpublicacion);
-  //   // .order('fechacreacion', { ascending: true });
-
   const { data: comentariosData, error } = await supabase
     .from('comentarios')
     .select('*, usuarios(gymtag)')
@@ -402,21 +405,35 @@ async function obtenerCantidadLikes(idpublicacion) {
 function updateWidth() {
   windowWidth.value = window.innerWidth;
   foto.value.style.cursor = 'pointer';
+  if (mostrarFinal.value && windowWidth.value > 875) {
+    contenidoTransform.value = 'translateY(0)';
+  } else if (mostrarFinal.value && windowWidth.value <= 875) {
+    contenidoTransform.value = 'translateY(0)';
+  }
 }
 
-onMounted(() => {
-  window.addEventListener("resize", updateWidth);
-});
-
 async function mostrar(bool) {
-  tieneLikeInicial.value = likes.value[props.publicacionUnica.idpublicacion] || false;
-  tieneGuardadoInicial.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
   if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
     document.body.style.overflow = "hidden";
     mostrarFinal.value = true;
+  }
+  updateWidth();
+  if (windowWidth.value <= 875) {
+    await nextTick();
+    const contenidoElement = document.querySelector('.contenido');
+    contenidoElement.classList.add('no_mostrar');
+    setTimeout(() => {
+      contenidoElement.classList.add('mostrar');
+      contenidoElement.classList.remove('no_mostrar');
+    }, 10);
+  };
+
+  tieneLikeInicial.value = likes.value[props.publicacionUnica.idpublicacion] || false;
+  tieneGuardadoInicial.value = guardados.value[props.publicacionUnica.idpublicacion] || false;
+  if ((!bool && windowWidth.value > 875) || (bool && windowWidth.value <= 875)) {
     await obtenerComentarios(props.publicacionUnica.idpublicacion);
   }
-};
+}
 
 function cerrar() {
   tieneLikeFinal.value = likes.value[props.publicacionUnica.idpublicacion] || false;
@@ -433,7 +450,26 @@ function cerrar() {
   }
 
   document.body.style.overflow = "visible";
-  mostrarFinal.value = false;
+  if (windowWidth.value <= 875) {
+    const contenidoElement = document.querySelector('.contenido');
+    contenidoElement.classList.remove('mostrar');
+    contenidoElement.classList.add('no_mostrar');
+    setTimeout(() => {
+      mostrarFinal.value = false;
+      mostrarMas.value = false;
+    }, 300);
+  } else {
+    mostrarFinal.value = false;
+    mostrarMas.value = false;
+  }
+}
+
+function handlePopState() {
+  if (mostrarFinal.value) {
+    cerrar();
+  } else {
+    history.go(-1);
+  }
 }
 
 function quitarOverflow() {
@@ -468,10 +504,11 @@ async function publicar() {
   await obtenerComentarios(props.publicacionUnica.idpublicacion);
 }
 
-function confirmarBorrar() {
+function confirmarBorrar(mensaje, comentarioId = null) {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';
-  mensajePopUp.value = '¿Seguro que quieres borrar esta publicación?';
+  mensajePopUp.value = mensaje;
+  comentarioIdParaEliminar.value = comentarioId;
   nextTick(() => {
     setTimeout(() => {
       const divPregunta = document.querySelector('.div_pregunta');
@@ -481,6 +518,21 @@ function confirmarBorrar() {
       }
     }, 5);
   });
+}
+
+/*Función para eliminar un comentario.*/
+async function borrarComentario() {
+  const { error } = await supabase
+    .from('comentarios')
+    .delete()
+    .eq('id', comentarioIdParaEliminar.value);
+
+  if (error) {
+    return;
+  }
+
+  await obtenerComentarios(props.publicacionUnica.idpublicacion);
+  cancelar();
 }
 
 /*El usuario confirma la eliminación de la foto de perfil.*/
@@ -498,10 +550,10 @@ async function confirmar() {
   }
 
 
-  const { data, error: deleteError } = await supabase
+  const { error: deleteError } = await supabase
     .from('publicaciones')
     .delete()
-    .eq('idpublicacion', props.publicacionUnica.idpublicacion);
+    .eq('idpublicacion', idPublicacion);
 
   if (deleteError) {
     console.log(deleteError);
@@ -515,7 +567,7 @@ async function confirmar() {
   if (storageError) {
     return;
   }
-  window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: props.publicacionUnica.idpublicacion } }));
+  window.dispatchEvent(new CustomEvent('ocultar-publicacion', { detail: { idPublicacion: idPublicacion } }));
   mostrarFinal.value = false;
 }
 
@@ -527,15 +579,58 @@ function cancelar() {
     divPregunta.classList.add('shrink');
     setTimeout(() => {
       mostrarPregunta.value = false;
-      document.body.style.overflow = '';
       mensajePopUp.value = '';
     }, 250);
   }
 }
 
+onMounted(() => {
+  window.addEventListener("resize", updateWidth);
+  updateWidth();
+  adjustHeights();
+  window.addEventListener('resize', adjustHeights);
+});
+
 onUnmounted(() => {
   window.removeEventListener('resize', updateWidth);
+  window.removeEventListener('resize', adjustHeights);
 });
+
+watch([tematica, descripcion, comentarios], adjustHeights);
+
+function girar_imagen() {
+  const imgElement = document.querySelector('.final .imagen img');
+  if (imgElement) {
+    if (imgElement.classList.contains('cover')) {
+      imgElement.classList.remove('cover');
+      imgElement.classList.add('normal');
+    } else {
+      imgElement.classList.remove('normal');
+      imgElement.classList.add('cover');
+    }
+  }
+}
+
+function toggleVerMas() {
+  mostrarMas.value = !mostrarMas.value;
+}
+
+function adjustHeights() {
+  nextTick(() => {
+    const tematicaContenidoComentarios = document.querySelector('.tematica_contenido_comentarios');
+    const tematicaContenido = document.querySelector('.tematica_contenido');
+    const comentarios = document.querySelector('.comentarios');
+
+    if (tematicaContenidoComentarios && tematicaContenido && comentarios) {
+      const totalHeight = 380;
+      const tematicaContenidoHeight = tematicaContenido.offsetHeight;
+      const comentariosHeight = totalHeight - tematicaContenidoHeight;
+
+      comentarios.style.height = `${comentariosHeight}px`;
+    }
+  });
+}
+
 </script>
 <template>
   <div class="publicacion" id="forzar-publicacion">
@@ -543,14 +638,14 @@ onUnmounted(() => {
       <div class="div_pregunta div_pregunta_inicio" @click.stop>
         <div class="pregunta">{{ mensajePopUp }}</div>
         <div class="botones_pregunta">
-          <button v-if="mensajePopUp == '¿Seguro que quieres borrar esta publicación?'"
+          <button v-if="mensajePopUp == '¿Seguro que quieres eliminar esta publicación?'"
             @click="confirmar">Eliminar</button>
-          <button v-if="mensajePopUp == '¿Seguro que quieres borrar esta publicación?'"
+          <button v-if="mensajePopUp == '¿Seguro que quieres eliminar esta publicación?'"
             @click="cancelar">Cancelar</button>
-          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
-            @click="cerrarSes">Si</button>
-          <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
-            @click="cancelar">No</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Seguro que quieres eliminar este comentario?'"
+            @click="borrarComentario()">Eliminar</button>
+          <button class="boton_esp" v-if="mensajePopUp == '¿Seguro que quieres eliminar este comentario?'"
+            @click="cancelar">Cancelar</button>
         </div>
       </div>
     </div>
@@ -609,17 +704,27 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      <!-- <h2 class="tematica">{{ tematica }}</h2> -->
     </div>
     <div class="final" v-if="mostrarFinal" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
-          <img :src="ruta" class="cover" @dblclick="handleDoubleClick" />
+          <img :src="ruta" @dblclick="handleDoubleClick" class="cover" />
           <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
             :style="likeAnimationStyle" />
+          <div class="div_girar_imagen" ref="div_girar_imagen" v-if="!esCover">
+            <svg width="600px" height="600px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+              class="girar_imagen" @click="girar_imagen" @click.stop>
+              <g id="Arrow / Expand">
+                <path id="Vector" d="M10 19H5V14M14 5H19V10" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </g>
+            </svg>
+          </div>
         </div>
         <div class="cuerpo">
-          <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" /></div>
+          <div class="cerrar"><font-awesome-icon :icon="['fas', 'xmark']" @click="cerrar" />
+            <div class="resizable-div" v-show="windowWidth <= 875" @click="cerrar"></div>
+          </div>
           <div class="encabezado">
             <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink"
               @click="quitarOverflow">
@@ -633,9 +738,16 @@ onUnmounted(() => {
               </div>
             </RouterLink>
             <div class="botones_seguir">
-              <button v-if="!siguiendo && perfilPropio == false" @click="seguir">Seguir</button>
-              <button v-if="siguiendo && perfilPropio == false" @click="dejarSeguir">Siguiendo</button>
-              <button v-if="perfilPropio == true || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'" @click="confirmarBorrar" class="boton_quitar_imagen">
+              <button v-if="!siguiendo && perfilPropio == false && windowWidth > 400" @click="seguir">Seguir</button>
+              <button v-if="siguiendo && perfilPropio == false && windowWidth > 400"
+                @click="dejarSeguir">Siguiendo</button>
+              <button v-if="!siguiendo && perfilPropio == false && windowWidth <= 400" @click="seguir">+</button>
+              <button v-if="siguiendo && perfilPropio == false && windowWidth <= 400" @click="dejarSeguir"
+                class="menos">
+                <div>¯</div>
+              </button>
+              <button v-if="perfilPropio == true || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'"
+                @click="confirmarBorrar('¿Seguro que quieres eliminar esta publicación?')" class="boton_quitar_imagen">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="quitar_imagen"
                   @click="confirmacion">
                   <path
@@ -644,37 +756,58 @@ onUnmounted(() => {
               </button>
             </div>
           </div>
-          <div class="contenedor_tematica">
-            <div class="tematica">{{ tematica }}</div>
-          </div>
-          <div class="contenedor_descripcion">
-            <div class="descripcion">{{ descripcion }}</div>
-          </div>
-
-
-          <div class="comentarios">
-            <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
-              <div class="header_cometario">
-                <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: comentario.usuarios.gymtag } }"
-                  class="RouterLink" @click="quitarOverflow">
-                  <div class="comentario-header">
-                    <!-- <img :src="fotoTuPerfilMostrar" class="comentario-foto" /> -->
-                    <img :src="comentario.fotoPerfilComentarioMostrada" class="comentario-foto" />
-                    <!-- <span class="comentario-usuario">{{ comentario.idusuario }}</span> -->
-                    <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
-                  </div>
-                </RouterLink>
+          <div class="tematica_contenido_comentarios">
+            <div class="tematica_contenido">
+              <div class="contenedor_tematica">
+                <div class="tematica">{{ tematica }}</div>
               </div>
-              <div class="comentario-contenido">
-                {{ comentario.comentario }}
+              <div v-if="descripcion.length > 0" :class="['contenedor_descripcion', { 'quitarOverflow': !mostrarMas }]">
+                <div v-if="descripcion.length > 115 && !mostrarMas" class="div_esp">
+                  <span class="span_esp">{{ descripcion.slice(0, 115) }}<span class="ver-mas" @click="toggleVerMas">
+                      ...más</span></span>
+                </div>
+                <div v-if="descripcion.length < 115">
+                  <span>{{ descripcion }}</span>
+                </div>
+                <div v-if="mostrarMas" class="descripcion-completa">
+                  <span class="sin_top">{{ descripcion }}</span>
+                  <span class="ver-menos" @click="toggleVerMas"> ...menos</span>
+                </div>
               </div>
-              <div class="comentario-fecha">
-                {{ new Date(comentario.fechacreacion).toLocaleString() }}
+            </div>
+            <div :class="['comentarios', { 'hacerPequenosComentarios': mostrarMas }]">
+              <div v-if="comentarios.length === 0" class="sin-comentarios">
+                <h3>Todavía no hay comentarios.</h3>
+              </div>
+              <div v-for="comentario in comentarios" :key="comentario.id" class="comentario">
+                <div class="header_cometario">
+                  <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: comentario.usuarios.gymtag } }"
+                    class="RouterLink" @click="quitarOverflow">
+                    <div class="comentario-header">
+                      <img :src="comentario.fotoPerfilComentarioMostrada" class="comentario-foto" />
+                      <span class="comentario-usuario">@{{ comentario.usuarios.gymtag }}</span>
+                    </div>
+                  </RouterLink>
+                  <button
+                    v-if="perfilPropio == true || comentario.idusuario === userId || userId == 'd522115b-0a93-4a05-bf50-8b32ccb9e344'"
+                    @click="confirmarBorrar('¿Seguro que quieres eliminar este comentario?', comentario.id)"
+                    class="boton_quitar_imagen boton_quitar_imagen_comentario">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="quitar_imagen"
+                      @click="confirmacion">
+                      <path
+                        d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="comentario-contenido">
+                  {{ comentario.comentario }}
+                </div>
+                <div class="comentario-fecha">
+                  {{ formatFecha(comentario.fechacreacion) }}
+                </div>
               </div>
             </div>
           </div>
-
-
           <div class="todo_botones_publicacion_grande">
             <div class="borde"></div>
             <div class="botones_publicacion_grande">
@@ -705,6 +838,7 @@ onUnmounted(() => {
             </div>
           </div>
           <div class="borde borde2"></div>
+
           <div class="div_comentar">
             <div class="anadir">
               <div class="foto_anadir">
@@ -719,10 +853,17 @@ onUnmounted(() => {
                   v-if="windowWidth < 875" type="text">
               </div>
             </div>
-            <div class="publicar">
+            <div class="publicar" v-if="windowWidth >= 400">
               <div class="publicar_div">
                 <button @click="publicar"
                   :class="deshabilitado ? 'boton_deshabilitado' : 'publicar_boton'">Publicar</button>
+              </div>
+            </div>
+            <div class="publicar" v-if="windowWidth < 400">
+              <div class="publicar_div">
+                <button @click="publicar"
+                  :class="deshabilitado ? 'boton_deshabilitado' : 'publicar_boton'"><font-awesome-icon
+                    :icon="['fas', 'paper-plane']" /></button>
               </div>
             </div>
           </div>
@@ -733,6 +874,22 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.div_girar_imagen {
+  height: 35px;
+  width: 35px;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+}
+
+svg.girar_imagen {
+  background-color: var(--light-blue-text);
+  border-radius: 50%;
+  width: 35px !important;
+  height: 35px !important;
+  cursor: pointer;
+}
+
 .div_pregunta {
   color: var(--light-blue-text);
   background-color: var(--dark-blue);
@@ -789,13 +946,13 @@ onUnmounted(() => {
   border-color: #eef2fa81;
 }
 
-.contenido {
-  cursor: default;
-}
-
 .header_cometario {
   width: fit-content;
   padding-right: 5px;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .custom-image-style {
@@ -828,7 +985,7 @@ onUnmounted(() => {
   transition: text-shadow 0.3s;
 }
 
-.gymtag_encabezado {
+.final .gymtag_encabezado {
   max-width: 270px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -863,6 +1020,9 @@ onUnmounted(() => {
 
 .botones_seguir {
   padding-right: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .botones_seguir button {
@@ -884,80 +1044,134 @@ onUnmounted(() => {
   border-color: #eef2fa81;
 }
 
+.tematica_contenido_comentarios {
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tematica_contenido {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 12px 0 0;
+  flex-shrink: 0;
+}
+
 .contenedor_tematica,
 .contenedor_descripcion {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  color: var(--light-blue-text);
+  position: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.tematica,
+.descripcion {
   height: fit-content;
-  background-color: green;
+  white-space: normal;
+  font-size: 19px;
 }
 
 .contenedor_tematica {
-  padding: 10px 20px;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-.tematica {
-  width: 450px;
-  max-width: 450px;
-  background-color: red;
-  height: fit-content;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  font-size: 19px;
-  color: var(--light-blue-text);
-}
-
-.descripcion {
-  width: 450px;
-  max-width: 450px;
-  background-color: red;
-  height: fit-content;
-  word-break: break-word;
-  overflow-wrap: break-word;
+.contenedor_descripcion {
   font-size: 15px;
-  color: var(--light-blue-text);
+  height: fit-content;
+  max-height: 190px;
+  padding-bottom: 10px;
+  overflow-y: auto;
+  padding: 10px 20px 10px 20px;
+  border-top: 1px solid #ebebebd3;
 }
 
+.ver-mas,
+.ver-menos {
+  color: #bababa;
+  cursor: pointer;
+}
 
+.descripcion-completa.show {
+  display: block;
+}
 
+.contenedor_descripcion.quitarOverflow {
+  overflow-y: hidden;
+}
 
+span.span_esp {
+  padding-top: 0;
+}
 
+.sin_top {
+  padding-top: 0;
+}
 
+.sin-comentarios {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--light-blue-text);
+  font-weight: 600 !important;
+}
 
-
-
-
+.sin-comentarios h3 {
+  font-weight: 200;
+}
 
 .comentarios {
-  height: 240px;
+  flex-grow: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  border: 1px solid #ebebebd3;
-  margin: 10px;
-  position: absolute;
-  bottom: 135px;
-  width: calc(100% - 20px);
-
+  border-top: 1px solid #ebebebd3;
+  background-color: var(--dark-blue);
+  transition: height 0.3s ease;
+  width: 100%;
 }
 
-.comentarios::-webkit-scrollbar {
-  width: 8px;
+.hacerPequenosComentarios {
+  height: 167px;
+}
+
+.comentarios::-webkit-scrollbar,
+.contenedor_descripcion::-webkit-scrollbar {
+  width: 10px;
 }
 
 .comentarios::-webkit-scrollbar-track {
   background: var(--dark-blue);
   background: #b8c1d346;
-  border-left: var(--light-blue-text) solid 1px;
+  border: var(--light-blue-text) solid 1px;
+  border-bottom: 1px solid #cccccc31;
 }
 
-.comentarios::-webkit-scrollbar-thumb {
+.contenedor_descripcion::-webkit-scrollbar-track {
+  background: var(--dark-blue);
+  background: #b8c1d346;
+  border: var(--light-blue-text) solid 1px;
+  border-bottom: none;
+  border-top: none;
+
+}
+
+.contenedor_descripcion::-webkit-scrollbar-track {
+  border: var(--light-blue-text) solid 1px;
+}
+
+.comentarios::-webkit-scrollbar-thumb,
+.contenedor_descripcion::-webkit-scrollbar-thumb {
   background-color: var(--light-blue-text);
 }
 
 .comentario {
-  border-bottom: 1px solid #cccccc4d;
+  border-bottom: 1px solid #cccccc31;
   padding: 10px 5px;
 }
 
@@ -965,14 +1179,16 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   color: var(--light-blue-text);
-  /* background-color: red; */
   width: fit-content;
   padding: 0 5px;
   cursor: pointer;
+  transition: text-shadow 0.3s;
 }
 
 .comentario-header:hover,
-.comentario-header:active {}
+.comentario-header:active {
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.575), 0 0 6px rgba(255, 255, 255, 0.301);
+}
 
 .comentario-foto {
   width: 40px;
@@ -983,6 +1199,13 @@ onUnmounted(() => {
   margin-left: 5px;
   border: 1px solid black;
   transition: border 0.3s;
+  background-color: var(--black);
+  transition: border 0.3s;
+}
+
+.comentario-header:hover .comentario-foto,
+.comentario-header:active .comentario-foto {
+  border: 1px solid rgb(109, 109, 109);
 }
 
 .foto_encabezado img {
@@ -990,11 +1213,6 @@ onUnmounted(() => {
   height: 100%;
   width: 100%;
   object-fit: cover;
-}
-
-.comentario-header .comentario-foto:hover,
-.comentario-header .comentario-foto:active {
-  border: 1px solid rgb(109, 109, 109);
 }
 
 .comentario-usuario {
@@ -1014,33 +1232,13 @@ onUnmounted(() => {
 .comentario-fecha {
   font-size: 13px;
   margin-left: 12px;
-  color: #999;
+  color: #bababa;
   margin-top: 5px;
 }
 
 .comentario:last-child {
   border: none;
 }
-
-.comentario:first-child {
-  /* padding-top: 0; */
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .publicacion {
   background-color: var(--black);
@@ -1051,10 +1249,7 @@ onUnmounted(() => {
   aspect-ratio: 1;
   position: relative;
   max-height: fit-content;
-  /* max-width: 500px; */
   border: 1px solid black;
-  /* overflow-clip-margin: content-box;
-  overflow: clip; */
   overflow: hidden;
   cursor: pointer;
 }
@@ -1136,7 +1331,7 @@ onUnmounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(96, 96, 96, 0.507);
+  background-color: rgba(52, 52, 52, 0.583);
   z-index: 700;
   display: flex;
   justify-content: center;
@@ -1147,9 +1342,10 @@ onUnmounted(() => {
   display: flex;
   background-color: black;
   border-radius: 4px;
-  border: var(--black) 2px solid;
+  border: var(--black) 3px solid;
   overflow: hidden;
   position: relative;
+  cursor: default;
 }
 
 .cerrar {
@@ -1169,13 +1365,10 @@ onUnmounted(() => {
   width: 600px;
   height: 600px;
   border-right: var(--black) 1px solid;
-}
-
-.imagen img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cuerpo {
@@ -1188,7 +1381,6 @@ onUnmounted(() => {
   width: 80%;
   height: 100%;
   display: flex;
-  justify-content: center;
   text-align: center;
   justify-content: end;
 }
@@ -1196,7 +1388,6 @@ onUnmounted(() => {
 .publicar_boton {
   cursor: pointer;
   background-color: var(--blue-buttons);
-  /* width: 50px; */
   border: solid var(--black) 2px;
   border-radius: 2px;
   font-size: 18px;
@@ -1279,7 +1470,6 @@ onUnmounted(() => {
   color: var(--light-blue-text);
 }
 
-
 .foto_anadir {
   width: 45px;
   height: 45px;
@@ -1288,6 +1478,7 @@ onUnmounted(() => {
   border-right: var(--black) 1px solid;
   margin-left: 20px;
   margin-top: 7px;
+  min-width: 45px;
 }
 
 .foto_anadir img {
@@ -1318,14 +1509,12 @@ onUnmounted(() => {
 
 .botones_publicacion_grande {
   display: flex;
-  align-items: bottom;
   position: absolute;
   justify-content: space-between;
   bottom: 81px;
   padding-top: 5px;
   height: 50px;
   width: 100%;
-  /* background-color: grey; */
   z-index: 100;
   overflow: visible;
 }
@@ -1335,7 +1524,6 @@ onUnmounted(() => {
   bottom: 62px;
   height: 21px;
   width: 100%;
-  /* background-color: lightcoral; */
   padding-left: 20px;
   z-index: 10;
   display: flex;
@@ -1348,7 +1536,7 @@ onUnmounted(() => {
   display: flex;
 }
 
-.botones_seguir button.boton_quitar_imagen {
+button.boton_quitar_imagen {
   width: 24px !important;
   height: 24px !important;
   display: flex;
@@ -1366,6 +1554,17 @@ onUnmounted(() => {
   height: 24px !important;
   width: 24px !important;
   fill: var(--light-blue-text);
+}
+
+button.boton_quitar_imagen_comentario {
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 25px;
+}
+
+.boton_quitar_imagen_comentario svg {
+  height: 20px !important;
+  width: 20px !important;
 }
 
 .megusta_comentario div {
@@ -1560,17 +1759,16 @@ onUnmounted(() => {
 
   .botones_seguir button {
     font-size: 12px;
-    padding: 4px 6px;
+    margin: 4px 6px;
   }
 
-  .gymtag_encabezado {
+  .final .gymtag_encabezado {
     max-width: 220px;
   }
 
   .botones_seguir {
     padding-right: 10px;
     padding-left: 5px;
-
   }
 
   .input_anadir .input {
@@ -1583,6 +1781,32 @@ onUnmounted(() => {
 
   .input_anadir {
     margin-left: 12px;
+  }
+
+  button.boton_quitar_imagen {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .boton_quitar_imagen svg {
+    height: 20px !important;
+    width: 20px !important;
+  }
+
+  .tematica {
+    font-size: 17px;
+  }
+
+  .contenedor_descripcion {
+    font-size: 14px;
+    height: fit-content;
+    max-height: 100px;
+  }
+
+  .tematica_contenido_comentarios {
+    height: 280px;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -1605,7 +1829,7 @@ onUnmounted(() => {
     width: 50px;
   }
 
-  .gymtag_encabezado {
+  .final .gymtag_encabezado {
     max-width: 210px;
   }
 
@@ -1615,6 +1839,20 @@ onUnmounted(() => {
 
   .publicar button {
     transform: translate(8px);
+  }
+
+  .tematica {
+    font-size: 16px;
+  }
+
+  .contenedor_descripcion {
+    max-height: 100px;
+  }
+
+  .tematica_contenido_comentarios {
+    height: 240px;
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -1628,8 +1866,155 @@ onUnmounted(() => {
     overflow: hidden;
   }
 
+  .final {
+    align-items: end;
+    background-color: rgba(42, 42, 42, 0.783);
+  }
+
+  .cerrar .svg-inline--fa.fa-xmark {
+    display: none;
+  }
+
+  .cerrar {
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 5px;
+  }
+
+  .resizable-div {
+    background-color: #eef2facf;
+    width: 20%;
+    height: 4px;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
+    border-radius: 10px;
+    max-width: 120px;
+  }
+
+  .contenido {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    height: 80vh;
+    border-top: 1px solid #eef2fa6c;
+    min-height: 735px;
+    /* transform: translateY(100%); */
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .contenido.no_mostrar {
+    transform: translateY(100%);
+  }
+
+  .contenido.mostrar {
+    transform: translateY(0);
+  }
+
+  .sin-comentarios h3 {
+    font-size: 26px;
+  }
+
+  .comentarios {
+    max-height: 490px;
+  }
+
+  .final .encabezado {
+    padding: 0 20px;
+  }
+
+  .final .gymtag_encabezado {
+    max-width: 400px;
+    overflow: auto;
+    text-overflow: none;
+  }
+
+  .megusta,
+  .comentar,
+  .guardar {
+    padding-top: 1px;
+  }
+
+  .final .foto_gymtag {
+    font-size: 29px;
+  }
+
+  .final .foto_encabezado {
+    height: 70px;
+    width: 70px;
+    overflow: hidden;
+    margin-right: 15px;
+  }
+
+  .final .foto_encabezado img {
+    border-radius: 50%;
+    height: 100%;
+    width: 100%;
+    border: 1px solid black;
+    transition: border 0.3s;
+    object-fit: cover;
+  }
+
+  .final .botones_seguir {
+    padding-right: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .final .botones_seguir button {
+    font-weight: bold;
+    text-decoration: none;
+    background-color: #3d5a98;
+    color: var(--light-blue-text);
+    border: 2px solid var(--black);
+    cursor: pointer;
+    border-radius: 25px;
+    text-align: center;
+    transition: border 0.5s;
+    padding: 5px 8px;
+    width: 84.44px;
+  }
+
+  .final .botones_seguir button.boton_quitar_imagen {
+    width: 24px !important;
+    height: 24px !important;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    background-color: transparent !important;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 12px;
+    transform: translateX(21px);
+  }
+
+  .final .botones_seguir .boton_quitar_imagen svg {
+    height: 24px !important;
+    width: 24px !important;
+    fill: var(--light-blue-text);
+  }
+
+  .contenedor_descripcion,
+  .contenedor_tematica {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
   .cuerpo {
-    height: 454px;
+    height: 100%;
+    width: 100%;
+  }
+
+  .tematica_contenido_comentarios {
+    height: 496px;
+    display: flex;
+    align-items: end;
   }
 
   .imagen {
@@ -1639,12 +2024,202 @@ onUnmounted(() => {
   .div_pregunta {
     margin-left: 0;
   }
+
+  .botones_publicacion_grande {
+    bottom: 91px;
+    padding: 0 10px;
+  }
+
+  .numero_likes {
+    bottom: 74px;
+    padding-left: 30px;
+  }
+
+  .borde {
+    bottom: 148px;
+  }
+
+  .borde2 {
+    bottom: 65px;
+  }
+
+  .div_comentar {
+    padding: 0px 30px 5px 20px;
+  }
+
+  .anadir {
+    width: 100%;
+  }
+
+  .input_anadir {
+    height: 45px;
+    width: 100%;
+    margin-left: 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .todo_botones_publicacion_grande {
+    width: fit-content;
+  }
+
+  .input_anadir .input {
+    width: 100%;
+    height: 35px;
+  }
+
+  .div_comentar * {
+    margin-top: 0;
+  }
+
+  .div_comentar .input {
+    margin-top: 0;
+  }
+
+  .publicar_div {
+    width: 155px;
+    justify-content: end;
+    padding-right: 10px;
+    align-items: center;
+  }
+
+  .publicar_boton {
+    width: 100%;
+    max-width: 120px;
+    height: 37px;
+  }
+
+  .boton_deshabilitado {
+    width: 100%;
+    max-width: 120px;
+    height: 37px;
+  }
+
+  .comentario {
+    padding: 10px 20px;
+  }
+
+  .boton_quitar_imagen_comentario {
+    margin: 0 !important;
+  }
+
+  .foto_anadir {
+    width: 47px;
+    height: 47px;
+    min-width: 47px;
+    margin-left: 7px;
+  }
 }
 
 @media (max-width: 625px) {
   .publicacion {
     border-radius: 0;
     margin: 2px;
+  }
+}
+
+@media (max-width: 550px) {
+  .contenido {
+    height: 78vh;
+    min-height: 720px;
+  }
+
+  .final .encabezado {
+    padding-left: 10px;
+  }
+
+  .final .botones_seguir {
+    padding-right: 0;
+    padding-left: 20px;
+  }
+
+  .final .foto_encabezado {
+    height: 55px;
+    width: 55px;
+    overflow: hidden;
+    margin-right: 15px;
+  }
+
+  .sin-comentarios h3 {
+    font-size: 23px;
+  }
+
+  .foto_gymtag {
+    margin-left: 20px;
+  }
+
+  .final .gymtag_encabezado {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .final .foto_gymtag {
+    font-size: 23px;
+    margin-left: 10px
+  }
+
+  .final .foto_encabezado {
+    overflow: hidden;
+    margin-right: 10px;
+  }
+
+  .final .botones_seguir {
+    padding-left: 0;
+  }
+
+  .contenedor_tematica {
+    padding: 0 20px;
+  }
+
+  .final .contenedor_descripcion {
+    padding: 10px 20px;
+  }
+
+  .comentario {
+    padding: 10px 10px;
+  }
+
+  .final .botones_publicacion_grande {
+    padding: 0;
+  }
+
+  .final .numero_likes {
+    padding-left: 17px;
+  }
+
+  .div_comentar {
+    padding: 0 10px 5px;
+  }
+
+  .publicar_div {
+    width: 105px;
+    justify-content: end;
+    padding-right: 10px;
+    align-items: center;
+  }
+
+  .publicar_boton {
+    width: 100%;
+    max-width: 90px;
+    height: 37px;
+  }
+
+  .boton_deshabilitado {
+    width: 100%;
+    max-width: 90px;
+    height: 37px;
+  }
+
+  .final .botones_seguir button.boton_quitar_imagen {
+    transform: translateX(8px);
+  }
+}
+
+@media (max-width: 470px) {
+  .final .gymtag_encabezado {
+    max-width: 240px;
   }
 }
 
@@ -1663,8 +2238,111 @@ onUnmounted(() => {
   }
 
   .botones_pregunta {
-
     width: 90%;
+  }
+
+  .final .gymtag_encabezado {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 400px) {
+  .final .megusta {
+    margin-right: 0;
+  }
+
+  .final .foto_encabezado {
+    height: 45px;
+    width: 45px;
+  }
+
+  .final .gymtag_encabezado {
+    font-size: 20px;
+    max-width: 200px;
+  }
+
+  .final .botones_seguir {
+    padding-right: 0;
+  }
+
+  .final .botones_seguir button {
+    font-weight: 400;
+    padding: 2px 0 0;
+    width: 30px;
+    font-size: 20px;
+  }
+
+  .final .botones_seguir button.boton_quitar_imagen {
+    width: 20px !important;
+    height: 20px !important;
+    transform: translateX(8px);
+  }
+
+  .final .botones_seguir .boton_quitar_imagen svg {
+    height: 20px !important;
+    width: 20px !important;
+  }
+
+  .final .botones_seguir button.menos div {
+    transform: translateY(9px) scaleX(0.85);
+    font-weight: bold;
+  }
+
+  .cerrar {
+    height: 15px;
+  }
+
+  .contenido {
+    height: 76vh;
+    min-height: 706px;
+  }
+
+  .final .gymtag_encabezado {
+    max-width: 250px;
+  }
+
+  .foto_anadir {
+    width: 40px;
+    height: 40px;
+    min-width: 40px !important;
+    margin-left: 4px;
+  }
+
+  .input_anadir {
+    margin-left: 10px;
+  }
+
+  .boton_deshabilitado {
+    padding: 0 10px;
+  }
+
+  .publicar_div {
+    width: 60px;
+    padding-right: 10px;
+  }
+
+  .publicar_boton {
+    max-width: 50px;
+  }
+
+  .boton_deshabilitado {
+    max-width: 50px;
+  }
+}
+
+@media (max-width: 365px) {
+  .final .gymtag_encabezado {
+    max-width: 200px;
+  }
+
+  .contenedor_descripcion.quitarOverflow {
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 320px) {
+  .final .gymtag_encabezado {
+    max-width: 180px;
   }
 }
 </style>

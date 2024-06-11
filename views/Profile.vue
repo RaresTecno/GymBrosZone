@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, watch, onMounted, onUnmounted, defineProps } from "vue";
+import { ref, onMounted, onUnmounted, defineProps, watch } from "vue";
 import { useRouter } from 'vue-router';
 import { usandoMovil, disponible } from "../main";
 import Publicacion from "../components/Publicacion.vue";
@@ -30,8 +30,13 @@ const esPrivado = ref(true)
 const router = useRouter();
 const edad = ref()
 
-async function mostrarp() {
+watch(() => props.gymtag, (newGymtag, oldGymtag) => {
+  if (newGymtag !== oldGymtag) {
+    mostrarp();
+  }
+});
 
+async function mostrarp() {
   const { data: usuario, errorUsuario } = await supabase
     .from('usuarios')
     .select("*")
@@ -870,7 +875,9 @@ watch(altura, validarAltura);
 #publicacion {
   padding: 0;
 }
-
+#forzar-publicacion {
+    
+  }
 .estadisticas {
   display: flex;
   flex-direction: column;

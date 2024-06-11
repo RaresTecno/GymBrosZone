@@ -1,52 +1,100 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
-import { usandoMovil, disponible } from "../main";
-import { ref, reactive, onMounted, onUnmounted } from "vue"
+import { disponible } from "../main";
+import { ref, onMounted, onUnmounted } from "vue"
 import subrayado from '../assets/img/descarga.svg'
-// const todasPublicaciones = ref()
-const idPublicacion = ref()
-const cantidadPublicaciones = ref()
+import Footer from '../components/Footer.vue'
+
+disponible.value = true;
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
 const todasPublicaciones = ref([]);
-let offset = 0;
-const limit = 9;
+let offsetSeguidos = 0;
+let offsetNoSeguidos = 0;
+const limit = 4;
 let loading = false;
+let noMorePublicacionesSeguidos = false;
+let noMorePublicacionesNoSeguidos = false;
 
-const cargarPublicaciones = async () => {
-  if (loading) return;
+async function cargarPublicaciones() {
+  if (loading || (noMorePublicacionesSeguidos && noMorePublicacionesNoSeguidos)) return;
   loading = true;
 
   try {
-    const { data: publicaciones, error } = await supabase
-      .from('publicaciones')
-      .select('*')
-      .order('fechapublicacion', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const { data: seguidores, error: errorSeguidores } = await supabase
+      .from('seguidores')
+      .select('idseguido')
+      .eq('idseguidor', userId.value);
 
-    if (error) {
-      console.error(error);
-      loading = false;
-      return;
+    if (errorSeguidores) throw errorSeguidores;
+
+    const seguidosIds = seguidores.map(seguidor => seguidor.idseguido);
+
+    const publicacionesPromises = [];
+
+    if (!noMorePublicacionesSeguidos) {
+      publicacionesPromises.push(
+        supabase
+          .from('publicaciones')
+          .select('*')
+          .in('idusuario', seguidosIds)
+          .order('fechapublicacion', { ascending: false })
+          .range(offsetSeguidos, offsetSeguidos + limit - 1)
+      );
     }
 
-    // Añadir las nuevas publicaciones a las existentes
-    todasPublicaciones.value.push(...publicaciones);
-    offset += limit;
-    loading = false;
+    if (!noMorePublicacionesNoSeguidos) {
+      publicacionesPromises.push(
+        supabase
+          .from('publicaciones')
+          .select('*')
+          .not('idusuario', 'in', `(${seguidosIds.join(',')})`)
+          .order('fechapublicacion', { ascending: false })
+          .range(offsetNoSeguidos, offsetNoSeguidos + limit - 1)
+      );
+    }
+
+    const resultados = await Promise.all(publicacionesPromises);
+
+    const publicacionesSeguidos = resultados[0] ? resultados[0].data : [];
+    const publicacionesNoSeguidos = resultados[1] ? resultados[1].data : [];
+
+    if (publicacionesSeguidos.length < limit) noMorePublicacionesSeguidos = true;
+    else offsetSeguidos += limit;
+
+    if (publicacionesNoSeguidos.length < limit) noMorePublicacionesNoSeguidos = true;
+    else offsetNoSeguidos += limit;
+
+    const publicacionesMap = new Map();
+    publicacionesSeguidos.forEach(pub => publicacionesMap.set(pub.idpublicacion, pub));
+    publicacionesNoSeguidos.forEach(pub => publicacionesMap.set(pub.idpublicacion, pub));
+
+    todasPublicaciones.value.push(...Array.from(publicacionesMap.values()));
   } catch (error) {
     console.error(error);
+  } finally {
     loading = false;
   }
-};
+}
 
-const handleScroll = () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+/*Detectamos si el usuario ha llegado casi al final de la página para mostrar otras 9 publicaciones.*/
+let maxScrollReached = 0; // Variable para almacenar el máximo desplazamiento alcanzado
+
+function handleScroll() {
+  // Obtener la altura total de la ventana y la cantidad desplazada actualmente
+  const currentScroll = window.scrollY + window.innerHeight;
+  const scrollThreshold = document.body.offsetHeight - 100;
+
+  // Verificar si el desplazamiento actual es mayor al máximo desplazamiento alcanzado anteriormente
+  if (currentScroll > maxScrollReached && currentScroll > scrollThreshold) {
     cargarPublicaciones();
+    maxScrollReached = currentScroll; // Actualizar el máximo desplazamiento alcanzado
   }
-};
+}
 
+/*Añadimos los eventos tras montarse la vista: eventos de detectar el final de la página y el de eliminación de una publicación.*/
 onMounted(() => {
   cargarPublicaciones();
   window.addEventListener('scroll', handleScroll);
@@ -55,6 +103,7 @@ onMounted(() => {
   });
 });
 
+/*Eliminamos los eventos cuando se desmonta el componente.*/
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
   window.removeEventListener('ocultar-publicacion', (event) => {
@@ -62,6 +111,7 @@ onUnmounted(() => {
   });
 });
 
+/*Función que oculta una publicación cuando esta es eliminada por el usuario.*/
 function ocultarPublicacion(idPublicacion) {
   const publicacionElement = document.querySelector(`[data-publicacion-id="${idPublicacion}"]`);
   if (publicacionElement) {
@@ -69,12 +119,17 @@ function ocultarPublicacion(idPublicacion) {
   }
 }
 
+/*Función para obtener la foto de perfil del usuario para que esta sea visible en las publicaciones a la hora de comentar.*/
 async function obtenerTuFotoPerfil() {
   if (userActive.value == true) {
     const { data: usuario, error } = await supabase
       .from('usuarios')
       .select("*")
       .eq('id', userId.value);
+    if (error) {
+      fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+      return;
+    }
     fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
     if (fotoTuPerfilMostrar.value === '/predeterminada.png' || fotoTuPerfilMostrar.value === null || fotoTuPerfilMostrar.value === '') {
       fotoTuPerfilMostrar.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
@@ -85,8 +140,6 @@ async function obtenerTuFotoPerfil() {
   }
 }
 obtenerTuFotoPerfil();
-
-disponible.value = true;
 </script>
 
 <template>
@@ -102,8 +155,9 @@ disponible.value = true;
           <p>No importa si eres un culturista profesional o si acabas de empezar tu viaje en el mundo del fitness, en
             Gymbros Zone encontrarás el apoyo y los recursos que necesitas para alcanzar tus metas. Aquí, cada
             repetición cuenta y cada progreso es celebrado.</p>
-            <br>
-            <p>En GymBros Zone, cada desafío es una oportunidad para crecer. Encuentra tu fuerza interior y haz que cada sesión de entrenamiento cuente.</p>
+          <br>
+          <p>En GymBros Zone, cada desafío es una oportunidad para crecer. Encuentra tu fuerza interior y haz que cada
+            sesión de entrenamiento cuente.</p>
         </div>
         <div class="bienvenida_der">
           <img src="../assets/img/sport-1244925.webp" alt="">
@@ -126,7 +180,8 @@ disponible.value = true;
         <div class="bienvenida_izq">
           <h2>Logra la dieta que tanto deseas!</h2>
           <p>En GymBros Zone tendrás una infinidad de alimentos que podras buscar, analizar e incluso escanear.</p>
-          <p>También podrás compartir tus recetas favoritas y descubrir nuevos platillos saludables creados por la comunidad.</p>
+          <p>También podrás compartir tus recetas favoritas y descubrir nuevos platillos saludables creados por la
+            comunidad.</p>
           <h3>¿A que esperas?</h3>
           <h4>Únete a GymBrosZone</h4>
           <div id="no-loged">
@@ -150,6 +205,7 @@ disponible.value = true;
       </div>
     </div>
   </main>
+  <Footer  v-if="!userActive" />
 </template>
 
 <style scoped>
@@ -232,17 +288,18 @@ h1 img {
   display: flex;
   flex-direction: column;
 }
+
 .dieta h3,
 .dieta h4,
 .botones {
   align-self: center;
   margin: 10px;
   text-align: center;
-  }
-  
-  .dieta h3{
-    margin-top: 30px;
-  }
+}
+
+.dieta h3 {
+  margin-top: 30px;
+}
 
 .btn-no-loged {
   display: flex;
@@ -260,7 +317,6 @@ h1 img {
 }
 
 @keyframes heartbeat {
-
   0%,
   100% {
     transform: scale(1);
@@ -301,15 +357,15 @@ h1 img {
   width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  /* Centra el contenido verticalmente */
+  /* Centra el contenido verticalmente*/
 }
 
 @media (max-width: 1100px) {
   .bienvenida {
     width: 90%;
   }
-    
-  .dieta h3{
+
+  .dieta h3 {
     margin-top: 10px;
   }
 }
@@ -343,12 +399,10 @@ h1 img {
     display: flex;
     flex-direction: column;
     width: 80%;
-    align-items: center;
   }
 }
 
 @media (max-width: 625px) {
-
   .publicaciones {
     margin-left: 0;
     padding-top: 30px;
@@ -358,11 +412,13 @@ h1 img {
     width: 100%;
   }
 }
-@media (max-width: 600px){
+
+@media (max-width: 600px) {
   .home {
     margin-top: 170px;
   }
 }
+
 @media(max-width: 500px) {
   h1 {
     display: flex;

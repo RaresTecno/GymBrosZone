@@ -26,6 +26,8 @@ h1{
 }
 body {
     background-color: var(--bg-color);
+    min-height: 100vh;
+    position: relative;
 }
 
 html::-webkit-scrollbar {

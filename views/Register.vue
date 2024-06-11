@@ -43,9 +43,7 @@ async function createAccount() {
                 'fechanacimiento': fecha_nacimiento.value,
                 'fotoperfil': '/predeterminada.png',
                 'nombre': nombre.value,
-                'apellidos': apellidos.value,
-                'privacidad': 'publica',
-                'sobremi': ''
+                'apellidos': apellidos.value
             }
         }
     });

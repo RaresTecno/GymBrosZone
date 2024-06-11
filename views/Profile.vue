@@ -617,7 +617,7 @@ watch(altura, validarAltura);
         </div>
         <div class="resultado-imc">
           <div class="res-imc">
-            <h3>IMC: {{ resIMC.toFixed(2) + " (" + nivelIMC+ ")"  }}</h3>
+            <h3>IMC: {{ (!isNaN(parseFloat(resIMC)) && resIMC !== null && resIMC !== undefined && nivelIMC) ? (parseFloat(resIMC).toFixed(2) + " (" + nivelIMC + ")") : "No disponible" }}</h3>
           </div>
           <table>
             <thead>

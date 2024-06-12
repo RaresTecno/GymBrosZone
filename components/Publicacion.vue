@@ -19,6 +19,10 @@ const props = defineProps({
   fotoTuPerfilMostrar: {
     type: String,
     required: false
+  },
+  mostrarHeaderFooter: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -71,7 +75,6 @@ const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
 const mostrarMas = ref(false);
 const publicacionId = ref(null);
-const mostrarHeaderFooter = ref(false);
 const emit = defineEmits(['mostrar-todo-perfil']);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
@@ -651,7 +654,6 @@ function adjustHeights() {
       const totalHeight = 380;
       const tematicaContenidoHeight = tematicaContenido.offsetHeight;
       const comentariosHeight = totalHeight - tematicaContenidoHeight;
-
       comentarios.style.height = `${comentariosHeight}px`;
     }
   });
@@ -660,22 +662,18 @@ function adjustHeights() {
 /*Cuando se llama esta función es porque el usuario se encuentra en /profile y la pantalla es menor a 875px.*/
 function clickImagen() {
   if (isProfileRoute.value && windowWidth.value < 875) {
-    mostrarTodoPerfil(props.publicacionUnica.idpublicacion);
+    mostrarPublicacionesColumna(props.publicacionUnica.idpublicacion);
   } else {
     mostrar(false);
   }
 }
 
-const publicacionesContainer = ref(null);
-
-
 /*Mostraremos las imágenes una debajo de la otra y se ocultarán los divs necesarios.*/
-function mostrarTodoPerfil(id) {
+function mostrarPublicacionesColumna(id) {
   if (windowWidth.value < 875) {
     publicacionId.value = id;
     document.getElementById('info').style.display = 'none';
     document.getElementById('botones').style.display = 'none';
-    mostrarHeaderFooter.value = true;
     /*Emitimos un evento para poder acceder al id de la publicación pulsada.*/
     emit('mostrar-todo-perfil', id);
   }
@@ -698,7 +696,7 @@ function mostrarTodoPerfil(id) {
         </div>
       </div>
     </div>
-    <div class="header-publicacion" v-if="(windowWidth <= 875 && (!isProfile || mostrarHeaderFooter))">
+    <div class="header-publicacion" v-if="(windowWidth <= 875 && (!props.ProfileView || mostrarHeaderFooter))">
       <!-- <div class="header-publicacion-izq">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
           
@@ -729,7 +727,7 @@ function mostrarTodoPerfil(id) {
       <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
         :style="likeAnimationStyle" />
     </div>
-    <div class="footer-publicacion" v-if="(windowWidth <= 875 && (!isProfile || mostrarHeaderFooter))">
+    <div class="footer-publicacion" v-if="(windowWidth <= 875 && (!props.ProfileView || mostrarHeaderFooter))">
       <div class="todo_botones_publicacion_grande todo_botones_publicacion_p">
         <div class="botones_publicacion_grande">
           <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()">

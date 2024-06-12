@@ -1218,6 +1218,11 @@ async function obtenerTuFotoPerfil() {
     margin-left: 0px
   }
 
+  .vista{
+    display: flex;
+    flex-direction: column;
+  }
+
   .usuario-card {
     margin-left: 0px;
   }
@@ -1232,9 +1237,7 @@ async function obtenerTuFotoPerfil() {
   }
 
   .reja-productos {
-
     margin-left: 0;
-
   }
 
   .mini-producto {

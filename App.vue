@@ -157,7 +157,7 @@ async function revisarEstadisticas(user) {
 </script>
 <template>
   <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey" />
-  <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
+  <HeaderMobile v-if="userActive && (windowWidth <= 875)" :key="state.headerKey"/>
   <RouterView />
   <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey" />
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />

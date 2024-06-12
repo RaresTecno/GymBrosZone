@@ -2,7 +2,7 @@
 /*Imports y declaración de variables.*/
 import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase, obtenerId, logOut } from '../clients/supabase';
+import { supabase, userId, logOut } from '../clients/supabase';
 import { disponible, reloadHeader } from "../main";
 
 disponible.value = true;
@@ -392,7 +392,7 @@ onMounted(async () => {
     mensaje('Tu información ha sido actualizada.');
     localStorage.removeItem('showMessage');
   }
-  id = await obtenerId();
+  id = userId.value;
   const { data, error } = await supabase
     .from('usuarios')
     .select('gymtag, nombre, apellidos, fechanacimiento, fotoperfil')

@@ -33,15 +33,6 @@ async function init() {
   } else {
     usandoMovil.value = false;
   }
-  // export const usandoAndroid = ref();
-  // async function init() {
-  //   if (
-  //     navigator.userAgent.match(/Android/i)
-  //   ) {
-  //     usandoAndroid.value = true;
-  //   } else {
-  //     usandoAndroid.value = false;
-  //   }
   await userState();
   library.add(fas);
   library.add(fab);

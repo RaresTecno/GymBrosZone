@@ -28,11 +28,13 @@ const esPrivado = ref(true)
 const router = useRouter();
 const edad = ref();
 const publicacionesContainer = ref(null);
+const mostrarHeaderFooter = ref({});
 const windowWidth = ref(window.innerWidth);
+const mostrarHeaderFooterGlobal = ref(false);
 
 /*Cambio el valor del ancho de la pantalla cuando cambia de tamaño.*/
 const updateWidth = () => {
-    windowWidth.value = window.innerWidth;
+  windowWidth.value = window.innerWidth;
 };
 
 /*Observamos los cambios en el gymtag.*/
@@ -81,7 +83,7 @@ async function mostrarp() {
   if (errorPublicaciones) {
     return;
   }
-  todasPublicaciones.value = publicaciones.reverse()
+  todasPublicaciones.value = publicaciones.reverse();
   cantidadPublicaciones.value = publicaciones.length;
 
   if (profileId.value == userId.value) {
@@ -492,11 +494,23 @@ watch(peso, validarPeso);
 watch(altura, validarAltura);
 
 function MostrarTodoPerfil(id) {
-  if (windowWidth.value < 875) {
+  if (id && windowWidth.value < 875) {
+    mostrarHeaderFooter.value[id] = true;
+    mostrarHeaderFooterGlobal.value = true;
     if (publicacionesContainer.value) {
       publicacionesContainer.value.style.display = 'flex';
       publicacionesContainer.value.style.flexDirection = 'column';
+      publicacionesContainer.value.style.alignItems = 'center';
+      publicacionesContainer.value.classList.add('publicaciones_esp');
+      const vistaElement = publicacionesContainer.value.querySelector('.vista');
       const targetElement = document.querySelector(`[data-publicacion-id="${id}"]`);
+      const contenido = document.querySelector('#contenido');
+      if (contenido) {
+        contenido.classList.add('contenido_esp');
+      }
+      if (vistaElement) {
+        vistaElement.classList.add('vista_esp');
+      }
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -548,8 +562,9 @@ function MostrarTodoPerfil(id) {
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista" ref="publicacionesContainer">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
           <div :data-publicacion-id="publicacion.idpublicacion">
-            <Publicacion :publicacionUnica="publicacion" :ProfileView="true"
-              :fotoTuPerfilMostrar="fotoTuPerfilMostrar" @mostrar-todo-perfil="MostrarTodoPerfil"/>
+            <Publicacion :publicacionUnica="publicacion" :ProfileView="true" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"
+              @mostrar-todo-perfil="MostrarTodoPerfil"
+              :mostrarHeaderFooter="mostrarHeaderFooterGlobal"/>
           </div>
         </template>
       </div>
@@ -653,7 +668,8 @@ function MostrarTodoPerfil(id) {
         </div>
         <div class="resultado-imc">
           <div class="res-imc">
-            <h3>IMC: {{ (!isNaN(parseFloat(resIMC)) && resIMC !== null && resIMC !== undefined && nivelIMC) ? (parseFloat(resIMC).toFixed(2) + " (" + nivelIMC + ")") : "No disponible" }}</h3>
+            <h3>IMC: {{ (!isNaN(parseFloat(resIMC)) && resIMC !== null && resIMC !== undefined && nivelIMC) ?
+              (parseFloat(resIMC).toFixed(2) + " (" + nivelIMC + ")") : "No disponible" }}</h3>
           </div>
           <table>
             <thead>
@@ -1180,22 +1196,6 @@ function MostrarTodoPerfil(id) {
   color: var(--dark-blue);
 }
 
-@media (max-width: 875.5px) {
-  .perfil {
-    margin: 0;
-  }
-
-  #info {
-    width: 100%;
-    padding-top: 60px;
-
-  }
-
-  #contenido {
-    width: 100%;
-  }
-}
-
 @media (min-width: 875px) and (max-width: 1100px) {
   .foto {
     width: 100px;
@@ -1226,7 +1226,6 @@ function MostrarTodoPerfil(id) {
   }
 
   #forzar-inicial {
-
     display: flex;
     background-repeat: no-repeat;
     background-position: center;
@@ -1247,7 +1246,26 @@ function MostrarTodoPerfil(id) {
   }
 }
 
-@media(max-width:875.5px) {
+@media (max-width: 875.5px) {
+  .perfil {
+    margin: 0;
+  }
+
+  #info {
+    width: 100%;
+    padding-top: 60px;
+
+  }
+
+  #contenido {
+    width: 100%;
+  }
+
+  .contenido_esp {
+    display: flex;
+    justify-content: center;
+  }
+
   .gymTag {
     margin-top: 10px;
     margin-left: -10px;
@@ -1258,6 +1276,18 @@ function MostrarTodoPerfil(id) {
     width: 100%;
     margin: 0;
     border: 0;
+  }
+
+  .publicaciones_esp {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+  }
+
+  .vista_esp {
+    margin-left: 0;
+    padding-top: 0;
   }
 }
 
@@ -1304,6 +1334,12 @@ function MostrarTodoPerfil(id) {
   .sup {
     border-right: none;
     border-bottom: 2px solid black;
+  }
+
+  .publicaciones_esp {
+    margin-left: 0;
+    padding-top: 30px;
+    width: 100%;
   }
 }
 

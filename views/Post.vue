@@ -2,7 +2,7 @@
 /*Imports y declaración de variables.*/
 import { ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase, obtenerId } from '../clients/supabase';
+import { supabase, userId } from '../clients/supabase';
 import { disponible } from "../main";
 
 disponible.value = true;
@@ -102,7 +102,7 @@ async function insertarImagen() {
   const imagen = fileInput.value.files[0];
   let nombrePublicacion;
   let ruta;
-  const id = await obtenerId();
+  const id = userId.value;
   const encId = await hashString(id);
 
   /*Consultamos el número de publicación del usuario.*/

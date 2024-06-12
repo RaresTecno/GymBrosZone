@@ -31,16 +31,32 @@ const publicacionesContainer = ref(null);
 const mostrarHeaderFooter = ref({});
 const windowWidth = ref(window.innerWidth);
 const mostrarHeaderFooterGlobal = ref(false);
+const isBelowThreshold = ref(window.innerWidth <= 875);
 
 /*Cambio el valor del ancho de la pantalla cuando cambia de tamaño.*/
 const updateWidth = () => {
   windowWidth.value = window.innerWidth;
+  if (windowWidth.value > 875) {
+    isBelowThreshold.value = false;
+  } else {
+    isBelowThreshold.value = true;
+  }
 };
+
 
 /*Observamos los cambios en el gymtag.*/
 watch(() => props.gymtag, (newGymtag, oldGymtag) => {
   if (newGymtag !== oldGymtag) {
     mostrarp();
+  }
+});
+
+watch(isBelowThreshold, (newVal, oldVal) => {
+  if (document.querySelector('.contenido_esp')) {
+    if (newVal !== oldVal) {
+      /*Recargamos la página.*/
+      router.go(0);
+    }
   }
 });
 
@@ -267,8 +283,9 @@ const { sexo, peso, altura, actividad, resActividad, resIMC, nivelIMC, pesoValid
 
 /*Validamos el peso ingresado.*/
 const validarPeso = () => {
-  const pesoValue = parseFloat(peso.value);
-  if (!isNaN(pesoValue) && pesoValue >= 35 && pesoValue <= 300 && (pesoValue * 100) % 1 === 0) {
+  const pesoValue = Math.floor(parseFloat(peso.value) * 100) / 100;
+  peso.value = Math.floor(parseFloat(peso.value) * 100) / 100;
+  if (!isNaN(pesoValue) && pesoValue >= 35 && pesoValue <= 300) {
     /*Si el valor es válido realizamos los cálculos.*/
     pesoValido.value = true;
     calcularIMC();
@@ -282,8 +299,9 @@ const validarPeso = () => {
 
 /*Validamos la altura ingresada*/
 const validarAltura = () => {
-  const alturaValue = parseFloat(altura.value);
-  if (!isNaN(alturaValue) && alturaValue >= 120 && alturaValue <= 250 && (alturaValue * 100) % 1 === 0) {
+  const alturaValue = Math.floor(parseFloat(altura.value) * 1) / 1;
+  altura.value = Math.floor(parseFloat(altura.value) * 1) / 1;
+  if (!isNaN(alturaValue) && alturaValue >= 120 && alturaValue <= 250) {
     /*Si el valor es válido realizamos los cálculos.*/
     alturaValida.value = true;
     calcularIMC();
@@ -493,7 +511,7 @@ watchEffect([sexo, actividad], [calcularCalorias, calcularIMC]);
 watch(peso, validarPeso);
 watch(altura, validarAltura);
 
-function MostrarTodoPerfil(id) {
+function mostrarTodoPerfil(id) {
   if (id && windowWidth.value < 875) {
     mostrarHeaderFooter.value[id] = true;
     mostrarHeaderFooterGlobal.value = true;
@@ -523,8 +541,14 @@ function MostrarTodoPerfil(id) {
   <div class="perfil" :class="{ usandoMovil: usandoMovil }">
     <div id="info">
       <div id="info-top">
-        <div class="foto">
-          <img :src="fotoPerfil" class="imagen" />
+        <div class="foto_boton">
+          <div class="foto">
+            <img :src="fotoPerfil" class="imagen" />
+          </div>
+          <div class="botones_seguir">
+            <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
+            <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
+          </div>
         </div>
         <div class="informacion">
           <h2 class="gymTag">@{{ gymTag }}</h2>
@@ -542,14 +566,10 @@ function MostrarTodoPerfil(id) {
               <h3>{{ cantidadPublicaciones }}</h3>
             </div>
           </div>
-          <div class="botones_seguir">
-            <button v-if="siguiendo == false && perfilPropio == false" @click="seguir()">Seguir</button>
-            <button v-if="siguiendo == true && perfilPropio == false" @click="dejarSeguir()">Siguiendo</button>
+          <div class="div-nombre">
+            <h2 class="nombre">{{ nombreCompleto }}</h2>
           </div>
         </div>
-      </div>
-      <div class="div-nombre">
-        <h2 class="nombre">{{ nombreCompleto }}</h2>
       </div>
     </div>
     <div id="contenido">
@@ -561,10 +581,9 @@ function MostrarTodoPerfil(id) {
       </div>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista" ref="publicacionesContainer">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <div :data-publicacion-id="publicacion.idpublicacion">
+          <div :data-publicacion-id="publicacion.idpublicacion" class="max_tamano">
             <Publicacion :publicacionUnica="publicacion" :ProfileView="true" :fotoTuPerfilMostrar="fotoTuPerfilMostrar"
-              @mostrar-todo-perfil="MostrarTodoPerfil"
-              :mostrarHeaderFooter="mostrarHeaderFooterGlobal"/>
+              @mostrar-todo-perfil="mostrarTodoPerfil" :mostrarHeaderFooter="mostrarHeaderFooterGlobal" />
           </div>
         </template>
       </div>
@@ -729,6 +748,23 @@ function MostrarTodoPerfil(id) {
   right: 20px;
 }
 
+.resultado-imc,
+.resultados-cal,
+.datos-estadisticas {
+  border-radius: 8px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.708), 0 0 7px rgba(0, 0, 0, 0.708);
+}
+
+.formulario-estadisticas {
+  border: 3px solid black;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.formulario-estadisticas input {
+  outline: none;
+}
+
 .perfil {
   display: flex;
   flex-direction: column;
@@ -743,30 +779,42 @@ function MostrarTodoPerfil(id) {
   min-height: fit-content;
   width: 73%;
   color: var(--light-blue-text);
-  font-size: clamp(8px, 4vw, 24px)
+  font-size: clamp(8px, 4vw, 24px);
+  height: fit-content;
 }
 
 #info-top {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
-  gap: 5%
+  margin: 25px 0 10px;
+  gap: 5%;
+  height: fit-content;
 }
 
 .foto {
-  background-color: rgb(0, 0, 0);
   min-width: 150px;
   min-height: 150px;
   width: 20vw;
   height: 20vw;
   max-width: 250px;
   max-height: 250px;
-  border: 2px solid black;
   border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.div-nombre {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  font-size: 25px !important;
 }
 
 .imagen {
+  border: 2px solid black;
   width: 100%;
+  background-color: rgb(0, 0, 0);
   height: 100%;
   object-fit: cover;
   max-width: 100%;
@@ -777,25 +825,27 @@ function MostrarTodoPerfil(id) {
 .informacion {
   margin-top: 10px;
   width: fit-content;
-}
-
-.div-nombre {
-  margin-left: 4%;
+  max-width: 400px;
 }
 
 .nombre {
-  font-size: clamp(30px, 4vw, 24px);
-  text-align: center;
+  font-size: clamp(20px, 4vw, 25px);
+  text-align: start;
+  padding-bottom: 10px;
+}
 
+.max_tamano {
+  width: 100%;
 }
 
 .info-basica {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(9px, 0.9em, 24px);
+  font-size: clamp(9px, 0.9em, 20px);
   font-weight: bold;
   gap: 5%;
+  padding-bottom: 80px;
 }
 
 .info-basica div {
@@ -804,6 +854,7 @@ function MostrarTodoPerfil(id) {
   align-items: center;
   justify-content: center;
   margin: 7px;
+  width: 33%;
 }
 
 #imagen {
@@ -816,18 +867,26 @@ function MostrarTodoPerfil(id) {
 }
 
 .gymTag {
-  margin-top: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
   margin-left: -10px;
   font-size: clamp(8px, 1.6em, 40px);
+}
 
+.foto_boton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: fit-content;
 }
 
 .botones_seguir {
-  padding-right: 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: fit-content;
+  margin-top: 20px;
+  margin-bottom: 15px;
 }
 
 .botones_seguir button {
@@ -883,6 +942,7 @@ function MostrarTodoPerfil(id) {
   grid-template-columns: repeat(3, 1fr);
   justify-items: center;
   justify-content: center;
+  padding-bottom: 60px;
 }
 
 #publicacion {
@@ -991,7 +1051,7 @@ function MostrarTodoPerfil(id) {
 
 .btn-guardar-stats {
   margin: auto;
-  margin-top: 10px;
+  margin-top: 20px;
   cursor: pointer;
   background-color: var(--blue-buttons);
   width: 27%;
@@ -1243,6 +1303,7 @@ function MostrarTodoPerfil(id) {
 
   .info-basica {
     font-size: clamp(10px, .6em, 40px);
+    padding-bottom: 25px;
   }
 }
 

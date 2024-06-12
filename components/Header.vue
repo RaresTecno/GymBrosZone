@@ -163,6 +163,9 @@ h1 {
   padding: 5px 30px;
   border-radius: 25px;
   width: fit-content;
+  font-family: "Permanent Marker", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .boton_header {

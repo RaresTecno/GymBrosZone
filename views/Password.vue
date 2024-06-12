@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { supabase } from '../clients/supabase';
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import Footer from '../components/Footer.vue';
 const email = ref('');
 
 /*Función para enviar el correo.*/
@@ -53,8 +54,14 @@ const emailValido = computed(() => {
             </div>
         </div>
     </div>
+    <Footer class="footer"/>
 </template>
 <style scoped>
+.footer{
+    position: absolute;
+    bottom: 0;
+}
+
 .todo_password {
     width: 100vw;
     height: fit-content;
@@ -63,6 +70,7 @@ const emailValido = computed(() => {
     align-items: center;
     flex-direction: column;
     padding-top: 165px;
+    margin-bottom: 60px;
 }
 
 .password {

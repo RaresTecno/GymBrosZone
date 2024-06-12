@@ -3,6 +3,7 @@
 import { disponible } from "../main";
 import { userActive } from "../clients/supabase";
 import { ref, onMounted, onUnmounted } from "vue";
+import Footer from '../components/Footer.vue';
 
 const windowWidth = ref(window.innerWidth);
 disponible.value = true;
@@ -39,6 +40,11 @@ function getContainerClasses() {
     }
     return classes;
 };
+
+/*Función para dar un margen u otro al botón en función de si el usuario está logued o no.*/
+function getButtonClasses() {
+    return userActive.value ? 'todo_boton siUsuario' : 'todo_boton noUsuario';
+}
 </script>
 <template>
     <div :class="getContainerClasses()">
@@ -86,12 +92,18 @@ function getContainerClasses() {
             <p>Para cualquier consulta o inquietud relacionada con esta información
                 legal, por favor contacta con nosotros en support@gymbroszone.com.</p>
         </div>
-        <div class="todo_boton"> <button onclick="window.location.href='/'">Volver</button></div>
+        <div :class="getButtonClasses()"> <button onclick="window.location.href='/'">Volver</button></div>
     </div>
+    <Footer v-if="!userActive" class="footer" />
 </template>
 <style scoped>
 .todo_margin {
     padding-left: 60px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
 }
 
 .subir {
@@ -117,7 +129,6 @@ function getContainerClasses() {
     box-shadow: 0 2px 5px var(--verde-oscuro-degradado);
     border: 3px solid var(--black-privacy-text);
     max-width: 980px;
-
 }
 
 .container_info h1 {
@@ -141,7 +152,11 @@ function getContainerClasses() {
     display: flex;
     justify-content: center;
     margin-top: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+}
+
+.noUsuario {
+    margin-bottom: 130px;
 }
 
 .todo_boton button {
@@ -163,5 +178,16 @@ function getContainerClasses() {
     border-color: black;
     background-color: var(--dark-blue);
     color: var(--light-blue-text);
+}
+
+@media (max-width: 875px) {
+    .noUsuario {
+        margin-bottom: 144px;
+    }
+}
+@media (max-width: 600px) {
+    .noUsuario {
+        margin-bottom: 222px;
+    }
 }
 </style>

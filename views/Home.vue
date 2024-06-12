@@ -3,9 +3,10 @@
 import Publicacion from "../components/Publicacion.vue";
 import { supabase, userActive, userId } from "../clients/supabase";
 import { disponible } from "../main";
-import { ref, onMounted, onUnmounted } from "vue"
-import subrayado from '../assets/img/descarga.svg'
-import Footer from '../components/Footer.vue'
+import { ref, onMounted, onUnmounted } from "vue";
+import subrayado from '../assets/img/descarga.svg';
+import underline from '../assets/img/underline.png';
+import Footer from '../components/Footer.vue';
 
 disponible.value = true;
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
@@ -73,7 +74,6 @@ async function cargarPublicaciones() {
 
     todasPublicaciones.value.push(...Array.from(publicacionesMap.values()));
   } catch (error) {
-    console.error(error);
   } finally {
     loading = false;
   }
@@ -195,9 +195,12 @@ obtenerTuFotoPerfil();
       </div>
     </div>
     <div v-if="userActive" class="publicaciones">
+      <h2 class="inspirate">Supera tus límites
+        <img :src="underline" alt="">
+      </h2>
       <div class="vista">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
-          <div :data-publicacion-id="publicacion.idpublicacion">
+          <div :data-publicacion-id="publicacion.idpublicacion" class="publicacion">
             <Publicacion :publicacionUnica="publicacion" :ProfileView="false"
               :fotoTuPerfilMostrar="fotoTuPerfilMostrar" />
           </div>
@@ -205,9 +208,29 @@ obtenerTuFotoPerfil();
       </div>
     </div>
   </main>
-  <Footer  v-if="!userActive" />
+  <Footer v-if="!userActive" />
 </template>
 <style scoped>
+.inspirate {
+  margin-top: 115px;
+  font-size: 60px;
+  display: flex;
+  font-family: "Permanent Marker", cursive;
+  font-weight: 400;
+  font-style: normal;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  transform: rotate(-3deg);
+  width: fit-content;
+}
+
+.inspirate img {
+  width: 100%;
+  transform: translateY(-8px) scaleX(0.8) scaleY(0.85);
+}
+
 main {
   display: flex;
   flex-direction: column;
@@ -217,6 +240,9 @@ h1 {
   font-size: 4em;
   margin: 20px;
   position: relative;
+  font-family: "Permanent Marker", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
 
 h1 img {
@@ -287,7 +313,7 @@ h1 img {
   flex-direction: column;
 }
 
-.dieta{
+.dieta {
   margin-bottom: 90px;
 }
 
@@ -319,6 +345,7 @@ h1 img {
 }
 
 @keyframes heartbeat {
+
   0%,
   100% {
     transform: scale(1);
@@ -355,11 +382,11 @@ h1 img {
 }
 
 .vista {
-  margin-top: 80px;
-  width: 60%;
+  margin-top: 50px;
+  width: 80%;
+  max-width: 1280px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  /* Centra el contenido verticalmente*/
 }
 
 @media (max-width: 1100px) {
@@ -369,6 +396,19 @@ h1 img {
 
   .dieta h3 {
     margin-top: 10px;
+  }
+
+  .inspirate {
+    font-size: 55px;
+    margin-top: 105px;
+  }
+
+  .inspirate img {
+    transform: translateY(-8px) scaleX(0.72) scaleY(0.77);
+  }
+
+  .vista {
+    margin-top: 40px;
   }
 }
 
@@ -394,20 +434,50 @@ h1 img {
   .publicaciones {
     margin-left: 0;
     padding-top: 0;
+    background-color: #0d285e;
   }
 
   .vista {
-    margin-top: 50px;
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
     width: 80%;
+    padding-bottom: 40px;
+  }
+
+  .inspirate {
+    font-size: 50px;
+    margin-top: 85px;
+    min-width: 710px;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .inspirate img {
+    transform: translateY(-8px) scaleX(0.68) scaleY(0.73);
+    filter: brightness(0) invert(0.95);
+  }
+
+  .publicaciones {
+    margin-bottom: 45px;
   }
 }
 
 @media (max-width: 625px) {
+  .inspirate {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 45px;
+    margin-top: 75px;
+  }
+
+  .inspirate img {
+    transform: translateY(-8px) scaleX(0.68) scaleY(0.73);
+    filter: brightness(0) invert(0.95);
+  }
+
   .publicaciones {
     margin-left: 0;
     padding-top: 30px;
+    background-color: #0d285e;
   }
 
   .vista {
@@ -418,6 +488,19 @@ h1 img {
 @media (max-width: 600px) {
   .home {
     margin-top: 170px;
+  }
+}
+
+@media (max-width: 580px) {
+  .inspirate {
+    min-width: 0;
+    font-size: 40px;
+    min-width: 550px;
+    margin-top: 60px;
+  }
+
+  .vista {
+    margin-top: 10px;
   }
 }
 
@@ -444,6 +527,35 @@ h1 img {
     justify-content: center;
     align-items: center;
     gap: 15px;
+  }
+}
+
+@media (max-width: 425px) {
+  .inspirate {
+    min-width: 0;
+    font-size: 35px;
+    min-width: 500px;
+    margin-top: 55px;
+  }
+
+  .vista {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .inspirate {
+    min-width: 0;
+    font-size: 30px;
+    min-width: 450px;
+  }
+}
+
+@media (max-width: 390px) {
+  .inspirate {
+    min-width: 0;
+    font-size: 25px;
+    min-width: 400px;
   }
 }
 </style>

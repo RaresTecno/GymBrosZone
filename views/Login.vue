@@ -2,8 +2,8 @@
 /*Imports y declaración de variables.*/
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
-import { supabase, userActive } from '../clients/supabase';
-import Footer from '../components/Footer.vue'
+import { supabase } from '../clients/supabase';
+import Footer from '../components/Footer.vue';
 
 const email = ref("");
 const password = ref("");
@@ -36,7 +36,7 @@ async function loginGoogle() {
 /*Función para crear una carpeta en la que se almacenarán las imágenes del usuario.*/
 async function crearCarpeta(data) {
     /*Ruta carpeta del usuario.*/
-    const ruta = `users/user-${data.user.id.split('').reverse().join('')}/`;
+    const ruta = `users/${data.user.id.split('').reverse().join('')}/`;
     /*Comprobamos si existe la carpeta con el Id del usuario.*/
     const { data: carpeta, error: errorCarpeta } = await supabase
         .storage
@@ -169,7 +169,7 @@ function mensaje(mensaje, Input) {
             </div>
         </div>
     </div>
-  <Footer class="footer"  v-if="!userActive" />
+  <Footer class="footer"/>
 </template>
 <style scoped>
 .footer{
@@ -434,7 +434,6 @@ button a {
 
 .mensaje {
     font-size: 20px;
-    /* min-height: 22px; */
     height: fit-content;
     visibility: hidden;
     display: flex;
@@ -564,6 +563,10 @@ button a {
 }
 
 @media(max-width: 600px) {
+    .login{
+        margin-bottom: 130px;
+    }
+
     .todo_login {
         padding-top: 232px;
     }
@@ -684,6 +687,16 @@ button a {
     .iniciar,
     .crear {
         height: 80px;
+    }
+
+    #btn-register{
+        font-size: 17px;
+    }
+}
+
+@media(max-width: 295px){
+    #btn-register{
+        font-size: 15px;
     }
 }
 </style>

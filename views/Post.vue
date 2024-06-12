@@ -428,7 +428,7 @@ function cancelar() {
             <div class="subcontainer">
               <input type="text" id="tematica" class="input" required autocomplete="off" ref="tematicaInput"
                 v-model="tematica" placeholder="(Opcional)">
-              <label class="label" for="tematica">Temática</label>
+              <label class="label label_especial_tematica" for="tematica">Temática / Título</label>
             </div>
           </div>
           <div class="container contenido">
@@ -475,6 +475,10 @@ function cancelar() {
   width: 50px;
   height: 50px;
   animation: loading 1.5s infinite linear;
+}
+
+.label_especial_tematica{
+  word-spacing: -2px;
 }
 
 .todo_publicar {

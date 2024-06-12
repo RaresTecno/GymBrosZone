@@ -1,7 +1,7 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase, userActive } from '../clients/supabase';
+import { supabase } from '../clients/supabase';
 import { usandoMovil } from '@/main';
 import { useRouter } from 'vue-router';
 import Footer from '../components/Footer.vue'
@@ -372,7 +372,7 @@ function verPoliticas() {
         </div>
         <!-- <button @click="$emit('irALogin')">Volver al Login</button> -->
     </div>
-  <Footer class="footer" v-if="!userActive" />
+  <Footer class="footer"/>
 
 </template>
 <style scoped>

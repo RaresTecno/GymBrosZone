@@ -132,7 +132,7 @@ async function revisarGymtag(user) {
 
 /*Función para revisar si el usuario tiene sus estadísticas guardadas.*/
 async function revisarEstadisticas(user) {
-  /*Comprobamos si el usuario que se ha logueado tiene gymtag.*/
+  /*Comprobamos si el usuario que se ha logueado tiene estadísticas.*/
   const { data: estadisticas, error } = await supabase
     .from('estadisticas')
     .select('*')

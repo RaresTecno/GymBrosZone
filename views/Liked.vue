@@ -86,7 +86,7 @@ async function obtenerTuFotoPerfil() {
       .from('usuarios')
       .select("*")
       .eq('id', userId.value);
-    if(error){
+    if (error) {
       return;
     }
     fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
@@ -105,6 +105,9 @@ disponible.value = true;
 <template>
   <main>
     <div class="publicaciones">
+      <div v-if="todasPublicaciones.length !== 0" class="titulo">
+        <h2>Tus likes</h2>
+      </div>
       <div v-if="todasPublicaciones.length === 0" class="no-publicaciones">
         <h2>Todavía no has dado like a ninguna publicación.</h2>
       </div>
@@ -130,6 +133,17 @@ disponible.value = true;
   color: var(--black);
 }
 
+.titulo {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.titulo h2 {
+  text-decoration: underline;
+  font-size: 40px;
+  text-shadow: 0 0 1px #0b1e44e3, 0 0 4px #386cd382;
+}
+
 .publicaciones {
   display: flex;
   flex-direction: column;
@@ -140,85 +154,11 @@ disponible.value = true;
 }
 
 .vista {
-  width: 60%;
+  margin-top: 30px;
+  width: 80%;
+  max-width: 1280px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-}
-
-.deshacer-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.8);
-  background-color: var(--dark-blue);
-  border: 2px solid black;
-  /* background-color: red; */
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  z-index: 2000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.deshacer-content {
-  display: flex;
-  align-items: center;
-}
-
-.contador-circulo {
-  position: relative;
-  width: 35px;
-  height: 35px;
-  margin-left: 15px;
-}
-
-.contador-circulo span {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 14px;
-  color: white;
-}
-
-.progress-circle {
-  width: 100%;
-  height: 100%;
-}
-
-.circle-bg {
-  fill: none;
-  stroke: #eee;
-  stroke-width: 2.8;
-}
-
-.circle {
-  fill: none;
-  stroke: #3e98c7;
-  stroke-width: 2.8;
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.1s linear;
-}
-
-.deshacer {
-  cursor: pointer;
-  background-color: var(--blue-buttons);
-  /* width: 50px; */
-  border: solid var(--black) 2px;
-  border-radius: 2px;
-  font-size: 15px;
-  transition: background-color 0.5s, border 0.5s, color 0.5s;
-  height: 35px;
-  padding: 0 5px;
-}
-
-.deshacer:hover,
-.deshacer:active {
-  background-color: var(--very-dark-blue);
-  color: var(--light-blue-text);
-  border: 2px solid var(--grey-buttons-inputs-border);
 }
 
 @media (max-width: 1100px) {
@@ -235,13 +175,31 @@ disponible.value = true;
   .publicaciones {
     margin-left: 0;
     padding-top: 0;
+    background-color: #0d285e;
   }
 
   .vista {
-    margin-top: 35px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     width: 80%;
+    padding-bottom: 40px;
+  }
+
+  .titulo {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .titulo h2 {
+    text-decoration: underline;
+    font-size: 40px;
+    color: var(--light-blue-text);
+    text-shadow: 0 0 1px rgba(5, 5, 5, 0.897), 0 0 4px rgba(5, 5, 5, 0.7), 0 0 6px rgba(5, 5, 5, 0.65);
+  }
+
+  .publicaciones {
+    margin-bottom: 45px;
   }
 }
 
@@ -272,6 +230,15 @@ disponible.value = true;
   .vista {
     width: 100%;
     margin: 0px;
+    margin-top: 5px;
+  }
+
+  .titulo {
+    margin-top: 30px;
+  }
+
+  .titulo h2 {
+    font-size: 32px;
   }
 }
 </style>

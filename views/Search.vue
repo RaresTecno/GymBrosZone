@@ -452,7 +452,7 @@ function buscarUsuarios() {
 const todosUsuarios = ref([]);
 const busquedaUsuarios = ref("");
 let offset = 0;
-const limit = 8;
+const limit = 10;
 const loading = ref(false);
 const loadingP = ref(false);
 let noMoreUsuarios = false;
@@ -1214,11 +1214,11 @@ async function obtenerTuFotoPerfil() {
   }
 
   .vista-usuarios {
-    width: 95%;
+    width: 92%;
     margin-left: 0px
   }
 
-  .vista{
+  .vista {
     display: flex;
     flex-direction: column;
   }
@@ -1245,6 +1245,24 @@ async function obtenerTuFotoPerfil() {
   }
 }
 
+@media(max-width:590px) {
+  .usuario-info h2 {
+    font-size: 20px;
+  }
+
+
+  .usuario-estadisticas span {
+    font-size: 18px;
+  }
+
+  .usuario-card {
+    padding: 15px;
+  }
+
+  .usuario-foto {
+    margin-right: 15px;
+  }
+}
 
 @media(max-width:566.5px) {
   .mini-producto {
@@ -1252,6 +1270,62 @@ async function obtenerTuFotoPerfil() {
   }
 }
 
+@media(max-width:495px) {
+  .usuario-info h2 {
+    font-size: 16px;
+  }
+
+  .usuario-estadisticas span {
+    font-size: 14px;
+  }
+
+  .usuario-card {
+    padding: 10px;
+  }
+
+  .usuario-foto {
+    margin-right: 12px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .usuario-estadisticas{
+    font-size: 14px;
+  }
+}
+
+@media(max-width: 440px) {
+  .filtros *{
+    font-size: 16px;
+  }
+}
+
+@media(max-width: 395px) {
+  .filtros *{
+    font-size: 14px;
+    padding: 7px;
+  }
+
+  .usuario-estadisticas{
+    display: none;
+  }
+}
+
+@media(max-width: 325px) {
+  .filtros *{
+    font-size: 13px;
+    padding: 5px;
+  }
+}
+
+
+@media(max-width: 305px) {
+  .usuario-foto {
+    margin-right: 12px;
+    width: 40px;
+    height: 40px;
+  }
+}
 .productos {
   margin-left: 60px;
   display: flex;
@@ -1455,7 +1529,6 @@ async function obtenerTuFotoPerfil() {
 
   .img-producto {
     height: 30%;
-    /* min-height: 200px; */
     margin: 0;
 
   }
@@ -1482,21 +1555,6 @@ async function obtenerTuFotoPerfil() {
     width: 80%;
     justify-content: center;
   }
-
-  .producto-nutriscore {
-    /* min-width: 60px; */
-  }
-
-  .producto-novagroup {
-    /* min-width: 30px; */
-
-  }
-
-  .producto-ecoscore {
-    /* min-width: 60px; */
-
-  }
-
 }
 
 @media (max-width: 655px) {
@@ -1505,7 +1563,7 @@ async function obtenerTuFotoPerfil() {
   }
 
   .search-producto {
-    width: 95%;
+    width: 92%;
   }
 }
 

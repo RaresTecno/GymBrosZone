@@ -1,15 +1,31 @@
 <script setup>
+/*Imports y declaración de variables.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { ref, onMounted } from "vue";
 import { userId, supabase } from "../clients/supabase";
 
-const gymTag = ref()
+const gymTag = ref();
+const fotoPerfil = ref();
+
+/*Función para cargar y mostrar la foto de perfil del usuario.*/
 async function cargarUsuario() {
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select("*")
     .eq('id', userId.value);
+  if(error){
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+    return;
+  }
   gymTag.value = usuario[0].gymtag;
+  fotoPerfil.value = usuario[0].fotoperfil;
+  /*Mostramos la foto predeterminada si el usuario no tiene una ruta almacenada.*/
+  if (fotoPerfil.value === '/predeterminada.png' || fotoPerfil.value === null || fotoPerfil.value === '') {
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg';
+  } else {
+    /*De lo contrario mostramos la foto de perfil actual del usuario.*/
+    fotoPerfil.value = 'https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/' + fotoPerfil.value;
+  }
 }
 cargarUsuario();
 const posicionAnt = ref(0);
@@ -18,7 +34,7 @@ const windowWidth = ref(window.innerWidth);
 
 const posicionActual = window.scrollY;
 
-//hacerlo tambien primero con el width
+/*Función para posicionar la barra lateral.*/
 if (windowWidth.value < 601) {
   if (posicionActual > 100) {
     altura.value = 0;
@@ -52,10 +68,9 @@ if (windowWidth.value < 601) {
 }
 posicionAnt.value = posicionActual;
 
+/*Función para reposicionar la barra lateral.*/
 function reposicionarBarra() {
   const posicionActual = window.scrollY;
-
-  //hacerlo tambien primero con el width
   if (windowWidth.value < 601) {
     if (posicionActual > 100) {
       altura.value = 0;
@@ -89,35 +104,30 @@ function reposicionarBarra() {
   }
   posicionAnt.value = posicionActual;
 }
+/*Función para actualizar el ancho de la pantalla.*/
 function updateWidth() {
   windowWidth.value = window.innerWidth;
   reposicionarBarra();
 }
+/*Añadimos el evento de escucha del scroll y de la redimensión.*/
 onMounted(() => {
   window.addEventListener("scroll", reposicionarBarra);
   window.addEventListener("resize", updateWidth);
 });
-
-function reloadPage(event) {
-  event.preventDefault();
-  const url = `${window.location.origin}${event.target.closest('a').getAttribute('href')}`;
-  window.location.href = url;
-}
 </script>
-
 <template>
   <transition name="slide-fade" mode="out-in">
     <nav :style="{ top: altura + 'px' }">
+      <div v-if="gymTag">
+        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink foto_barra">
+          <div class="icono"><img :src="fotoPerfil" class="imgperfil" /></div>
+          <h2>Perfil</h2>
+        </RouterLink>
+      </div>
       <div>
         <RouterLink to="/" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'house']" /></div>
           <h2>Home</h2>
-        </RouterLink>
-      </div>
-      <div v-if="gymTag">
-        <RouterLink :to="{ name: 'profile', params: { gymtag: gymTag } }" @click="reloadPage" class="RouterLink">
-          <div class="icono"><font-awesome-icon class="icon usuario" :icon="['fas', 'user']" /></div>
-          <h2>Perfil</h2>
         </RouterLink>
       </div>
       <div>
@@ -133,33 +143,20 @@ function reloadPage(event) {
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/likes" class="RouterLink">
+        <RouterLink to="/liked" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'heart']" /></div>
           <h2>Likes</h2>
         </RouterLink>
       </div>
       <div>
-        <RouterLink to="/keep" class="RouterLink">
+        <RouterLink to="/saved" class="RouterLink">
           <div class="icono"><font-awesome-icon class="icon guardado" :icon="['fas', 'bookmark']" /></div>
           <h2>Guardados</h2>
         </RouterLink>
       </div>
-      <!-- <div>
-        <RouterLink to="/tables" class="RouterLink">
-          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'table']" /></div>
-          <h2>Tablas</h2>
-        </RouterLink>
-      </div> -->
-      <!-- <div>
-        <RouterLink to="/messages" class="RouterLink">
-          <div class="icono"><font-awesome-icon class="icon" :icon="['fas', 'comment-dots']" /></div>
-          <h2>Mensajes</h2>
-        </RouterLink>
-      </div> -->
     </nav>
   </transition>
 </template>
-
 <style scoped>
 nav {
   background-color: var(--dark-blue);
@@ -179,7 +176,6 @@ nav {
 h2 {
   margin-left: 10px;
   width: 120px;
-  /* display: none; */
   transform: translateX(-190px);
   color: var(--dark-blue);
   transition: color 0.5s;
@@ -203,9 +199,37 @@ div .RouterLink {
   cursor: pointer;
 }
 
+div .RouterLink:hover, div .RouterLink:active{
+  text-shadow: 0 0 5px #eef2fa2d, 0 0 10px #eef2fa2d;
+}
+
+.RouterLink .icon {
+  transition: filter 0.3s, text-shadow 0.3s;
+}
+
+.RouterLink:hover .icon, 
+.RouterLink:active .icon {
+  filter: brightness(2);
+}
+
+
 .icon {
   color: var(--light-blue-text);
   width: 36px;
   height: 36px;
+}
+
+.imgperfil{
+  border-radius: 50px;
+  border: 1px solid var(--black);
+  width: 40px;
+  height: 40px;
+  margin: -2px;
+  object-fit: cover;
+  transition: border 0.3s;
+}
+
+.foto_barra:hover .imgperfil, .foto_barra:active .imgperfil{
+  border-color: rgb(109, 109, 109);
 }
 </style>

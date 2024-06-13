@@ -1,34 +1,10 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { supabase, userState, userActive } from '../clients/supabase';
+import { supabase } from '../clients/supabase';
 import { usandoMovil } from '@/main';
-
-
-//https://www.youtube.com/watch?v=efNX5x7O0cY
-
-async function createAccount() {
-    const { data, error } = await supabase.auth.signUp({
-        email: email.value,
-        password: password.value,
-        options: {
-            data: {
-                'gymtag': gymtag.value,
-                'fechanacimiento': fecha_nacimiento.value,
-                'fotoperfil': '/predeterminada.png',
-                'nombre': nombre.value,
-                'apellidos': apellidos.value,
-                'privacidad': 'publica'
-            }
-        }
-    });
-    if (error) {
-        return null;
-    } else {
-        const emailEncoded = encodeURIComponent(email.value); // Codifica para seguridad URL
-        window.location.href = `/waiting-verification?email=${emailEncoded}`;
-    }
-}
+import { useRouter } from 'vue-router';
+import Footer from '../components/Footer.vue'
 
 const nombre = ref('');
 const apellidos = ref('');
@@ -55,48 +31,79 @@ const mensajeError = ref('');
 const windowWidth = ref(window.innerWidth);
 const mostrarPrimeraParte = ref(true);
 
-//Establecemos 'pantallaGrande' como 'true' si la ventana es al menos de 1140px de ancho.
+const router = useRouter();
+
+/*Función para crear la cuenta del usuario con la información ingresada.*/
+async function createAccount() {
+    const { data, error } = await supabase.auth.signUp({
+        email: email.value,
+        password: password.value,
+        options: {
+            data: {
+                'gymtag': gymtag.value,
+                'fechanacimiento': fecha_nacimiento.value,
+                'fotoperfil': '/predeterminada.png',
+                'nombre': nombre.value,
+                'apellidos': apellidos.value
+            }
+        }
+    });
+    if (error) {
+        return null;
+    } else {
+        /*Codificamos la URL por seguridad.*/
+        const emailEncoded = encodeURIComponent(email.value);
+        window.location.href = `/waiting-verification?email=${emailEncoded}`;
+    }
+}
+
+/*Establecemos 'pantallaGrande' como 'true' si la ventana es al menos de 1140px de ancho.*/
 const pantallaGrande = computed(() => {
     return windowWidth.value >= 1140;
 });
 
-//Cambio el valor del ancho de la pantalla cuando cambia de tamaño.
+/*Cambio el valor del ancho de la pantalla cuando cambia de tamaño.*/
 const updateWidth = () => {
     windowWidth.value = window.innerWidth;
 };
 
-//Añadimos un addEventListener para el evento 'resize' cuando montamos el componente.
+/*Añadimos un addEventListener para el evento 'resize' cuando montamos el componente.*/
 onMounted(() => {
     window.addEventListener('resize', updateWidth);
 });
 
-//Eliminamos el addEventListener del evento 'resize' cuando desmontamos el componente.
+/*Eliminamos el addEventListener del evento 'resize' cuando desmontamos el componente.*/
 onUnmounted(() => {
     window.removeEventListener('resize', updateWidth);
 });
 
-//Mostramos la segunda parte del formulario.
+/*Mostramos la segunda parte del formulario.*/
 function segundaParte() {
     mostrarPrimeraParte.value = false;
     mostrarMensaje.value = false;
     mensajeError.value = '';
 }
 
-//Mostramos la primera parte del formulario.
+/*Mostramos la primera parte del formulario.*/
 function primeraParte() {
     mostrarPrimeraParte.value = true;
     mostrarMensaje.value = false;
     mensajeError.value = '';
 }
 
-//Función para mostrar el mensaje de error y limpiar el input que contiene el error.
+/*Función para mostrar el mensaje de error al usuario.*/
 function mensaje(mensaje, Input) {
     mensajeError.value = mensaje;
     mostrarMensaje.value = true;
     Input.value.focus();
 }
 
-//Comprobamos el nombre ingresado.
+/*Para que cuando se haga clic en el div que tapa el icono del calendario, se haga focus en el input de la fecha de nacimiento.*/
+function triggerDateInput(){
+    fecha_nacimientoInput.value.focus();
+}
+
+/*Comprobamos el nombre ingresado.*/
 function validarNombre() {
     const nombreT = nombre.value.trim();
     if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,14}$/i.test(nombreT)) {
@@ -106,7 +113,7 @@ function validarNombre() {
     return false;
 }
 
-//Comprobamos los apellidos ingresados.
+/*Comprobamos los apellidos ingresados.*/
 function validarApellidos() {
     const apellidosT = apellidos.value.trim();
     if (/^(?!.* {2,})[a-zñáéíóú\s-]{3,24}$/i.test(apellidosT)) {
@@ -116,21 +123,21 @@ function validarApellidos() {
     return false;
 }
 
-//Comprobamos el GymTag ingresado.
+/*Comprobamos el GymTag ingresado.*/
 async function validarGymtag() {
     const gymtagMin = gymtag.value.toLowerCase();
     gymtag.value = gymtagMin;
-    //Comprobamos que el tamaño del GymTag sea el deseado.
+    /*Comprobamos que el tamaño del GymTag sea el deseado.*/
     if (gymtagMin.length < 3 || gymtagMin.length > 14) {
         mensaje('Tu GymTag debe tener entre 3 y 14 caracteres.', gymtagInput);
         return false;
     }
-    //Comprobamos que los caracteres ingresados sean válidos.
+    /*Comprobamos que los caracteres ingresados sean válidos.*/
     if (!/^[a-z0-9ñ._]+$/.test(gymtagMin)) {
         mensaje('Tu GymTag solo puede tener letras, números y algunos caracteres especiales.', gymtagInput);
         return false;
     }
-    //Comprobamos si el GymTag está disponible.
+    /*Comprobamos si el GymTag está disponible.*/
     try {
         const { data: usuarios, error } = await supabase
             .from('usuarios')
@@ -138,12 +145,12 @@ async function validarGymtag() {
             .eq('gymtag', gymtagMin);
 
         if (error) throw error;
-        //El gymtag estará en uso si usuarios contiene algún elemento.
+        /*El gymtag estará en uso si usuarios contiene algún elemento.*/
         if (usuarios.length > 0) {
             mensaje('El GymTag ingresado ya está en uso.', gymtagInput);
             return false;
         }
-        //GymTag disponible.
+        /*GymTag disponible.*/
         return true;
     } catch (error) {
         mensaje('Hubo un error al verificar el GymTag. Por favor, inténtalo de nuevo.', gymtagInput);
@@ -151,13 +158,13 @@ async function validarGymtag() {
     }
 }
 
-//Comprobamos si el email ingresado tiene formato de email.
+/*Comprobamos si el email ingresado tiene formato de email.*/
 async function validarEmail() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
         mensaje('El email ingresado no es válido.', emailInput);
         return false;
     }
-    //Comprobamos si el email está disponible.
+    /*Comprobamos si el email está disponible.*/
     try {
         const { data: usuarios, error } = await supabase
             .from('usuarios')
@@ -165,12 +172,12 @@ async function validarEmail() {
             .eq('email', email.value);
 
         if (error) throw error;
-        //El email estará en uso si usuarios contiene algún elemento.
+        /*El email estará en uso si usuarios contiene algún elemento.*/
         if (usuarios.length > 0) {
             mensaje('El Email ingresado ya está en uso.', emailInput);
             return false;
         }
-        //Email disponible.
+        /*Email disponible.*/
         return true;
     } catch (error) {
         mensaje('Hubo un error al verificar el Email. Por favor, inténtalo de nuevo.', emailInput);
@@ -178,13 +185,13 @@ async function validarEmail() {
     }
 }
 
-//Comprobamos las contraseñas ingresadas.
+/*Comprobamos las contraseñas ingresadas.*/
 function validarContras() {
-    //Si las contraseñas son iguales y seguras, la contraseña es válida.
+    /*Si las contraseñas son iguales y seguras, la contraseña es válida.*/
     if (password.value === password2.value && /^(?=.*[A-Z])(?=.*\d)[^\s]{8,}$/.test(password.value)){
         return true;
     } else {
-        //Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.
+        /*Si las contraseñas no son iguales o no son seguras, se avisa al usuario de ello.*/
         if (password.value !== password2.value) {
             mensaje('Las contraseñas no coinciden.', password2Input);
         } else {
@@ -195,20 +202,24 @@ function validarContras() {
     }
 }
 
-//Comprobamos si el usuario es mayor de 14 años.
+/*Comprobamos si el usuario es mayor de 14 años.*/
 function validarEdad() {
     var fechaActual = new Date();
     var annoActual = fechaActual.getFullYear();
     const anno = parseInt(fecha_nacimiento.value.split("-")[0], 10);
     if (/^(\d{4})-(\d{2})-(\d{2})$/.test(fecha_nacimiento.value) && (anno >= 1900 && anno <= (annoActual - 14))) {
         return true;
-    } else {
-        //Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.
+    } else if(anno <= 1900){
+        /*Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.*/
+        mensaje('La edad ingresada no es válida.', fecha_nacimientoInput);
+    }else if(anno >= (annoActual - 14)){
+        /*Si el usuario no tiene más de 14 años se le avisa que debe tenerlos.*/
         mensaje('Debes tener más de 14 años.', fecha_nacimientoInput);
     }
+    return false;
 }
 
-//Comprobamos que el usuario haya aceptado las políticas y condiciones de GymBros Zone.
+/*Comprobamos que el usuario haya aceptado las políticas y condiciones de GymBros Zone.*/
 function validarAceptar() {
     if (aceptar.value) {
         return true;
@@ -219,7 +230,7 @@ function validarAceptar() {
     }
 }
 
-//Llamamos a las funciones que validan los inputs en la primera parte del formulario (pantallas pequeñas).
+/*Llamamos a las funciones que validan los inputs en la primera parte del formulario (pantallas pequeñas).*/
 async function siguiente() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
@@ -229,20 +240,20 @@ async function siguiente() {
     return;
 }
 
-//Llamamos a las funciones que validan los inputs de todo el formulario (cualquier pantalla.
+/*Llamamos a las funciones que validan los inputs de todo el formulario (cualquier pantalla.*/
 async function creaCuenta() {
     mostrarMensaje.value = false;
     mensajeError.value = '';
     if (validarNombre() && validarApellidos() && await validarGymtag() && await validarEmail() && validarContras() && validarEdad() && validarAceptar()) {
-        console.log('supa');
         createAccount();
     } else {
         return;
     }
 }
 
+/*Redirección para ver las políticas.*/
 function verPoliticas() {
-    window.location.href = '/politicas-y-condiciones';
+    router.push('/policies');
 }
 </script>
 <template>
@@ -278,13 +289,10 @@ function verPoliticas() {
                         <input type="text" id="gymtag" class="input" required autocomplete="off" v-model="gymtag"
                             ref="gymtagInput">
                         <label class="label" for="gymtag">GymTag</label>
-
                         <div class="tooltip">
-                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"
-                                @click="mostrar()" />
+                            <font-awesome-icon :icon="['fas', 'circle-info']" class="info contenedor_ojo"/>
                             <div class="tooltiptext">Este será tu nombre de usuario</div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -331,7 +339,7 @@ function verPoliticas() {
                         <input type="date" id="fecha_nacimiento" class="input" required autocomplete="off"
                             v-model="fecha_nacimiento" ref="fecha_nacimientoInput">
                         <label class="label" for="fecha_nacimiento">Fecha de nacimiento</label>
-                        <div class="contenedor_calendario">
+                        <div class="contenedor_calendario" @click="triggerDateInput">
                             <font-awesome-icon v-if="usandoMovil" :icon="['fas', 'calendar']" class="calendario" />
                         </div>
                     </div>
@@ -364,8 +372,14 @@ function verPoliticas() {
         </div>
         <!-- <button @click="$emit('irALogin')">Volver al Login</button> -->
     </div>
+  <Footer class="footer"/>
+
 </template>
 <style scoped>
+.footer{
+    position: absolute;
+    bottom: 0;
+}
 .todo_register {
     width: 100vw;
     height: fit-content;
@@ -387,7 +401,7 @@ function verPoliticas() {
     flex-direction: column;
     border: var(--black) 4px solid;
     border-radius: 6px;
-    margin-bottom: 70px;
+    margin-bottom: 160px;
     position: relative;
 }
 
@@ -573,7 +587,7 @@ function verPoliticas() {
     font-size: 30px;
     padding: 7.5px 0;
     margin-left: -35px;
-    cursor: default;
+    cursor: pointer;
     position: relative;
 }
 
@@ -869,7 +883,6 @@ function verPoliticas() {
         font-size: 30px;
         padding: 7.5px 0;
         margin-left: -35px;
-        /* pointer-events: none; */
     }
 
     .calendario {
@@ -955,6 +968,10 @@ function verPoliticas() {
     }
 
     .contenedor_calendario {
+        height: 30px;
+    }
+
+    .contenedor_calendario {
         padding: 8px 0;
     }
 
@@ -968,7 +985,6 @@ function verPoliticas() {
 
     .contenedor_calendario {
         pointer-events: none;
-
     }
 
     .calendario {

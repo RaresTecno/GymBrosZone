@@ -1,6 +1,8 @@
 <script setup>
-import { ref } from 'vue';
-import { supabase, obtenerId } from '../clients/supabase';
+/*Imports y declaración de variables.*/
+import { ref, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { supabase, userId } from '../clients/supabase';
 import { disponible } from "../main";
 
 disponible.value = true;
@@ -17,9 +19,16 @@ const logo_foto = ref(null);
 const fondo_imagen = ref(null);
 const div_quitar_imagen = ref(null);
 const div_girar_imagen = ref(null);
+const publicar_container = ref();
 
 const mensajeAviso = ref('');
 const mostrarAviso = ref(false);
+const mostrarPregunta = ref(false);
+
+const deshabilitado = ref(false);
+const cargando = ref(false);
+
+const router = useRouter();
 
 /*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
 function aviso(mensaje, Input) {
@@ -39,6 +48,11 @@ function avisoImagen(mensaje) {
 
 /*Función para realizar la publicación.*/
 async function publicar() {
+  cargando.value = true;
+  mensajeAviso.value = '';
+  mostrarAviso.value = false;
+  /*Deshabilitamos el botón.*/
+  deshabilitarBoton(true);
   /*Validamos la temática y el contenido de la publicación.*/
   if (validarTematica() && validarContenido()) {
     /*Comprobamos si hay una imagen para así realizar la publicación.*/
@@ -49,7 +63,29 @@ async function publicar() {
       await guardarPublicacion(data);
     } else {
       avisoImagen('Debes incluir una imagen.');
+      deshabilitarBoton(false);
+      cargando.value = false;
     }
+  } else {
+    deshabilitarBoton(false);
+    cargando.value = false;
+  }
+}
+
+/*Función para deshabilitar el botón y que así no se pueden realizar varias veces la publicación.*/
+function deshabilitarBoton(deshabilitar) {
+  const publicarBoton = document.querySelector('.publicar_boton');
+
+  if (deshabilitar) {
+    if (publicarBoton) {
+      publicarBoton.disabled = true;
+    }
+    deshabilitado.value = true;
+  } else {
+    if (publicarBoton) {
+      publicarBoton.disabled = false;
+    }
+    deshabilitado.value = false;
   }
 }
 
@@ -64,56 +100,47 @@ async function hashString(cadena) {
 /*Función para guardar la imagen en la bdd.*/
 async function insertarImagen() {
   const imagen = fileInput.value.files[0];
-  let nombreDisponible = false;
-  let contador = 1;
   let nombrePublicacion;
   let ruta;
-  let id = await obtenerId();
-  let encId = await hashString(id);
+  const id = userId.value;
+  const encId = await hashString(id);
 
-  /*Buscamos un nombre único para almacenar la imagen con dicho nombre.*/
-  do {
-    /*Asignamos un posible nombre para la imagen. Falta juntarlo con el Id del usuario y encriptarlo.*/
-    nombrePublicacion = 'post-' + contador;
-    /*Creamos la ruta de la carpeta en la que se almacenará la imagen.*/
-    ruta = `users/user-${encId}/post/`;
-    /*Verificamos si la carpeta en la que almacenaremos la imagen existe.*/
-    const { data: publicacion, error: errorPublicacion } = await supabase
-      .storage
-      .from('files')
-      .list(ruta);
+  /*Consultamos el número de publicación del usuario.*/
+  const { data: publicaciones, error } = await supabase
+    .from('usuarios')
+    .select('publicaciones')
+    .eq('id', id);
+  if (error) {
     /*Avisamos al usuario en caso de error.*/
-    if (errorPublicacion) {
-      avisoImagen('Ha ocurrido un error al guardar la publicación.');
-      return false;
-    }
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  }
+  /*Creamos el nuevo nombre de la publicación y su ruta.*/
+  nombrePublicacion = 'post-' + publicaciones[0].publicaciones;
+  ruta = `users/${encId}/post/`;
+  const nombreArchivo = await hashString(id + nombrePublicacion);
 
-    /*Encriptamos el nombre de la imagen que vamos a guardar.*/
-    const nombreArchivo = await hashString(id + nombrePublicacion);
-    /*Comprobamos si la carpeta en la que almacenaremos la imagen contiene alguna imagen con el mismo nombre de la imagen que hemos encriptado.*/
-    const existePublicacion = publicacion.some(file => file.name === nombreArchivo);
-
-    /*Si no existe una imagen con el nombre encriptado, la guardamos.*/
-    if (!existePublicacion) {
-      nombreDisponible = true;
-      /*Guardamos la publicación.*/
-      const rutaFinal = `${ruta}${nombreArchivo}`;
-      const { data, error } = await supabase.storage
-        .from('files')
-        .upload(rutaFinal, imagen);
-      /*Avisamos al usuario en caso de error.*/
-      if (error) {
-        avisoImagen('Ha ocurrido un error al guardar la publicación.');
-        return false;
-      }
-      return [id, rutaFinal];
-    } else {
-      contador++;
-    }
-  } while (!nombreDisponible);
-  /*Avisamos al usuario en caso de error.*/
-  avisoImagen('Ha ocurrido un error al guardar la publicación.');
-  return false;
+  /*Subimos la imagen.*/
+  const rutaFinal = `${ruta}${nombreArchivo}`;
+  const { data, error: errorSubir } = await supabase.storage
+    .from('files')
+    .upload(rutaFinal, imagen);
+  if (errorSubir) {
+    /*Avisamos al usuario en caso de error.*/
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  }
+  /*Actualizamos el contador de las publicaciones del usuario.*/
+  const { data: publicacionesUpdate, error: errorUpdate } = await supabase
+    .from('usuarios')
+    .update({ publicaciones: publicaciones[0].publicaciones + 1 })
+    .eq('id', id);
+  if (errorUpdate) {
+    /*Avisamos al usuario en caso de error.*/
+    avisoImagen('Ha ocurrido un error al guardar la publicación.');
+    return false;
+  }
+  return [id, rutaFinal];
 }
 
 /*Función para guarda la publicación del usuario.*/
@@ -135,9 +162,7 @@ async function guardarPublicacion(data) {
     return false;
   } else {
     /*Si se ha guardado la publicación, vaciamos todos los campos.*/
-    quitar_imagen();
-    tematica.value = '';
-    contenido.value = '';
+    aceptar();
   }
 }
 
@@ -154,7 +179,7 @@ function validarTematica() {
 
 /*Función para validar el contenido.*/
 function validarContenido() {
-  if (contenido.value.length <= 440) {
+  if (contenido.value.length <= 380) {
     return true;
   } else {
     /*Avisamos al usuario en caso de error.*/
@@ -170,7 +195,12 @@ function triggerFileInput() {
 
 /*Redirigimos al usuario a home si pulsa el botón de cerrar publicar.*/
 function cerrar_publicar() {
-  window.location.href = "/";
+  if (publicar_container.value) {
+    publicar_container.value.classList.add('slide-down');
+  }
+  setTimeout(() => {
+    router.push('/');
+  }, 200);
 }
 
 /*Función para quitar la previsualización de la imagen.*/
@@ -205,6 +235,7 @@ function girar_imagen() {
 function resetInput(event) {
   hayImagen.value = false;
   event.target.value = null;
+  quitar_imagen();
 }
 
 /*Función para comprobar la imagen.*/
@@ -230,8 +261,27 @@ function comprobarImagen(event) {
     event.target.value = '';
     return;
   }
-  /*Llamamos a la función para mostrar la previsualización de la imagen.*/
-  mostrarImagen(file);
+  /* Verificar la proporción de la imagen */
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+      if (ratio < 0.33 || ratio > 3) {
+        /* Avisamos al usuario si la proporción no es aceptable */
+        avisoImagen('Las proporciones de la imágenes no son válidas.');
+        /* Limpiamos el input si la proporción no es aceptable */
+        event.target.value = '';
+        return;
+      }
+      /* Llamamos a la función para mostrar la previsualización de la imagen si todo es correcto */
+      mostrarImagen(file);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 /*Función para mostrar la previsualización de la imagen.*/
@@ -250,13 +300,78 @@ function mostrarImagen(file) {
   };
   reader.readAsDataURL(file);
 }
+
+/*Se muestra el PopUp de aviso tras realizar la publicación.*/
+function aceptar() {
+  mostrarPregunta.value = true;
+  document.body.style.overflow = 'hidden';
+  nextTick(() => {
+    setTimeout(() => {
+      const divPregunta = document.querySelector('.div_pregunta');
+      if (divPregunta) {
+        divPregunta.classList.remove('shrink');
+        divPregunta.classList.add('expand');
+      }
+    }, 5);
+  });
+  deshabilitarBoton(false);
+  cargando.value = false;
+}
+
+/*Se redirige al usuario al Home y se oculta el PopUp de aviso.*/
+function irHome() {
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.add('shrink');
+    divPregunta.classList.remove('expand');
+    cargando.value = false;
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+    }, 250);
+    setTimeout(() => {
+      router.push('/');
+    }, 200);
+  }
+  quitar_imagen();
+  tematica.value = '';
+  contenido.value = '';
+  deshabilitarBoton(false);
+}
+
+/*Función para ocultar el PopUp de aviso tras realizar la publicación.*/
+function cancelar() {
+  const divPregunta = document.querySelector('.div_pregunta');
+  if (divPregunta) {
+    divPregunta.classList.remove('expand');
+    divPregunta.classList.add('shrink');
+    cargando.value = false;
+    setTimeout(() => {
+      mostrarPregunta.value = false;
+      document.body.style.overflow = '';
+    }, 250);
+  }
+  quitar_imagen();
+  tematica.value = '';
+  contenido.value = '';
+  deshabilitarBoton(false);
+}
 </script>
-
-
-
 <template>
   <div class="todo_publicar">
-    <div class="publicar_container">
+    <div v-if="cargando" class="todo_mostrar_pregunta">
+      <div class="cargando"></div>
+    </div>
+    <div v-if="mostrarPregunta" class="todo_mostrar_pregunta" @click="cancelar">
+      <div class="div_pregunta div_pregunta_inicio" @click.stop>
+        <div class="mensaje">¡Listo! Tu publicación ya es visible para todos los GymBros!!</div>
+        <div class="botones_pregunta">
+          <button @click="cancelar">Volver a publicar</button>
+          <button @click="irHome">Ver publicaciones</button>
+        </div>
+      </div>
+    </div>
+    <div class="publicar_container" ref="publicar_container">
       <div class="titulo_publicar">
         <div class="tit_publicar">
           Publicar
@@ -297,10 +412,11 @@ function mostrarImagen(file) {
             </div>
           </div>
           <div class="div_input_imagen">
-            <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput" />
+            <input class="input_file" type="file" ref="fileInput" @change="comprobarImagen" @click="resetInput"
+              accept="image/*" />
             <div class="anadir">
               <div class="anadir_texto">
-                <button>
+                <button @click="triggerFileInput">
                   Seleccionar imagen
                 </button>
               </div>
@@ -312,7 +428,7 @@ function mostrarImagen(file) {
             <div class="subcontainer">
               <input type="text" id="tematica" class="input" required autocomplete="off" ref="tematicaInput"
                 v-model="tematica" placeholder="(Opcional)">
-              <label class="label" for="tematica">Temática</label>
+              <label class="label label_especial_tematica" for="tematica">Temática / Título</label>
             </div>
           </div>
           <div class="container contenido">
@@ -325,7 +441,8 @@ function mostrarImagen(file) {
           </div>
           <div class="publicar">
             <div class="publicar_div">
-              <button class="publicar_boton" @click="publicar">Publicar</button>
+              <button :class="deshabilitado ? 'boton_deshabilitado' : 'publicar_boton'"
+                @click="publicar">Publicar</button>
             </div>
           </div>
         </div>
@@ -337,10 +454,33 @@ function mostrarImagen(file) {
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.cargando {
+  border: 6px solid var(--light-blue-text);
+  border-radius: 100%;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  width: 50px;
+  height: 50px;
+  animation: loading 1.5s infinite linear;
+}
+
+.label_especial_tematica{
+  word-spacing: -2px;
+}
+
 .todo_publicar {
   background-color: var(--bg-color);
   width: 100vw;
@@ -355,13 +495,22 @@ function mostrarImagen(file) {
 
 .publicar_container {
   width: 80%;
-  margin-top: 140px;
+  margin-top: 100px;
   height: 520px;
   background-color: var(--dark-blue);
   max-width: 1026px;
   border: var(--black) 4px solid;
   border-radius: 6px;
   min-width: 761px;
+}
+
+.publicar_container {
+  transition: transform 0.25s ease-in-out, background-color 0.25s ease-in-out;
+}
+
+.slide-down {
+  transform: translateY(100%);
+  background-color: black;
 }
 
 .aviso {
@@ -398,6 +547,7 @@ function mostrarImagen(file) {
 }
 
 .cerrar_publicar {
+  display: none;
   cursor: pointer;
 }
 
@@ -490,9 +640,6 @@ svg.girar_imagen {
 }
 
 #imagen {
-  /* width: 100%;
-  height: 100%;
-  object-fit: cover; */
   max-width: 100%;
   max-height: 100%;
 }
@@ -505,11 +652,6 @@ svg.girar_imagen {
 .div_contenido {
   width: calc(55% + 2px);
   height: 100%;
-}
-
-.publicar {
-  height: fit-content;
-  width: 100%;
 }
 
 .publicar {
@@ -538,7 +680,7 @@ svg.girar_imagen {
   width: 200px;
   border-radius: 2px;
   position: relative;
-  top: 18.5px;
+  top: -1800.5px;
   cursor: pointer;
 }
 
@@ -550,7 +692,6 @@ svg.girar_imagen {
   align-items: center;
   position: relative;
   top: -18.5px;
-  pointer-events: none;
 }
 
 .anadir_texto {
@@ -571,7 +712,6 @@ svg.girar_imagen {
   border-radius: 2px;
   font-size: 18px;
   transition: background-color 0.5s, border 0.5s, color 0.5s;
-  pointer-events: none;
 }
 
 .anadir_texto button:hover,
@@ -656,7 +796,7 @@ svg.girar_imagen {
   justify-content: end;
 }
 
-.publicar_div button {
+.publicar_boton {
   cursor: pointer;
   background-color: var(--blue-buttons);
   width: 27%;
@@ -666,16 +806,89 @@ svg.girar_imagen {
   transition: background-color 0.5s, border 0.5s, color 0.5s;
 }
 
-.publicar_div button:hover,
-.publicar_div button:active {
+.publicar_boton:hover,
+.publicar_boton:active {
   background-color: var(--very-dark-blue);
   color: var(--light-blue-text);
   border: 2px solid var(--grey-buttons-inputs-border);
 }
 
+.boton_deshabilitado {
+  cursor: not-allowed;
+  background-color: #4e6368;
+  width: 27%;
+  color: rgba(0, 0, 0, 0.76);
+  border: solid rgba(0, 0, 0, 0.76) 2px;
+  border-radius: 2px;
+  font-size: 18px;
+}
+
+.boton_deshabilitado:hover,
+.boton_deshabilitado:active {
+  background-color: #4e6368;
+  color: rgba(0, 0, 0, 0.76);
+  border: solid rgba(0, 0, 0, 0.76) 2px;
+}
+
 #file-upload-button {
   cursor: pointer !important;
   width: 0 !important;
+}
+
+.div_pregunta {
+  color: var(--light-blue-text);
+  background-color: var(--dark-blue);
+  padding: 25px 30px;
+  border-radius: 5px;
+  border: var(--black) 2px solid;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 120px;
+  cursor: default;
+  margin-left: 60px;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.div_pregunta_inicio {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.shrink {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.div_pregunta.expand {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.botones_pregunta {
+  width: 80%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.botones_pregunta button {
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #3d5a98;
+  color: var(--light-blue-text);
+  border: 2px solid var(--black);
+  cursor: pointer;
+  border-radius: 25px;
+  text-align: center;
+  transition: border 0.5s;
+  padding: 5px 10px;
+}
+
+.botones_pregunta button:hover,
+.botones_pregunta button:active {
+  border-color: #eef2fa81;
 }
 
 ::placeholder {
@@ -759,6 +972,7 @@ svg.girar_imagen {
 
   .cerrar_publicar {
     margin-right: 4px;
+    display: flex;
   }
 
   .publicar_container {
@@ -770,6 +984,11 @@ svg.girar_imagen {
     border: none;
     border-radius: 0;
     min-width: 0;
+  }
+
+  .todo_publicar,
+  .publicar_container {
+    min-height: 98vh;
   }
 
   .contenido_publicar {
@@ -830,6 +1049,10 @@ svg.girar_imagen {
   .contenido {
     margin-top: 55px;
   }
+
+  .div_pregunta {
+    margin-left: 0;
+  }
 }
 
 @media(max-width: 600px) {
@@ -854,6 +1077,10 @@ svg.girar_imagen {
     min-width: 125px;
   }
 
+  .boton_deshabilitado {
+    min-width: 125px;
+  }
+
   .container .label {
     font-size: 20px;
   }
@@ -869,6 +1096,43 @@ svg.girar_imagen {
 
   .textarea {
     height: 200px;
+  }
+
+  .mensaje {
+    width: 70%;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .div_pregunta {
+    height: 140px;
+    width: 80%;
+  }
+
+  .botones_pregunta {
+    width: 100%;
+  }
+}
+
+@media(max-width: 490px) {
+  .mensaje {
+    width: 85%;
+  }
+
+  .botones_pregunta {
+    flex-direction: column;
+    width: 60%;
+    justify-content: space-between;
+    height: 100px;
+  }
+
+  .botones_pregunta:first-child {
+    margin-bottom: 20px;
+  }
+
+  .div_pregunta {
+    height: 180px;
+    width: 80%;
   }
 }
 
@@ -895,7 +1159,7 @@ svg.girar_imagen {
   }
 
   .publicar {
-    margin-bottom: 5px;
+    margin-bottom: 25px;
   }
 
   .textarea,
@@ -904,7 +1168,7 @@ svg.girar_imagen {
   }
 
   .aviso {
-    transform: translateY(-120px);
+    transform: translateY(-135px);
   }
 
   .textarea {
@@ -912,13 +1176,22 @@ svg.girar_imagen {
   }
 }
 
-@media(max-width: 380px) {
-
-  .todo_publicar,
-  .publicar_container {
-    height: 920px;
+@media(max-width: 415px) {
+  .mensaje {
+    width: 85%;
   }
 
+  .botones_pregunta {
+    width: 80%;
+  }
+
+  .div_pregunta {
+    height: 200px;
+    width: 80%;
+  }
+}
+
+@media(max-width: 380px) {
   .prev_imagen {
     height: 250px;
     width: 250px;
@@ -957,7 +1230,7 @@ svg.girar_imagen {
   }
 
   .aviso {
-    transform: translateY(-225px);
+    transform: translateY(-135px);
   }
 
   .aviso_texto {
@@ -970,24 +1243,21 @@ svg.girar_imagen {
   }
 }
 
-@media(max-width: 300px) {
+@media(max-width: 315px) {
 
-  .todo_publicar,
-  .publicar_container {
-    height: 1000px;
+  .mensaje,
+  .botones_pregunta {
+    width: 100%;
   }
+}
 
+@media(max-width: 300px) {
   .prev_imagen {
     height: 220px;
     width: 220px;
   }
 
-  .aviso {
-    transform: translateY(-340px);
-  }
-
   .aviso_texto {
-    font-size: 15px;
     width: 90%;
   }
 

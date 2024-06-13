@@ -1,28 +1,31 @@
 <script setup>
+/*Importamos los componentes.*/
 import Header from './components/Header.vue'
 import HeaderMobile from './components/HeaderMobile.vue'
 
 import NavLateral from './components/BarraLateral.vue'
 import NavInferior from './components/BarraInferior.vue'
-import Footer from './components/Footer.vue'
 import './assets/index.css'
 import { supabase, userActive, logOut } from './clients/supabase'
-import { usandoMovil, disponible } from './main'
+import { usandoMovil, disponible, state } from './main'
 
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 
-const user = ref(null);
-
+/*Declaración de variables.*/
 disponible.value = true;
 const windowWidth = ref(window.innerWidth);
 
+/*Función para obtener el nuevo ancho de la pantalla si se redimensiona.*/
 function updateWidth() {
   windowWidth.value = window.innerWidth;
 }
+
+/*Añadimos un evento de escucha para comprobar si se redimensiona la pantalla.*/
 onMounted(() => {
   window.addEventListener("resize", updateWidth);
 });
 
+/*Cuando se monta el componente, llamamos a las funciones.*/
 onMounted(async () => {
   if (userActive.value) {
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -33,8 +36,8 @@ onMounted(async () => {
     if (user) {
       await revisarCarpeta(user);
       await revisarGymtag(user);
+      await revisarEstadisticas(user);
     }
-    
   }
 });
 
@@ -46,15 +49,15 @@ async function hashUserId(userId) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/*Función para revisar si el usuario tiene una carpeta en el storage.*/
 async function revisarCarpeta(user) {
   /*Construcción de la ruta de la carpeta propia del usuario.*/
-  const ruta = `users/user-${await hashUserId(user.id)}/`;
+  const ruta = `users/${await hashUserId(user.id)}/`;
   /*Comprobamos si existe una carpeta con el nombre de la ruta.*/
   const { data: carpeta, error: errorCarpeta } = await supabase
     .storage
     .from('files')
     .list(ruta);
-
   /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
   if (errorCarpeta) {
     logOut();
@@ -77,8 +80,9 @@ async function revisarCarpeta(user) {
   }
 }
 
+/*Función para revisar si el usuario tiene un gymtag.*/
 async function revisarGymtag(user) {
-  /*comprobamos si el usuario que se ha logueado tiene gymtag.*/
+  /*Comprobamos si el usuario que se ha logueado tiene gymtag.*/
   const { data: usuario, error } = await supabase
     .from('usuarios')
     .select('gymtag')
@@ -126,33 +130,43 @@ async function revisarGymtag(user) {
   }
 }
 
-
+/*Función para revisar si el usuario tiene sus estadísticas guardadas.*/
+async function revisarEstadisticas(user) {
+  /*Comprobamos si el usuario que se ha logueado tiene estadísticas.*/
+  const { data: estadisticas, error } = await supabase
+    .from('estadisticas')
+    .select('*')
+    .eq('idusuario', user.id);
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+  if (error) {
+    logOut();
+    return false;
+  }
+  /*Comprobamos si están guardadas las estadísticas del usuario.*/
+  if (estadisticas.length < 1) {
+    const { error: insertError } = await supabase
+    .from('estadisticas')
+    .insert([{ idusuario: user.id, esprivado: true}]);
+  /*Cerramos la sesión del usuario en caso de error para que se repita el proceso.*/
+    if(insertError){
+      logOut();
+      return false;
+    }
+  }
+}
 </script>
-
 <template>
-  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" />
-  <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
+  <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey" />
+  <HeaderMobile v-if="userActive && (windowWidth <= 875)" :key="state.headerKey"/>
   <RouterView />
-  <!-- <router-link to="/account">Account</router-link> -->
-  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" />
+  <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey" />
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
-
-  <!-- <Footer /> -->
 </template>
-
 <style>
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-}
-
-:root {
-  --bg-color: #DBE4F6;
-  --dark-blue: #0B1E44;
-  --alt-black: #121212;
-  --greeny-cyan: #caeff6;
-  --blue: #3D5A98;
 }
 
 body {

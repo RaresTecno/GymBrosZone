@@ -1,14 +1,23 @@
-import { createApp, ref } from "vue";
+import { createApp, ref, reactive } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
-import { userActive, userState, obtenerId } from "./clients/supabase";
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { userState } from "./clients/supabase";
 export const disponible = ref();
 disponible.value = true;
 
-const navegador = ref(navigator.userAgent);
+
+export const state = reactive({
+  headerKey: 0
+});
+
+export function reloadHeader() {
+  state.headerKey += 1;
+}
+
 export const usandoMovil = ref();
 async function init() {
   if (
@@ -24,11 +33,10 @@ async function init() {
   } else {
     usandoMovil.value = false;
   }
-
   await userState();
-  // await obtenerId();
   library.add(fas);
   library.add(fab);
+  library.add(far);
   const app = createApp(App);
   app.use(router);
   app.mount('#app');

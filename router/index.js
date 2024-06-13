@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { userActive } from '../clients/supabase'
 
-// import Politicas_y_condiciones from '../views/Politicas_y_condiciones.vue'
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -29,6 +27,11 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: "/policies",
+      name: "policies",
+      component: () => import("@/views/Policies.vue"),
+    },
+    {
       path: "/account",
       name: "account",
       component: () => import("@/views/Account.vue"),
@@ -47,18 +50,23 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: "/liked",
+      name: "liked",
+      component: () => import("@/views/Liked.vue"),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: "/saved",
+      name: "saved",
+      component: () => import("@/views/Saved.vue"),
+      meta: { requiresAuth: true }
+    },
+    {
       path: "/profile/:gymtag",
       name: "profile",
       component: () => import("@/views/Profile.vue"),
       props: true,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: "editProfile",
-          name: "editProfile",
-          component: () => import("@/components/EditProfile.vue"),
-        },
-      ],
+      meta: { requiresAuth: true }
     },
     {
       path: '/post',
@@ -67,29 +75,31 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/privacy',
-      name: 'privacy',
-      component: () => import("@/views/PrivacyPolicy.vue"),
+      path: '/recoverPassword',
+      name: 'password',
+      component: () => import("@/views/Password.vue"),
+      meta: { requiresAuth: false }
     },
-    // Ruta comodín para manejar rutas no encontradas
+    {
+      path: '/recovery',
+      name: 'recovery',
+      component: () => import("@/views/ChangePassword.vue"),
+      meta: { requiresAuth: true }
+    },
+    /*Ruta comodín para manejar rutas no encontradas*/
     {
       path: "/:catchAll(.*)",
       redirect: "/NotFound",
     },
-    // {
-    //   path: '/politicas_y_condiciones',
-    //   name: 'politicas_y_condiciones',
-    //   component: Politicas_y_condiciones
-    // }
   ],
 });
-
+/*Antes de redirrigir a una ruta, comprobamos si el usuario puede acceder a dicha ruta y si existe.*/
 router.beforeEach(async (to, from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const userToken = userActive.value;
     if (requiresAuth && !userToken) {
       next({ name: 'login' });
-    } else if (!requiresAuth && userToken && (to.name === 'login' || to.name === 'register')) {
+    } else if (!requiresAuth && userToken && (to.name === 'login' || to.name === 'register' || to.name === 'password' || to.name === 'waiting-verification')) {
       next({ name: 'home' });
     } else {
       next();

@@ -6,38 +6,43 @@ const mensaje = ref('');
 const url = ref('');
 let timeoutId;
 
+/*Función para redirigir al usuario a los 20 segundos.*/
 onMounted(() => {
     timeoutId = setTimeout(() => {
         url.value = "/login";
         redirigir();
     }, 20000);
-
     const route = useRoute();
     const email = route.query.email ? decodeURIComponent(route.query.email) : '';
+    /*Si no hay email redirigimos al usuario a home.*/
     if (!email) {
         window.location.href = '/';
         return;
     }
+    /*Si el correo es un gmail,  establecemos la ruta para la redirección a gmail.*/
     if (email.includes('@gmail.com')) {
         mensaje.value = "Ir a Gmail";
         url.value = "https://mail.google.com/mail/u/0/#inbox";
+    /*Si el correo es un hotmail u outlook, establecemos la ruta para la redirección a outlook.*/
     } else if (email.includes('@hotmail.com') || email.includes('@outlook.com')) {
         mensaje.value = "Ir a Outlook";
         url.value = "https://outlook.office365.com/mail/";
     } else {
+    /*De lo contrario, establecemos la ruta para la redirección a login para iniciar sesión.*/
         mensaje.value = "Ir a Login";
         url.value = "/login";
     }
 });
 
+/*Cuando se desmonta la vista, limpiamos el contador de la redirección.*/
 onUnmounted(() => {
     clearTimeout(timeoutId); 
 });
 
+/*Función para redirigir al usuario a la ruta que previamente hemos establecido.*/
 function redirigir() {
     window.location.href = url.value; 
 }
-
 </script>
 <template>
     <div class="todo_waiting">

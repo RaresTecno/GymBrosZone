@@ -4,7 +4,6 @@ import { ref, onMounted, watch } from "vue";
 import { useRoute } from 'vue-router';
 import { userId, supabase } from "../clients/supabase";
 
-
 const gymTag = ref("");
 const route = useRoute();
 const posicionAnt = ref(0);

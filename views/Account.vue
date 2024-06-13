@@ -2,7 +2,7 @@
 /*Imports y declaración de variables.*/
 import { ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase, obtenerId, logOut } from '../clients/supabase';
+import { supabase, userId, logOut } from '../clients/supabase';
 import { disponible, reloadHeader } from "../main";
 
 disponible.value = true;
@@ -25,12 +25,9 @@ const fecha_nacimiento = ref('');
 const nombre = ref('');
 const apellidos = ref('');
 
-/*Variables aviso.*/
-const mensajeAviso = ref('');
-const mostrarAviso = ref(false);
-const mensajePopUp = ref('');
 
 /*Variables PopUp */
+const mensajePopUp = ref('');
 const mostrarPregunta = ref(false);
 const esPredeterminada = ref(true);
 const account_container = ref();
@@ -134,24 +131,42 @@ function validarEdad() {
   return false;
 }
 
-/*Se avisa al usuario de que la temática o el contenido son demasiado largos.*/
+/*Función para avisar al usuario.*/
 function mensaje(mensaje) {
-  mensajeAviso.value = mensaje;
-  mostrarAviso.value = true;
+  mostrarPregunta.value = true;
+  document.body.style.overflow = 'hidden';
+  mensajePopUp.value = mensaje;
+  nextTick(() => {
+    setTimeout(() => {
+      const divPregunta = document.querySelector('.div_pregunta');
+      if (divPregunta) {
+        divPregunta.classList.remove('shrink');
+        divPregunta.classList.add('expand');
+      }
+    }, 5);
+  });
 }
 
 /*Se avisa al usuario de que ha incluido un archivo inválido o que ha ocurrido algún error al guardar la imagen o la publicación.*/
 function avisoImagen(mensaje) {
-  mensajeAviso.value = mensaje;
-  mostrarAviso.value = true;
+  mostrarPregunta.value = true;
+  document.body.style.overflow = 'hidden';
+  mensajePopUp.value = mensaje;
+  nextTick(() => {
+    setTimeout(() => {
+      const divPregunta = document.querySelector('.div_pregunta');
+      if (divPregunta) {
+        divPregunta.classList.remove('shrink');
+        divPregunta.classList.add('expand');
+      }
+    }, 5);
+  });
   /*Quitamos la imagen.*/
   quitar_imagen();
 }
 
 /*Función para actualizar la información del usuario.*/
 async function guardar() {
-  mensajeAviso.value = '';
-  mostrarAviso.value = false;
   let recargar = false;
   let consulta = {};
   /*Comprobamos el gymtag.*/
@@ -165,6 +180,7 @@ async function guardar() {
   /*Comprobamos la fecha de nacimiento.*/
   if (fecha_nacimientoActual !== fecha_nacimiento.value && validarEdad()) {
     consulta.fechanacimiento = fecha_nacimiento.value;
+    fecha_nacimientoActual = fecha_nacimiento.value;
   } else if (fecha_nacimientoActual === fecha_nacimiento.value) {
   } else {
     fecha_nacimiento.value = fecha_nacimientoActual;
@@ -174,15 +190,17 @@ async function guardar() {
   /*Comprobamos el nombre.*/
   if (nombreActual !== nombre.value && validarNombre()) {
     consulta.nombre = nombre.value;
+    nombreActual = nombre.value;
   } else if (nombreActual === nombre.value) {
   } else {
-    apellidos.value = nombreActual;
+    nombre.value = nombreActual;
     return false;
   }
 
   /*Comprobamos los apellidos.*/
   if (apellidosActual !== apellidos.value && validarApellidos()) {
     consulta.apellidos = apellidos.value;
+    apellidosActual = apellidos.value;
   } else if (apellidosActual === apellidos.value) {
   } else {
     apellidos.value = apellidosActual;
@@ -358,8 +376,6 @@ function comprobarImagen(event) {
 
 /*Función para mostrar la previsualización de la imagen.*/
 function mostrarImagen(file) {
-  mensajeAviso.value = '';
-  mostrarAviso.value = false;
   hayImagen.value = true;
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -376,7 +392,7 @@ onMounted(async () => {
     mensaje('Tu información ha sido actualizada.');
     localStorage.removeItem('showMessage');
   }
-  id = await obtenerId();
+  id = userId.value;
   const { data, error } = await supabase
     .from('usuarios')
     .select('gymtag, nombre, apellidos, fechanacimiento, fotoperfil')
@@ -412,7 +428,7 @@ onMounted(async () => {
   }
 });
 
-/*Confirmación de si se elimina la foto de perfil.*/
+/*Se muestra el PopUp de confirmación para eliminar la foto de perfil.*/
 function confirmacion() {
   if (!esPredeterminada.value) {
     mostrarPregunta.value = true;
@@ -474,7 +490,7 @@ function cerrarSes() {
   logOut();
 }
 
-/*Función para mostrar el PopUp.*/
+/*Función para mostrar el PopUp para cerrar sesión.*/
 function cerrarSesion() {
   mostrarPregunta.value = true;
   document.body.style.overflow = 'hidden';
@@ -488,7 +504,6 @@ function cerrarSesion() {
       }
     }, 5);
   });
-
 }
 </script>
 <template>
@@ -497,6 +512,7 @@ function cerrarSesion() {
       <div class="div_pregunta div_pregunta_inicio" @click.stop>
         <div class="pregunta">{{ mensajePopUp }}</div>
         <div class="botones_pregunta">
+          <button v-if="mensajePopUp != '¿Quieres eliminar tu foto de perfil?' && mensajePopUp != '¿Estás seguro que deseas cerrar sesión?'" @click="cancelar">Aceptar</button>
           <button v-if="mensajePopUp == '¿Quieres eliminar tu foto de perfil?'" @click="confirmar">Eliminar</button>
           <button v-if="mensajePopUp == '¿Quieres eliminar tu foto de perfil?'" @click="cancelar">Cancelar</button>
           <button class="boton_esp" v-if="mensajePopUp == '¿Estás seguro que deseas cerrar sesión?'"
@@ -598,14 +614,8 @@ function cerrarSesion() {
           <button class="guardar_boton" @click="guardar">Guardar</button>
         </div>
       </div>
-      <div class="aviso" :style="{ display: mostrarAviso ? 'flex' : 'none' }">
-        <div class="aviso_texto">
-          {{ mensajeAviso }}
-        </div>
-      </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -766,25 +776,6 @@ function cerrarSesion() {
   border: var(--black) 4px solid;
   border-radius: 6px;
   min-width: 761px;
-}
-
-.aviso {
-  height: 35px;
-  width: 100%;
-  margin-top: -20px;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.aviso_texto {
-  width: fit-content;
-  font-size: 20px;
-  padding: 3px 15px;
-  border-radius: 2px;
-  color: var(--light-blue-text);
-  text-align: center;
 }
 
 .titulo_account {
@@ -1268,10 +1259,6 @@ svg.quitar_imagen {
     min-width: 200px
   }
 
-  .aviso_texto {
-    font-size: 19px;
-  }
-
   .anadir {
     top: -13.5px;
   }
@@ -1340,10 +1327,6 @@ svg.quitar_imagen {
     width: 200px;
   }
 
-  .aviso_texto {
-    font-size: 17px;
-  }
-
   .contendor_boton1 {
     margin-right: 20px;
     width: 240px;
@@ -1376,10 +1359,6 @@ svg.quitar_imagen {
 
   .guardar {
     margin-bottom: 0 !important;
-  }
-
-  .aviso {
-    margin-top: 25px;
   }
 }
 
@@ -1432,10 +1411,6 @@ svg.quitar_imagen {
   .guardar {
     margin-bottom: 5px;
     margin-top: 60px;
-  }
-
-  .aviso_texto {
-    width: 85%;
   }
 
   .contendor_boton1 {
@@ -1506,13 +1481,15 @@ svg.quitar_imagen {
   }
 
   .div_pregunta {
-    padding: 17px 19px;
+    padding: 17px 7px;
     margin-left: 0;
     height: 104px;
   }
 
   .pregunta {
     text-align: center;
+    margin-bottom: 20px;
+    width: 90%;
   }
 }
 
@@ -1550,10 +1527,6 @@ svg.quitar_imagen {
 
   .div_imagen {
     padding-bottom: 10px;
-  }
-
-  .aviso_texto {
-    width: 90%;
   }
 
   .contenedor_input {

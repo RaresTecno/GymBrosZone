@@ -1,7 +1,7 @@
 <script setup>
 /*Imports necesarios.*/
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { ref, onMounted, onUnmounted, computed, nextTick, watch } from "vue";
+import { ref, onMounted, onUnmounted, computed, nextTick, watch, defineEmits } from "vue";
 import { supabase, userId } from "@/clients/supabase";
 import fotoPredeterminada from "../assets/img/foto-predeterminada.avif";
 import { useRoute } from 'vue-router';
@@ -19,6 +19,10 @@ const props = defineProps({
   fotoTuPerfilMostrar: {
     type: String,
     required: false
+  },
+  mostrarHeaderFooter: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -70,9 +74,15 @@ const comentarioIdParaEliminar = ref(null);
 const tematica = ref(props.publicacionUnica.tematica);
 const descripcion = ref(props.publicacionUnica.contenido);
 const mostrarMas = ref(false);
+const publicacionId = ref(null);
+const emit = defineEmits(['mostrar-todo-perfil']);
 
 const ruta = ref("https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/" + props.publicacionUnica.ruta);
 const fotoPerfilMostrada = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
+
+const isProfileRoute = computed(() => {
+  return route.name === 'profile';
+});
 
 cargarPublicacion();
 
@@ -611,7 +621,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', adjustHeights);
 });
 
-/*Observamos los divs de temática, descripción y comentarios para ajustar sua alturas.*/
+/*Observamos los divs de temática, descripción y comentarios para ajustar sus alturas.*/
 watch([tematica, descripcion, comentarios], adjustHeights);
 
 /*Función para redimensionar la imagen en función de como el usuario la haya subido.*/
@@ -644,10 +654,29 @@ function adjustHeights() {
       const totalHeight = 380;
       const tematicaContenidoHeight = tematicaContenido.offsetHeight;
       const comentariosHeight = totalHeight - tematicaContenidoHeight;
-
       comentarios.style.height = `${comentariosHeight}px`;
     }
   });
+}
+
+/*Cuando se llama esta función es porque el usuario se encuentra en /profile y la pantalla es menor a 875px.*/
+function clickImagen() {
+  if (isProfileRoute.value && windowWidth.value < 875) {
+    mostrarPublicacionesColumna(props.publicacionUnica.idpublicacion);
+  } else {
+    mostrar(false);
+  }
+}
+
+/*Mostraremos las imágenes una debajo de la otra y se ocultarán los divs necesarios.*/
+function mostrarPublicacionesColumna(id) {
+  if (windowWidth.value < 875) {
+    publicacionId.value = id;
+    document.getElementById('info').style.display = 'none';
+    document.getElementById('botones').style.display = 'none';
+    /*Emitimos un evento para poder acceder al id de la publicación pulsada.*/
+    emit('mostrar-todo-perfil', id);
+  }
 }
 </script>
 <template>
@@ -667,17 +696,7 @@ function adjustHeights() {
         </div>
       </div>
     </div>
-    <div class="header-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
-      <!-- <div class="header-publicacion-izq">
-        <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink">
-          
-          <img :src="fotoPerfilMostrada" alt="">
-          <h2 class="gymtag">@{{ gymTag }}</h2>
-        </RouterLink>
-      </div>
-      <div class="header-publicacion-der">
-        <font-awesome-icon class="icon" :icon="['fas', 'ellipsis-vertical']" />
-      </div> -->
+    <div class="header-publicacion" v-if="(windowWidth <= 875 && (!props.ProfileView || mostrarHeaderFooter))">
       <div class="encabezado encabezado_p">
         <RouterLink v-if="gymTag" :to="{ name: 'profile', params: { gymtag: gymTag } }" class="RouterLink"
           @click="quitarOverflow">
@@ -693,12 +712,13 @@ function adjustHeights() {
       </div>
     </div>
     <div @click="mostrar(false)" class="inicial" id="forzar-inicial">
-      <img :src="ruta" @error="comprobarImagen" :class="isCover ? 'cover' : 'normal'" ref="foto"
-        @dblclick="dobleClick" />
+      <img :src="ruta" @error="comprobarImagen"
+        :class="[isCover ? 'cover' : 'normal', { 'sin_borde': $route.path.startsWith('/profile/') }]" ref="foto"
+        @dblclick="dobleClick" @click="clickImagen" />
       <font-awesome-icon v-if="animatingLike" :icon="['fas', 'heart']" class="like-animation"
         :style="likeAnimationStyle" />
     </div>
-    <div class="footer-publicacion" v-if="(windowWidth <= 875 && !isProfile)">
+    <div class="footer-publicacion" v-if="(windowWidth <= 875 && (!props.ProfileView || mostrarHeaderFooter))">
       <div class="todo_botones_publicacion_grande todo_botones_publicacion_p">
         <div class="botones_publicacion_grande">
           <div class="megusta" v-if="!likes[props.publicacionUnica.idpublicacion]" @click="darLike()">
@@ -713,16 +733,22 @@ function adjustHeights() {
               :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
           </div>
           <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
-            <font-awesome-icon :icon="['fas', 'bookmark']" class="save"
+            <font-awesome-icon :icon="['fas', 'bookmark']" class="save save_dorado"
               :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
           </div>
           <div class="comentar" @click="mostrar(true)" @click.stop>
             <font-awesome-icon :icon="['far', 'comment']" class="comment" />
           </div>
         </div>
+        <div class="likes_pequeno">
+          {{ numeroLikes }} {{ likeText }}
+        </div>
+        <div v-if="tematica" class="descripcion_foto">
+          {{ tematica }}
+        </div>
       </div>
     </div>
-    <div class="final" v-if="mostrarFinal" @click="cerrar">
+    <div class="final" v-if="mostrarFinal && (!isProfileRoute || windowWidth >= 0)" @click="cerrar">
       <div class="contenido" @click.stop>
         <div class="imagen">
           <img :src="ruta" @dblclick="dobleClick" class="cover" />
@@ -846,7 +872,7 @@ function adjustHeights() {
                   :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
               </div>
               <div class="guardar" v-if="guardados[props.publicacionUnica.idpublicacion]" @click="eliminarGuardado">
-                <font-awesome-icon :icon="['fas', 'bookmark']" class="save"
+                <font-awesome-icon :icon="['fas', 'bookmark']" class="save save_dorado"
                   :class="{ 'save-animation': animatingSave[props.publicacionUnica.idpublicacion] }" />
               </div>
             </div>
@@ -889,7 +915,6 @@ function adjustHeights() {
     </div>
   </div>
 </template>
-
 <style scoped>
 .div_girar_imagen {
   height: 35px;
@@ -1148,7 +1173,7 @@ span.span_esp {
   overflow-y: auto;
   overflow-x: hidden;
   border-top: 1px solid #ebebebd3;
-  background-color: #0f3072;
+  background-color: #0d285e;
   transition: height 0.3s ease;
   width: 100%;
 }
@@ -1311,6 +1336,34 @@ span.span_esp {
   background-color: var(--dark-blue);
   display: flex;
   align-items: center;
+  padding-top: 5px;
+  height: fit-content;
+}
+
+.likes_pequeno {
+  height: 17px;
+  width: 100%;
+  padding-left: 20px;
+  display: flex;
+  align-items: center;
+  color: #eef2faf1;
+  font-size: 15px;
+  transform: translateY(-2px);
+  margin-bottom: 5px;
+}
+
+.descripcion_foto {
+  height: fit-content;
+  padding-left: 20px;
+  padding-right: 20px;
+  color: var(--light-blue-text);
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.footer-publicacion>.todo_botones_publicacion_grande.todo_botones_publicacion_p {
+  display: flex;
+  flex-direction: column;
 }
 
 .footer-publicacion .tematica {
@@ -1335,6 +1388,15 @@ span.span_esp {
   height: 100%;
   width: 100%;
   object-fit: cover;
+}
+
+.encabezado,
+.footer-publicacion {
+  cursor: default;
+}
+
+.final .cover {
+  cursor: pointer;
 }
 
 .normal {
@@ -1475,7 +1537,7 @@ span.span_esp {
   resize: none;
   overflow-y: auto;
   margin-top: 12px;
-  word-spacing: -4px;
+  word-spacing: 0;
 }
 
 .input_anadir .input:focus {
@@ -1619,6 +1681,7 @@ button.boton_quitar_imagen_comentario {
 .comment {
   color: var(--light-blue-text);
   cursor: pointer;
+  transition: transform 0.2s;
 }
 
 .heart,
@@ -1628,6 +1691,10 @@ button.boton_quitar_imagen_comentario {
 
 .heart.rojo {
   color: rgb(235, 4, 4);
+}
+
+.save.save_dorado {
+  color: rgb(230, 196, 28);
 }
 
 @keyframes likeBounce {
@@ -1651,7 +1718,6 @@ button.boton_quitar_imagen_comentario {
     color: rgb(238, 70, 70);
   }
 }
-
 
 .like-animation2 {
   animation: likeBounce 0.6s ease-in-out;
@@ -1686,16 +1752,6 @@ button.boton_quitar_imagen_comentario {
   }
 }
 
-.heart {
-  color: var(--light-blue-text);
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.heart:hover {
-  transform: scale(1.1);
-}
-
 @keyframes saveGlow {
   0% {
     transform: scale(1);
@@ -1717,13 +1773,16 @@ button.boton_quitar_imagen_comentario {
   animation: saveGlow 0.4s ease-in-out;
 }
 
-.save {
-  transition: transform 0.2s;
-  cursor: pointer;
+.save:hover,
+.save:active,
+.heart:hover,
+.heart:active {
+  transform: scale(1.1);
 }
 
-.save:hover {
-  transform: scale(1.1);
+.comment:hover,
+.comment:active {
+  transform: scale(1.08);
 }
 
 ::placeholder {
@@ -1769,7 +1828,7 @@ button.boton_quitar_imagen_comentario {
   }
 
   .foto_gymtag {
-    margin-left: 10px;
+    margin-left: 15px;
   }
 
   .foto_encabezado {
@@ -1876,6 +1935,10 @@ button.boton_quitar_imagen_comentario {
 }
 
 @media (max-width: 875px) {
+  .cover {
+    max-height: 750px;
+  }
+
   .publicacion {
     height: fit-content;
     aspect-ratio: 0;
@@ -1883,6 +1946,7 @@ button.boton_quitar_imagen_comentario {
     border-radius: 12px;
     margin: 25px 0 25px 0;
     overflow: hidden;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.586), 0 0 8px rgba(0, 0, 0, 0.533);
   }
 
   .final {
@@ -1921,7 +1985,6 @@ button.boton_quitar_imagen_comentario {
     height: 80vh;
     border-top: 1px solid #eef2fa6c;
     min-height: 735px;
-    /* transform: translateY(100%); */
     transition: transform 0.3s ease-in-out;
   }
 
@@ -2128,12 +2191,64 @@ button.boton_quitar_imagen_comentario {
     min-width: 47px;
     margin-left: 7px;
   }
+
+  .cover {
+    border: 1px solid rgba(255, 255, 255, 0.359);
+    border-left: none;
+    border-right: none;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande {
+    width: 241px;
+  }
+
+  .sin_borde {
+    border: none;
+    box-shadow: none;
+  }
+
+  .publicaciones_esp .sin_borde {
+    border: 1px solid rgba(255, 255, 255, 0.359);
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.586), 0 0 8px rgba(0, 0, 0, 0.533);
+  }
 }
 
 @media (max-width: 625px) {
   .publicacion {
     border-radius: 0;
-    margin: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.768);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.586), 0 0 4px rgba(0, 0, 0, 0.668), 0 0 6px rgba(0, 0, 0, 0.767);
+    border-left: 1px solid rgba(54, 54, 54, 0.66);
+    border-right: 1px solid rgba(54, 54, 54, 0.66);
+  }
+
+  .sin_borde {
+    border: none;
+    box-shadow: none;
+  }
+
+  .publicaciones_esp .sin_borde {
+    border-radius: 0;
+    border: 1px solid rgba(0, 0, 0, 0.768);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.586), 0 0 4px rgba(0, 0, 0, 0.668), 0 0 6px rgba(0, 0, 0, 0.767);
+    border-left: 1px solid rgba(54, 54, 54, 0.66);
+    border-right: 1px solid rgba(54, 54, 54, 0.66);
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p {
+    width: 100vw;
+  }
+
+  .descripcion_foto {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  .cover {
+    max-height: 600px;
   }
 }
 
@@ -2161,10 +2276,6 @@ button.boton_quitar_imagen_comentario {
 
   .sin-comentarios h3 {
     font-size: 23px;
-  }
-
-  .foto_gymtag {
-    margin-left: 20px;
   }
 
   .final .gymtag_encabezado {
@@ -2242,7 +2353,46 @@ button.boton_quitar_imagen_comentario {
   }
 }
 
+@media (max-width: 450px) {
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande {
+    width: 200px;
+    height: 47px;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande>.megusta {
+    font-size: 35px;
+    margin-right: 0;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande>.megusta>.heart {
+    font-size: 35px;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande>.guardar {
+    font-size: 35px;
+    margin-top: 0;
+    margin-right: 0;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande>.guardar>.save {
+    font-size: 33px;
+    margin-top: 0;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande>.comentar {
+    font-size: 35px;
+  }
+
+  .todo_botones_publicacion_grande.todo_botones_publicacion_p .botones_publicacion_grande>.comentar>.comment {
+    font-size: 35px;
+  }
+}
+
 @media (max-width: 425px) {
+  .foto_gymtag {
+    margin-left: 10px;
+  }
+
   .div_pregunta {
     height: fit-content;
     width: 80%;
@@ -2268,6 +2418,11 @@ button.boton_quitar_imagen_comentario {
 @media (max-width: 400px) {
   .final .megusta {
     margin-right: 0;
+  }
+
+  .descripcion_foto {
+    font-size: 16px;
+    margin-bottom: 5px;
   }
 
   .final .foto_encabezado {
@@ -2362,6 +2517,75 @@ button.boton_quitar_imagen_comentario {
 @media (max-width: 320px) {
   .final .gymtag_encabezado {
     max-width: 180px;
+  }
+}
+
+@media (max-height: 740px) and (max-width: 600px) {
+
+  .cuerpo,
+  .contenido.mostrar {
+    height: 580px;
+    min-height: 582px;
+  }
+
+  .contenido.mostrar {
+    position: relative;
+  }
+
+  .cuerpo {
+    position: absolute;
+    bottom: 0;
+  }
+
+  .comentarios {
+    flex-grow: 0;
+  }
+
+  .botones_publicacion_grande {
+    padding-top: 5px !important;
+  }
+
+  .numero_likes {
+    padding-top: 5px !important;
+  }
+
+  .borde {
+    transform: translateY(5px);
+  }
+
+  .borde2 {
+    transform: translateY(0);
+  }
+
+  .contenido {
+    background-color: transparent;
+  }
+}
+
+@media (max-height: 600px) and (max-width: 600px) {
+
+  .cuerpo,
+  .contenido.mostrar {
+    height: 500px;
+    min-height: 502px;
+  }
+
+  .contenido {
+    background-color: transparent;
+  }
+
+  .contenido.mostrar {
+    position: relative;
+  }
+
+  .cuerpo {
+    position: absolute;
+    bottom: 0;
+  }
+
+  .comentarios {
+    height: 281px !important;
+    flex-grow: 0;
   }
 }
 </style>

@@ -132,7 +132,7 @@ async function revisarGymtag(user) {
 
 /*Función para revisar si el usuario tiene sus estadísticas guardadas.*/
 async function revisarEstadisticas(user) {
-  /*Comprobamos si el usuario que se ha logueado tiene gymtag.*/
+  /*Comprobamos si el usuario que se ha logueado tiene estadísticas.*/
   const { data: estadisticas, error } = await supabase
     .from('estadisticas')
     .select('*')
@@ -157,7 +157,7 @@ async function revisarEstadisticas(user) {
 </script>
 <template>
   <Header v-if="((!usandoMovil && (windowWidth > 875)) || !userActive)" :key="state.headerKey" />
-  <HeaderMobile v-if="userActive && (windowWidth <= 875)" />
+  <HeaderMobile v-if="userActive && (windowWidth <= 875)" :key="state.headerKey"/>
   <RouterView />
   <NavLateral v-if="userActive && !usandoMovil && disponible && (windowWidth > 875)" :key="state.headerKey" />
   <NavInferior v-if="userActive && disponible && (windowWidth <= 875)" />
@@ -167,14 +167,6 @@ async function revisarEstadisticas(user) {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-}
-
-:root {
-  --bg-color: #DBE4F6;
-  --dark-blue: #0B1E44;
-  --alt-black: #121212;
-  --greeny-cyan: #caeff6;
-  --blue: #3D5A98;
 }
 
 body {

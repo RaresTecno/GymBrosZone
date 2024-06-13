@@ -86,7 +86,7 @@ async function obtenerTuFotoPerfil() {
       .from('usuarios')
       .select("*")
       .eq('id', userId.value);
-    if(error){
+    if (error) {
       return;
     }
     fotoTuPerfilMostrar.value = usuario[0].fotoperfil;
@@ -105,6 +105,9 @@ disponible.value = true;
 <template>
   <main>
     <div class="publicaciones">
+      <div v-if="todasPublicaciones.length !== 0" class="titulo">
+        <h2>Tus guardados</h2>
+      </div>
       <div class="no-publicaciones" v-if="todasPublicaciones.length === 0">
         <h2>Todavía no has guardado ninguna publicación.</h2>
       </div>
@@ -130,6 +133,17 @@ disponible.value = true;
   color: var(--black);
 }
 
+.titulo {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.titulo h2 {
+  text-decoration: underline;
+  font-size: 40px;
+  text-shadow: 0 0 1px #0b1e44e3, 0 0 4px #386cd382;
+}
+
 .publicaciones {
   display: flex;
   flex-direction: column;
@@ -140,7 +154,9 @@ disponible.value = true;
 }
 
 .vista {
-  width: 60%;
+  margin-top: 30px;
+  width: 80%;
+  max-width: 1280px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
 }
@@ -159,13 +175,32 @@ disponible.value = true;
   .publicaciones {
     margin-left: 0;
     padding-top: 0;
+    background-color: #0d285e;
   }
 
   .vista {
-    margin-top: 35px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
     width: 80%;
+    padding-bottom: 40px;
+    min-height: 77.9vh;
+  }
+
+  .titulo {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  .titulo h2 {
+    text-decoration: underline;
+    font-size: 40px;
+    color: var(--light-blue-text);
+    text-shadow: 0 0 1px rgba(5, 5, 5, 0.897), 0 0 4px rgba(5, 5, 5, 0.7), 0 0 6px rgba(5, 5, 5, 0.65);
+  }
+
+  .publicaciones {
+    margin-bottom: 45px;
   }
 }
 
@@ -196,6 +231,15 @@ disponible.value = true;
   .vista {
     width: 100%;
     margin: 0px;
+    margin-top: 5px;
+  }
+
+  .titulo {
+    margin-top: 30px;
+  }
+
+  .titulo h2 {
+    font-size: 32px;
   }
 }
 </style>

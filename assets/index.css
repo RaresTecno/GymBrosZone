@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
 * {
     padding: 0;
     margin: 0;
@@ -11,19 +12,13 @@
     --very-dark-blue: #010e25;
     --black: black;
     --light-blue-text: #eef2fa;
-    --blue-inputs: #3D5A98;
-    --blue-buttons: #CAEFF6;
+    --blue-inputs: #3d5a98;
+    --blue-buttons: #caeff6;
     --grey-buttons-inputs-border: #eef2fa81;
-
-    --bg-color2: rgba(36, 44, 89, 0.161);
-    --border-bg-color2: 2px solid rgba(36, 44, 89, 0.374);
+    --bg-color2: #242c5929;
+    --border-bg-color2: 2px solid #242c595f;
     --black-privacy-text: #0e0d0d;
-}
-
-h1{
-    font-family: "Permanent Marker", cursive;
-    font-weight: 400;
-    font-style: normal;
+    --alt-black: #121212;
 }
 
 body {

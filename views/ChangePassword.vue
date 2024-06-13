@@ -22,10 +22,10 @@ async function cambiarContra() {
     mensajeError.value = '';
     mostrarMensaje.value = false;
     if (validarContras()) {
-        confirmarBorrar();
-        //     const { data, error } = await supabase.auth.updateUser({
-        //         password: password.value
-        //     })
+        mensajeInformativo();
+        const { data, error } = await supabase.auth.updateUser({
+            password: password.value
+        });
     }
 }
 
@@ -48,7 +48,7 @@ function validarContras() {
 }
 
 /*Se muestra el PopUp informativo.*/
-function confirmarBorrar() {
+function mensajeInformativo() {
     mostrarPregunta.value = true;
     document.body.style.overflow = 'hidden';
     nextTick(() => {
@@ -409,11 +409,11 @@ button a {
         width: 75%;
     }
 
-    .boton{
+    .boton {
         margin-top: 20px;
     }
 
-    .mensaje_texto{
+    .mensaje_texto {
         font-size: 16px;
     }
 

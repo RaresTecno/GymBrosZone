@@ -9,7 +9,9 @@ const email = ref('');
 async function recuperarContra() {
     let { data, error } = await supabase.auth.resetPasswordForEmail(email.value, {
         redirectTo: 'https://gymbroszone.com/recovery',
-    })
+    });
+    const emailEncoded = encodeURIComponent(email.value);
+    window.location.href = `/waiting-verification?email=${emailEncoded}`;
 }
 
 const emailValido = computed(() => {
@@ -54,10 +56,10 @@ const emailValido = computed(() => {
             </div>
         </div>
     </div>
-    <Footer class="footer"/>
+    <Footer class="footer" />
 </template>
 <style scoped>
-.footer{
+.footer {
     position: absolute;
     bottom: 0;
 }

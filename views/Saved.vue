@@ -184,6 +184,7 @@ disponible.value = true;
     flex-direction: column;
     width: 80%;
     padding-bottom: 40px;
+    min-height: 77.9vh;
   }
 
   .titulo {

@@ -18,8 +18,6 @@ const pagina = ref(1);
 const productos = ref([]);
 const totalPaginas = ref(1);
 const productosPorPagina = 10;
-const tiempoCarga = ref(null);
-const paginasParaMostrar = ref([]);
 const codigo = ref();
 
 const ProductoFoto = ref("");
@@ -58,112 +56,260 @@ const ProductoSugarsPoints = ref("");
 const ProductoSaturatedPoints = ref("");
 const ProductoSodiumPoints = ref("");
 const ProductoNutriScorePoints = ref("");
+const error_buscar_producto = ref(false);
+const maxScrollReached = ref(0);
+
+const cargando = ref(true);
 
 const fotoTuPerfilMostrar = ref('https://subcejpmaueqsiypcyzt.supabase.co/storage/v1/object/public/files/users/foto-perfil-predeterminada.jpg');
 
-watch([busquedaAlimento, pagina], buscarProductos);
+const totalPaginasComputed = computed(() => {
+  return Math.ceil(totalPaginas.value);
+});
+
+/*Función para ir a la página anterior.*/
+async function paginaAnterior() {
+  if (pagina.value > 1) {
+    pagina.value--;
+    await buscarProductos(pagina.value);
+    scrollToFooter();
+  }
+}
+
+/*Función para ir a la página siguiente.*/
+async function paginaSiguiente() {
+  if (pagina.value < totalPaginas.value) {
+    pagina.value++;
+    // window.scrollTo({ top: document.body.scrollHeight });
+    await buscarProductos(pagina.value);
+    scrollToFooter();
+  }
+}
+
+/*Función para desplazar la pantalla al footer.*/
+function scrollToFooter() {
+  const footer = document.querySelector('footer');
+  if (footer) {
+    const footerRect = footer.getBoundingClientRect();
+    const footerOffset = footerRect.top + window.pageYOffset - (window.innerHeight / 2) + (footerRect.height / 2);
+    window.scrollTo({ top: footerOffset, behavior: 'smooth' });
+  }
+}
 
 /*Observamos los cambios en busquedaAlimento.*/
 watch(busquedaAlimento, () => {
-  /*Cuando busquedaAlimento cambia, establecemos la página a 1.*/
-  codigo.value = undefined
+  codigo.value = undefined;
   pagina.value = 1;
+  const busqueda = busquedaAlimento.value.trim();
+  const botonBuscar = document.querySelector('.boton_productos');
+  if (esCodigoBarras.test(busqueda) || busqueda == '') {
+    if (botonBuscar) {
+      botonBuscar.classList.remove('animate-button');
+    }
+    buscarProductos();
+  } else {
+    if (botonBuscar) {
+      setInterval(() => {
+        botonBuscar.classList.add('animate-button');
+      }, 2000);
+    }
+  }
 });
 
+setInterval(() => {
+  setInterval(() => {
+    const botonBuscar = document.querySelector('.publicar_boton');
+    if (botonBuscar && !esCodigoBarras.test(busquedaAlimento.value.trim()) && busquedaAlimento.value.trim() !== '') {
+      botonBuscar.classList.remove('animate-button');
+      setTimeout(() => {
+        botonBuscar.classList.add('animate-button');
+      }, 50); // Delay para reiniciar la animación
+    }
+  }, 4000);
+}, 2000);
+
 const esCodigoBarras = /^[0-9]{4,}$/;
+const esCantidad = /^[0-9]{1,3}$/;
+
+/*Función para asignar los detalles de un producto.*/
+function asignarDetallesProducto(producto) {
+  /*Asignamos los valores del producto a las variables correspondientes.*/
+  ProductoFat_100.value = producto.nutriments["fat_100g"];
+  ProductoFoto.value = imagen(producto);
+  ProductoNombre.value = nombre(producto);
+  ProductoNutriScore.value = urlNutriScore(producto);
+  ProductoNovaGroup.value = urlNovaScore(producto);
+  ProductoEcoScore.value = urlEcoScore(producto);
+  ProductoKcal_100.value = producto.nutriments["energy-kcal_100g"];
+  ProductoKjul_100.value = producto.nutriments["energy-kj_100g"];
+  ProductoFat_100.value = producto.nutriments["fat_100g"];
+  ProductoFatUnit.value = producto.nutriments["fat_unit"];
+  ProductoSaturedFat_100.value = producto.nutriments["saturated-fat_100g"];
+  ProductoSaturedFatUnit.value = producto.nutriments["saturated-fat_unit"];
+  ProductoCarbohydrates_100g.value = producto.nutriments["carbohydrates_100g"];
+  ProductoCarbohydratesUnit.value = producto.nutriments["carbohydrates_unit"];
+  ProductoSugars_100.value = producto.nutriments["sugars_100g"];
+  ProductoSugarsUnit.value = producto.nutriments["sugars_unit"];
+  ProductoFiber_100.value = producto.nutriments["fiber_100g"];
+  ProductoFiberUnit.value = producto.nutriments["fiber_unit"];
+  ProductoProteins_100.value = producto.nutriments["proteins_100g"];
+  ProductoProteinsUnit.value = producto.nutriments["proteins_unit"];
+  ProductoSalt_100.value = producto.nutriments["salt_100g"];
+  ProductoSaltUnit.value = producto.nutriments["salt_unit"];
+  ProductoAlcohol_100.value = producto.nutriments["alcohol_100g"];
+  ProductoAlcoholUnit.value = producto.nutriments["alcohol_unit"];
+  ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
+  ProductoCantidad.value = producto.quantity;
+
+  /*Asignamos los puntos del NutriScore del producto a las variables correspondientes.*/
+  ProductoNegativePoints.value = producto.nutriscore_data ? producto.nutriscore_data.negative_points : "?";
+  ProductoPositivePoints.value = producto.nutriscore_data ? producto.nutriscore_data.positive_points : "?";
+  ProductoProteinsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.proteins_points : "?";
+  ProductoFiberPoints.value = producto.nutriscore_data ? producto.nutriscore_data.fiber_points : "?";
+  ProductoFruitsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points : "?";
+  ProductoEnergyPoints.value = producto.nutriscore_data ? producto.nutriscore_data.energy_points : "?";
+  ProductoSaturatedPoints.value = producto.nutriscore_data ? producto.nutriscore_data.saturated_fat_points : "?";
+  ProductoSugarsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sugars_points : "?";
+  ProductoSodiumPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sodium_points : "?";
+  ProductoNutriScorePoints.value = producto.nutriscore_data ? producto.nutriscore_score_opposite : "?";
+}
+
 
 /*Función para buscar un producto.*/
 async function buscarProductos() {
+  cargando.value = true;
   let url;
+  let busqueda = busquedaAlimento.value.trim();
   /*Comprobamos si lo ingresado en el input es un código de barras o no.*/
-  if (esCodigoBarras.test(busquedaAlimento.value.trim()) || codigo.value != undefined) {
-    /*Buscamos la publicación por su código de barras.*/
-    if (codigo.value === undefined) {
-      url = "https://world.openfoodfacts.org/api/v3/product/" + busquedaAlimento.value.trim();
-      codigo.value = busquedaAlimento.value.trim()
-    } else {
-      /*URL para la búsqueda con el código de barras guardado.*/
-      url = "https://world.openfoodfacts.org/api/v3/product/" + codigo.value;
-    }
-    vistaUnica.value = true;
-    /*Hacemos la petición a la API y obtenemos la respuesta.*/
-    const response = await fetch(url);
-    let result = await response.json();
-    /*Extraemos los resultados.*/
-    const producto = result.product;
-
-    /*Asignamos los valores del producto a las variables correspondientes.*/
-    productos.value = result.products;
-    ProductoFat_100.value = producto.nutriments["fat_100g"];
-    ProductoFoto.value = imagen(producto);
-    ProductoNombre.value = nombre(producto);
-    ProductoNutriScore.value = urlNutriScore(producto);
-    ProductoNovaGroup.value = urlNovaScore(producto);
-    ProductoEcoScore.value = urlEcoScore(producto);
-    ProductoKcal_100.value = producto.nutriments["energy-kcal_100g"];
-    ProductoKjul_100.value = producto.nutriments["energy-kj_100g"];
-    ProductoFat_100.value = producto.nutriments["fat_100g"];
-    ProductoFatUnit.value = producto.nutriments["fat_unit"];
-    ProductoSaturedFat_100.value = producto.nutriments["saturated-fat_100g"];
-    ProductoSaturedFatUnit.value = producto.nutriments["saturated-fat_unit"];
-    ProductoCarbohydrates_100g.value = producto.nutriments["carbohydrates_100g"];
-    ProductoCarbohydratesUnit.value = producto.nutriments["carbohydrates_unit"];
-    ProductoSugars_100.value = producto.nutriments["sugars_100g"];
-    ProductoSugarsUnit.value = producto.nutriments["sugars_unit"];
-    ProductoFiber_100.value = producto.nutriments["fiber_100g"];
-    ProductoFiberUnit.value = producto.nutriments["fiber_unit"];
-    ProductoProteins_100.value = producto.nutriments["proteins_100g"];
-    ProductoProteinsUnit.value = producto.nutriments["proteins_unit"];
-    ProductoSalt_100.value = producto.nutriments["salt_100g"];
-    ProductoSaltUnit.value = producto.nutriments["salt_unit"];
-    ProductoAlcohol_100.value = producto.nutriments["alcohol_100g"];
-    ProductoAlcoholUnit.value = producto.nutriments["alcohol_unit"];
-    ProductoIngredientes.value = ingredients(producto).replace(/_/g, " ");
-    ProductoCantidad.value = producto.quantity;
-
-    /*Asignamos los puntos del NutriScore del producto a las variables correspondientes.*/
-    ProductoNegativePoints.value = producto.nutriscore_data ? producto.nutriscore_data.negative_points : "?";
-    ProductoPositivePoints.value = producto.nutriscore_data ? producto.nutriscore_data.positive_points : "?";
-    ProductoProteinsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.proteins_points : "?";
-    ProductoFiberPoints.value = producto.nutriscore_data ? producto.nutriscore_data.fiber_points : "?";
-    ProductoFruitsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.fruits_vegetables_nuts_colza_walnut_olive_oils_points : "?";
-    ProductoEnergyPoints.value = producto.nutriscore_data ? producto.nutriscore_data.energy_points : "?";
-    ProductoSaturatedPoints.value = producto.nutriscore_data ? producto.nutriscore_data.saturated_fat_points : "?";
-    ProductoSugarsPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sugars_points : "?";
-    ProductoSodiumPoints.value = producto.nutriscore_data ? producto.nutriscore_data.sodium_points : "?";
-    ProductoNutriScorePoints.value = producto.nutriscore_data ? producto.nutriscore_score_opposite : "?";
-  } else {
-    /*Si no es un código de barras, buscamos productos por su información como su nombre.*/
-    url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busquedaAlimento.value.trim())}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
+  if (busqueda === "" && codigo.value == undefined) {
+    url = `https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
     vistaUnica.value = false;
-
+  } else if (esCodigoBarras.test(busqueda) || codigo.value != undefined) {
+    mostrarProducto(busqueda);
     try {
       /*Hacemos la petición a la API y obtenemos la respuesta.*/
       const response = await fetch(url);
       let result = await response.json();
+      if (result.status === 'failure' && result.result.id === 'product_not_found') {
+        vistaUnica.value = false;
+        error_buscar_producto.value = true;
+        return;
+      } else {
+        error_buscar_producto.value = false;
+      }
+      vistaUnica.value = true;
       /*Extraemos los resultados.*/
-      const resultado = result.products;
-      productos.value = resultado;
-      /*Calculamos el número de páginas.*/
-      totalPaginas.value = Math.ceil(result.count / productosPorPagina);
-      buscado.value = true;
+      const producto = result.product;
+
+      /*Asignamos los valores del producto a las variables correspondientes.*/
+      asignarDetallesProducto(producto);
     } catch (error) {
-      return;
+    } finally {
+      cargando.value = false;
     }
+  } else if (esCantidad.test(busqueda)) {
+    /*Si no es un código de barras, buscamos productos por su información como su nombre.*/
+    url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busqueda)}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=quantity`;
+    vistaUnica.value = false;
+  } else {
+    url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(busqueda)}&search_simple=1&action=process&page_size=${productosPorPagina}&page=${pagina.value}&json=true&sort_by=popularity`;
+    vistaUnica.value = false;
+  }
+  try {
+    /*Hacemos la petición a la API y obtenemos la respuesta.*/
+    const response = await fetch(url);
+    let result = await response.json();
+    /*Extraemos los resultados.*/
+    const resultado = result.products;
+    productos.value = resultado;
+    /*Calculamos el número de páginas.*/
+    totalPaginas.value = Math.ceil(result.count / productosPorPagina);
+    buscado.value = true;
+    if (resultado.length === 0 && busqueda !== "") {
+      error_buscar_producto.value = true;
+      return;
+    } else {
+      error_buscar_producto.value = false;
+    }
+  } catch (error) {
+    return;
+  } finally {
+    cargando.value = false;
   }
 }
 
 /*Función para mostrar un producto más en detalle.*/
-function mostrarProducto(codigoP) {
-  codigo.value = codigoP
-  buscarProductos()
+async function mostrarProducto(codigoP) {
+  codigo.value = codigoP;
+  vistaUnica.value = true;
+  window.scrollTo(0, 0);
+  try {
+    const url = `https://world.openfoodfacts.org/api/v3/product/${codigoP}`;
+    const response = await fetch(url);
+    const result = await response.json();
+    if (result.status === 'failure' && result.result.id === 'product_not_found') {
+      error_buscar_producto.value = true;
+      return;
+    } else {
+      error_buscar_producto.value = false;
+    }
+    const producto = result.product;
+    asignarDetallesProducto(producto);
+  } catch (error) {
+  } finally {
+    cargando.value = false;
+  }
 }
 
 /*Función para cerrar el producto que se está visualizando.*/
 function cerrarProducto() {
-  codigo.value = undefined
-  buscarProductos()
-  vistaUnica.value = false
+  codigo.value = undefined;
+  vistaUnica.value = false;
+  resetearDatosProducto();
+  const rejaProductos = document.querySelector('.reja-productos');
+  if (rejaProductos) {
+    rejaProductos.classList.remove('invisible');
+  }
+  cargando.value = false;
+}
+
+/*Función para resetear los datos del producto.*/
+function resetearDatosProducto() {
+  ProductoFoto.value = "";
+  ProductoNombre.value = "";
+  ProductoNutriScore.value = "";
+  ProductoNovaGroup.value = "";
+  ProductoEcoScore.value = "";
+  ProductoCantidad.value = "";
+  ProductoIngredientes.value = "";
+  ProductoKcal_100.value = "";
+  ProductoKjul_100.value = "";
+  ProductoFat_100.value = "";
+  ProductoFatUnit.value = "";
+  ProductoSaturedFat_100.value = "";
+  ProductoSaturedFatUnit.value = "";
+  ProductoCarbohydrates_100g.value = "";
+  ProductoCarbohydratesUnit.value = "";
+  ProductoSugars_100.value = "";
+  ProductoSugarsUnit.value = "";
+  ProductoFiber_100.value = "";
+  ProductoFiberUnit.value = "";
+  ProductoProteins_100.value = "";
+  ProductoProteinsUnit.value = "";
+  ProductoSalt_100.value = "";
+  ProductoSaltUnit.value = "";
+  ProductoAlcohol_100.value = "";
+  ProductoAlcoholUnit.value = "";
+  ProductoPositivePoints.value = "";
+  ProductoNegativePoints.value = "";
+  ProductoProteinsPoints.value = "";
+  ProductoFiberPoints.value = "";
+  ProductoFruitsPoints.value = "";
+  ProductoEnergyPoints.value = "";
+  ProductoSugarsPoints.value = "";
+  ProductoSaturatedPoints.value = "";
+  ProductoSodiumPoints.value = "";
+  ProductoNutriScorePoints.value = "";
 }
 
 /*Función para poner la primera letra en mayúscula.*/
@@ -332,6 +478,10 @@ function urlNovaScore(valor) {
 /*Función para borrar el filtro de alimentos.*/
 function borrar() {
   busquedaAlimento.value = "";
+  cargando.value = true;
+  error_buscar_producto.value = false;
+  cerrarProducto();
+  buscarProductos();
 }
 
 /*Función para borrar el filtro de usuarios.*/
@@ -343,26 +493,11 @@ function borrarUsuario() {
   cargarUsuarios();
 }
 
-/*Función para ir a la página anterior.*/
-const paginaAnterior = () => {
-  if (pagina.value > 1) {
-    pagina.value--;
-    buscarProductos();
-  }
-};
-
-/*Función para ir a la página siguiente.*/
-const paginaSiguiente = () => {
-  if (pagina.value < totalPaginas.value) {
-    pagina.value++;
-    buscarProductos();
-  }
-};
-
 const vistaBusqueda = ref("Usuarios");
 /*Función para cambiar la vista.*/
 function cambiarVista(tipo) {
   vistaBusqueda.value = tipo;
+  maxScrollReached.value = 0;
   if (tipo === 'Publicaciones') {
     buscarPublicaciones();
     obtenerTuFotoPerfil();
@@ -446,7 +581,7 @@ function buscarUsuarios() {
   offset = 0;
   noMoreUsuarios = false;
   cargarUsuarios();
-};
+}
 
 /*Variables para mostrar los usuarios.*/
 const todosUsuarios = ref([]);
@@ -513,7 +648,7 @@ async function cargarUsuarios() {
   } finally {
     loading.value = false;
   }
-};
+}
 
 const todasPublicaciones = ref([]);
 const busquedaPublicaciones = ref("");
@@ -548,7 +683,7 @@ async function cargarPublicaciones() {
   } finally {
     loadingP.value = false;
   }
-};
+}
 
 /*Función para buscar publicaciones.*/
 function buscarPublicaciones() {
@@ -567,22 +702,25 @@ function borrarFiltroPublicaciones() {
   cargarPublicaciones();
 }
 
-let maxScrollReached = 0;
 /*Función para cargar os usuarios dinámicamente.*/
 function handleScroll() {
   const currentScroll = window.scrollY + window.innerHeight;
   const scrollThreshold = document.body.offsetHeight - 100;
 
-  if (currentScroll > maxScrollReached && currentScroll > scrollThreshold) {
-    cargarUsuarios();
-    maxScrollReached = currentScroll;
+  if (currentScroll > maxScrollReached.value && currentScroll > scrollThreshold) {
+    if (vistaBusqueda.value === 'Usuarios') {
+      cargarUsuarios();
+    } else if(vistaBusqueda.value === 'Publicaciones'){
+      cargarPublicaciones();
+    }
+    maxScrollReached.value = currentScroll;
   }
 }
 
 /*Cuando se monta la vista, llamamos a las funciones y añadimos el evento de escucha del scroll.*/
 onMounted(() => {
   buscarProductos()
-  // cargarUsuarios(); //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  cargarUsuarios();
   window.addEventListener('scroll', handleScroll);
 });
 
@@ -636,7 +774,7 @@ async function obtenerTuFotoPerfil() {
   <div v-if="vistaBusqueda === 'Usuarios'" class="usuarios">
     <div class="search-producto buscar_usuario">
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
-      <input type="text" v-model="busquedaUsuarios" />
+      <input type="text" v-model="busquedaUsuarios" placeholder="Escribe aquí" />
       <font-awesome-icon class="cross quitar_filtro_usuario" :icon="['fas', 'xmark']" @click="borrarUsuario" />
       <button @click="buscarUsuarios" v-if="mostrarBotonBuscar" class="publicar_boton">Buscar</button>
     </div>
@@ -662,9 +800,9 @@ async function obtenerTuFotoPerfil() {
     </div>
   </div>
   <div v-if="vistaBusqueda === 'Publicaciones'" class="publicaciones">
-    <div class="search-producto buscar_usuario">
+    <div class="search-producto buscar_usuario" :class="vistaBusqueda === 'Publicaciones' ? 'pub' : ''">
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
-      <input type="text" v-model="busquedaPublicaciones" />
+      <input type="text" v-model="busquedaPublicaciones" placeholder="Escribe aquí" />
       <font-awesome-icon class="cross quitar_filtro_usuario" :icon="['fas', 'xmark']"
         @click="borrarFiltroPublicaciones" />
       <button @click="buscarPublicaciones" v-if="mostrarBotonBuscar" class="publicar_boton">Buscar</button>
@@ -682,18 +820,25 @@ async function obtenerTuFotoPerfil() {
     </div>
   </div>
   <div class="productos-comun" v-if="vistaBusqueda === 'Productos'">
-    <div class="search-producto">
+    <div class="search-producto buscar_usuario">
       <font-awesome-icon class="lupa" :icon="['fas', 'magnifying-glass']" />
-      <input type="text" v-model="busquedaAlimento" />
-      <font-awesome-icon class="cross" :icon="['fas', 'xmark']" @click="borrar" />
+      <input type="text" v-model="busquedaAlimento" placeholder="Escribe aquí" />
+      <font-awesome-icon class="cross quitar_filtro_usuario" :icon="['fas', 'xmark']" @click="borrar" />
+      <button @click="buscarProductos" v-if="mostrarBotonBuscar" class="publicar_boton boton_productos">Buscar</button>
     </div>
     <div class="scanner-padre">
       <button class="btn-scanner" @click="mostrarScanner()">Escanear producto</button>
       <div id="reader"></div>
       <div id="result"></div>
     </div>
-    <div class="reja-productos" v-if="vistaUnica == false">
-      <template v-for="producto in productos" :key="producto.code">
+    <div class="error_buscar_producto" v-if="error_buscar_producto">
+      <h2>No hay coincidencias.</h2>
+    </div>
+    <div class="reja-productos" :class="{ 'invisible': vistaUnica }" v-if="!error_buscar_producto">
+      <div v-if="cargando" class="cargando_productos">
+        <div class="cargando"></div>
+      </div>
+      <template v-for="producto in productos" :key="producto.code" v-if="!cargando">
         <div class="mini-producto-padre">
           <div class="mini-producto" @click="mostrarProducto(producto.id)">
             <h2 v-if="(nombre(producto) + cantidad(producto)).length > 50" class="mini-nombre">{{ (nombre(producto) &&
@@ -715,13 +860,20 @@ async function obtenerTuFotoPerfil() {
         </div>
       </template>
     </div>
-    <div class="pagination-controls" v-if="buscado && vistaUnica == false">
-      <button @click="paginaAnterior" :disabled="pagina === 1">Previous</button>
-      <span>{{ pagina }} / {{ totalPaginas }}</span>
-      <button @click="paginaSiguiente" :disabled="pagina === totalPaginas">Next</button>
+    <div class="pagination-controls" :class="{ 'invisible': buscado && vistaUnica }"
+      v-if="!cargando && !error_buscar_producto">
+      <button @click="paginaAnterior" :disabled="pagina === 1" :class="{ 'disabled-button': pagina === 1 }">
+        <font-awesome-icon :icon="['fas', 'chevron-left']" />
+      </button>
+      <span>{{ pagina }} / {{ totalPaginasComputed }}</span>
+      <button @click="paginaSiguiente" :disabled="pagina === totalPaginas"
+        :class="{ 'disabled-button': pagina === totalPaginas }">
+        <font-awesome-icon :icon="['fas', 'chevron-right']" />
+      </button>
     </div>
   </div>
-  <div v-if="vistaUnica == true && vistaBusqueda === 'Productos'" class="productos">
+  <div class="productos" :class="{ 'invisible': !vistaUnica && vistaBusqueda === 'Productos' }"
+    v-if="vistaBusqueda === 'Productos'">
     <div class="producto-arriba">
       <font-awesome-icon @click="cerrarProducto()" class="cross-interno" :icon="['fas', 'xmark']" />
       <div class="producto-img">
@@ -808,8 +960,89 @@ async function obtenerTuFotoPerfil() {
       </div>
     </div>
   </div>
+  <footer></footer>
 </template>
 <style scoped>
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg) translateX(3px);
+  }
+
+  20% {
+    transform: rotate(5deg) translateX(3px);
+  }
+
+  40% {
+    transform: rotate(-5deg) translateX(3px);
+  }
+
+  60% {
+    transform: rotate(5deg) translateX(3px);
+  }
+
+  80% {
+    transform: rotate(-5deg) translateX(3px);
+  }
+
+  100% {
+    transform: rotate(0deg) translateX(3px);
+  }
+}
+
+.animate-button {
+  animation: rotate 0.5s;
+}
+
+.error_buscar_producto {
+  margin-left: 60px;
+  margin-top: 150px;
+}
+
+.pagination-controls {
+  margin: 40px 0 10px 60px;
+  display: flex;
+  align-items: center;
+  font-size: 25px;
+  color: rgba(255, 255, 255, 0.92);
+  color: var(--dark-blue);
+  font-weight: bold;
+}
+
+.pagination-controls button {
+  font-size: 26px;
+  border: none;
+  height: fit-content;
+  width: 30px;
+  margin: 0 8px;
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  background-color: var(--dark-blue);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 2px solid black;
+}
+
+.disabled-button {
+  background-color: #213555 !important;
+  cursor: not-allowed !important;
+  color: rgba(255, 255, 255, 0.557) !important;
+  border: 2px solid rgba(0, 0, 0, 0.86) !important;
+}
+
+.cargando_productos {
+  width: 100% !important;
+  left: 30px;
+  display: flex;
+  justify-content: center;
+  margin: 100px 0 140px;
+  position: absolute;
+  top: 400px;
+}
+
+.cargando_productos .cargando {
+  position: relative;
+}
+
 .publicar_boton {
   cursor: pointer;
   background-color: var(--blue-buttons);
@@ -820,6 +1053,10 @@ async function obtenerTuFotoPerfil() {
   height: 28px;
   padding: 0 10px;
   transform: translateX(3px);
+}
+
+.invisible {
+  display: none !important;
 }
 
 .publicar_boton:hover,
@@ -834,6 +1071,7 @@ async function obtenerTuFotoPerfil() {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  padding-bottom: 20px;
 }
 
 .vista-usuarios {
@@ -958,7 +1196,7 @@ async function obtenerTuFotoPerfil() {
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 50px;
+  margin-bottom: 20px;
 }
 
 .search-producto {
@@ -984,7 +1222,7 @@ async function obtenerTuFotoPerfil() {
   padding-left: 30px;
   padding-right: 5px;
   font-size: 18px;
-  border: 2px solid var(--dark-blue);
+  border: 2px solid black;
   border-radius: 8px;
 }
 
@@ -1018,21 +1256,25 @@ async function obtenerTuFotoPerfil() {
   margin: auto;
   margin-bottom: 10px;
   background-color: var(--blue-inputs);
-  border: 2px solid var(--dark-blue);
+  border: 2px solid var(--black);
   padding: 5px;
   color: var(--light-blue-text);
   font-size: 18px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.496);
+  transition: box-shadow 0.3s, background-color 0.3s;
+  cursor: pointer;
 }
 
-.btn-scanner:hover {
-  cursor: pointer;
-  box-shadow: 0 2px 10px 2px rgba(0, 0, 0, 0.8);
+.btn-scanner:hover,
+.btn-scanner:active {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.496), 0 2px 15px rgba(0, 0, 0, 0.496);
+  background-color: #243e76;
 }
 
 #reader {
   position: relative;
-  margin-top: 10px;
+  margin-top: 15px;
+  margin-bottom: 15px;
   width: 60%;
 }
 
@@ -1052,6 +1294,7 @@ async function obtenerTuFotoPerfil() {
   gap: 15px;
   width: 70%;
   margin-left: 60px;
+  margin-top: 10px;
 }
 
 .mini-producto-padre {
@@ -1066,6 +1309,15 @@ async function obtenerTuFotoPerfil() {
   height: 320px;
   background-color: white;
   border-radius: 10px;
+  box-shadow: 0 0 2px black, 0 0 4px black, 0 0 8px rgba(0, 0, 0, 0.616);
+  transition: box-shadow 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+.mini-producto:hover,
+.mini-producto:active {
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.524), 0 0 2px black, 0 0 6px rgba(0, 0, 0, 0.853);
+  transform: translateY(-2px);
 }
 
 .mini-nombre {
@@ -1153,9 +1405,10 @@ async function obtenerTuFotoPerfil() {
 
 .vista {
   margin-top: 0px;
-  width: 60%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  width: 80%;
+  max-width: 1280px;
 }
 
 @keyframes loading {
@@ -1197,7 +1450,7 @@ async function obtenerTuFotoPerfil() {
   margin-top: 8px;
 }
 
-@media(max-width: 1100px) {
+@media (max-width: 1100px) {
   .reja-productos {
     width: 90%;
 
@@ -1208,19 +1461,31 @@ async function obtenerTuFotoPerfil() {
   }
 }
 
-@media(max-width: 875.5px) {
+@media (max-width: 875.5px) {
+  .pagination-controls {
+    margin-left: 0;
+  }
+
   .buscador {
     margin: 60px 0 0 0px;
   }
 
+  .error_buscar_producto {
+    margin-left: 0;
+  }
+
   .vista-usuarios {
     width: 92%;
-    margin-left: 0px
+    margin-left: 0px;
+    margin-top: 5px;
   }
 
   .vista {
     display: flex;
     flex-direction: column;
+    padding-bottom: 40px;
+    min-height: 77.9vh;
+    width: 80%;
   }
 
   .usuario-card {
@@ -1243,13 +1508,53 @@ async function obtenerTuFotoPerfil() {
   .mini-producto {
     width: 100%;
   }
+
+  .publicaciones {
+    margin-left: 0;
+    padding-top: 0;
+    background-color: #0d285e;
+    margin-bottom: 45px;
+    min-height: 98vh;
+  }
+
+  .buscar_usuario {
+    margin-bottom: 20px;
+  }
+
+  .cargando_productos {
+    left: 0;
+  }
+
+  .pagination-controls {
+    margin-bottom: 70px;
+  }
+}
+
+@media (max-width: 625px) {
+  .publicaciones {
+    margin-left: 0;
+  }
+
+  .vista {
+    width: 100%;
+    margin: 0px;
+    margin-top: 5px;
+  }
+
+  .pub {
+    width: 92% !important;
+    margin: 10px 0 10px;
+  }
+
+  .search-producto {
+    margin-top: 40px;
+  }
 }
 
 @media(max-width:590px) {
   .usuario-info h2 {
     font-size: 20px;
   }
-
 
   .usuario-estadisticas span {
     font-size: 18px;
@@ -1289,30 +1594,30 @@ async function obtenerTuFotoPerfil() {
     height: 50px;
   }
 
-  .usuario-estadisticas{
+  .usuario-estadisticas {
     font-size: 14px;
   }
 }
 
 @media(max-width: 440px) {
-  .filtros *{
+  .filtros * {
     font-size: 16px;
   }
 }
 
 @media(max-width: 395px) {
-  .filtros *{
+  .filtros * {
     font-size: 14px;
     padding: 7px;
   }
 
-  .usuario-estadisticas{
+  .usuario-estadisticas {
     display: none;
   }
 }
 
 @media(max-width: 325px) {
-  .filtros *{
+  .filtros * {
     font-size: 13px;
     padding: 5px;
   }
@@ -1326,11 +1631,13 @@ async function obtenerTuFotoPerfil() {
     height: 40px;
   }
 }
+
 .productos {
   margin-left: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: -20px;
 }
 
 .producto-arriba {
@@ -1344,6 +1651,7 @@ async function obtenerTuFotoPerfil() {
   border-radius: 25px;
   border: 2px solid black;
   margin-bottom: 20px;
+  box-shadow: 0 0 3px black, 0 0 6px rgba(0, 0, 0, 0.819);
 }
 
 .cross-interno {
@@ -1407,8 +1715,16 @@ async function obtenerTuFotoPerfil() {
 .general-scores {
   display: flex;
   align-items: center;
-  width: 60%;
-  margin: 20px auto
+  width: 80%;
+  margin: 20px auto;
+}
+
+.general-scores img {
+  width: 30%;
+}
+
+.general-scores .producto-novagroup {
+  width: 20%;
 }
 
 .producto-nutriscore {
@@ -1431,12 +1747,13 @@ async function obtenerTuFotoPerfil() {
 }
 
 .producto-nutrientes {
-  margin-bottom: 80px;
+  margin-bottom: 60px;
   border-radius: 25px;
   background-color: #5984df;
   padding: 24px;
   border: 2px solid black;
   width: 80%;
+  box-shadow: 0 0 3px black, 0 0 6px rgba(0, 0, 0, 0.819);
 }
 
 .tabla-nutrientes {
@@ -1514,17 +1831,17 @@ async function obtenerTuFotoPerfil() {
 
   .cross-interno {
     top: 10px;
-    right: 10px;
+    right: 12px;
   }
 
   .producto-img {
-    min-width: 100%;
+    min-width: calc(100% - 14px);
     width: fit-content;
-    max-width: 100%;
+    max-width: calc(100% - 14px);
     min-height: auto;
-
+    margin: 7px;
+    margin-bottom: 0;
     max-height: 600px;
-    margin: 0;
   }
 
   .img-producto {
@@ -1555,6 +1872,15 @@ async function obtenerTuFotoPerfil() {
     width: 80%;
     justify-content: center;
   }
+
+  .producto-nutrientes {
+    margin-bottom: 100px;
+  }
+
+  .btn-scanner {
+    margin-top: 20px;
+    margin-bottom: 0;
+  }
 }
 
 @media (max-width: 655px) {
@@ -1564,6 +1890,10 @@ async function obtenerTuFotoPerfil() {
 
   .search-producto {
     width: 92%;
+  }
+
+  .pub {
+    width: 70%;
   }
 }
 

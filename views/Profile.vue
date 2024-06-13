@@ -43,7 +43,6 @@ const updateWidth = () => {
   }
 };
 
-
 /*Observamos los cambios en el gymtag.*/
 watch(() => props.gymtag, (newGymtag, oldGymtag) => {
   if (newGymtag !== oldGymtag) {
@@ -51,8 +50,9 @@ watch(() => props.gymtag, (newGymtag, oldGymtag) => {
   }
 });
 
+/*Observamos el ancho de la pantalla para recargar la página si el usuario la redimensiona.*/
 watch(isBelowThreshold, (newVal, oldVal) => {
-  if (document.querySelector('.contenido_esp')) {
+  if (document.querySelector('.contenido_esp') || document.querySelector('.final')) {
     if (newVal !== oldVal) {
       /*Recargamos la página.*/
       router.go(0);
@@ -435,9 +435,9 @@ function calcularEdad(fechaNacimiento) {
   /*Convertimos la cadena de fecha de nacimiento a un objeto Date.*/
   const fechaNac = new Date(fechaNacimiento);
   const hoy = new Date();
-  /*Calculamos la diferencia en años*/
+  /*Calculamos la diferencia en años.*/
   let edad = hoy.getFullYear() - fechaNac.getFullYear();
-  /*Ajustamos la edad si el cumpleaños de este año no ha sido aún*/
+  /*Ajustamos la edad si el cumpleaños de este año no ha sido aún.*/
   const mesActual = hoy.getMonth();
   const diaActual = hoy.getDate();
   const mesNacimiento = fechaNac.getMonth();
@@ -511,6 +511,7 @@ watchEffect([sexo, actividad], [calcularCalorias, calcularIMC]);
 watch(peso, validarPeso);
 watch(altura, validarAltura);
 
+/*Función para mostrar todas las publicaciones de un perfil una debajo de la otra.*/
 function mostrarTodoPerfil(id) {
   if (id && windowWidth.value < 875) {
     mostrarHeaderFooter.value[id] = true;
@@ -523,6 +524,16 @@ function mostrarTodoPerfil(id) {
       const vistaElement = publicacionesContainer.value.querySelector('.vista');
       const targetElement = document.querySelector(`[data-publicacion-id="${id}"]`);
       const contenido = document.querySelector('#contenido');
+      const arriba = document.querySelector('.arriba');
+      const volver = document.querySelector('.volver');
+      if (arriba) {
+        arriba.classList.remove('arriba');
+        arriba.classList.add('mostrar_arriba');
+      }
+      if (volver) {
+        volver.classList.remove('volver');
+        volver.classList.add('mostrar_volver');
+      }
       if (contenido) {
         contenido.classList.add('contenido_esp');
       }
@@ -531,13 +542,74 @@ function mostrarTodoPerfil(id) {
       }
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const isLastElement = targetElement === targetElement.parentNode.lastElementChild;
+        const isFirstElement = targetElement === targetElement.parentNode.firstElementChild;
+        let offset;
+
+        if (isFirstElement) {
+          offset = 0;
+        } else if (isLastElement) {
+          offset = 370;
+        } else {
+          offset = 200;
+        }
+
+        setTimeout(() => {
+          window.scrollBy({ top: offset, behavior: 'smooth' });
+        }, 5);
       }
+    }
+  }
+}
+
+/*Función para mostrar el perfil de manera original.*/
+function volver() {
+  if (windowWidth.value < 875) {
+    mostrarHeaderFooter.value = {};
+    mostrarHeaderFooterGlobal.value = false;
+    if (publicacionesContainer.value) {
+      publicacionesContainer.value.style.display = '';
+      publicacionesContainer.value.style.flexDirection = '';
+      publicacionesContainer.value.style.alignItems = '';
+      publicacionesContainer.value.classList.remove('publicaciones_esp');
+      const vistaElement = publicacionesContainer.value.querySelector('.vista');
+      const contenido = document.querySelector('#contenido');
+      const arriba = document.querySelector('.mostrar_arriba');
+      const volver = document.querySelector('.mostrar_volver');
+      const infoElement = document.querySelector('#info');
+      const botonesElement = document.querySelector('#botones');
+      if (infoElement) {
+        infoElement.style.display = 'block';
+      }
+      if (botonesElement) {
+        botonesElement.style.display = 'flex';
+      }
+      if (arriba) {
+        arriba.classList.remove('mostrar_arriba');
+        arriba.classList.add('arriba');
+      }
+      if (volver) {
+        volver.classList.remove('mostrar_volver');
+        volver.classList.add('volver');
+      }
+      if (contenido) {
+        contenido.classList.remove('contenido_esp');
+      }
+      if (vistaElement) {
+        vistaElement.classList.remove('vista_esp');
+        vistaElement.style.display = 'grid';
+        vistaElement.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        vistaElement.style.justifyItems = 'center';
+        vistaElement.style.justifyContent = 'center';
+        vistaElement.style.paddingBottom = '60px';
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 }
 </script>
 <template>
-  <!-- <button @click="arriba" id="arriba">Volver arriba</button> -->
   <div class="perfil" :class="{ usandoMovil: usandoMovil }">
     <div id="info">
       <div id="info-top">
@@ -579,6 +651,10 @@ function mostrarTodoPerfil(id) {
         <button @click="cambiarVista('Estadisticas')"
           :class="{ vistaBoton: vista === 'Estadisticas', vistaNormal: vista !== 'Estadisticas' }">Estadisticas</button>
       </div>
+      <button @click="volver" class="volver"><font-awesome-icon :icon="['fas', 'backward']"
+          class="icono_volver" /></button>
+      <button @click="arriba" class="arriba"><font-awesome-icon :icon="['fas', 'arrow-up']"
+          class="icono_arriba" /></button>
       <div v-if="vista == 'Publicaciones'" id="publicaciones" class="vista" ref="publicacionesContainer">
         <template v-for="publicacion in todasPublicaciones" :key="publicacion">
           <div :data-publicacion-id="publicacion.idpublicacion" class="max_tamano">
@@ -613,7 +689,6 @@ function mostrarTodoPerfil(id) {
                 <option value="muy_intenso">Muy intenso: ejercicio muy intenso o trabajo físico y ejercicio 2 veces/día
                 </option>
               </select>
-              <!-- <input type="number" class="edad" v-model="edad" min="1" max="150" step="1" required> -->
             </div>
             <div class="tu-sexo datos-stats">
               <label>Tu Sexo</label>
@@ -633,7 +708,6 @@ function mostrarTodoPerfil(id) {
               <input type="number" class="altura" v-model="altura" min="30" max="300" step="1" required>
             </div>
           </div>
-          <!-- <button type="button" @click="calcularCalorias()">Calcular</button> -->
           <button type="button" @click="guardarEstadisticas()" class="btn-guardar-stats">Guardar</button>
           <div v-if="mostrarAviso" class="mensaje">{{ mensajeAviso }}</div>
         </form>
@@ -734,18 +808,83 @@ function mostrarTodoPerfil(id) {
           </table>
         </div>
       </div>
-      <div v-if="(esPrivado && !perfilPropio) && (vista == 'Estadisticas')" class="perfilPrivado">
+      <div v-if="(esPrivado && !perfilPropio) && (vista == 'Estadisticas')" class="perfilPrivado candado_perfil">
         <font-awesome-icon class="candado2" :icon="['fas', 'lock']" />
         Las estadísticas este usuario son privadas
+      </div>
+      <div v-if="vista == 'Publicaciones' && cantidadPublicaciones < 1" class="perfilPrivado camara_perfil">
+        <font-awesome-icon :icon="['fas', 'camera']" class="camara" />
+        Todavía no hay publicaciones
       </div>
     </div>
   </div>
 </template>
 <style scoped>
-#arriba {
+.camara {
+  font-size: 100px;
+  border: 2px solid var(--dark-blue);
+  border-radius: 50%;
+  color: var(--dark-blue);
+  padding: 25px;
+}
+
+.arriba {
+  display: none;
+}
+
+.volver {
+  display: none;
+}
+
+.mostrar_arriba {
   position: fixed;
-  top: 40px;
-  right: 20px;
+  bottom: 57px;
+  right: 10px;
+  display: block;
+  width: fit-content;
+  color: var(--light-blue-text);
+  background-color: transparent;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  transition: color 0.3s, filter 0.3;
+  z-index: 200;
+  height: 53px;
+  display: block;
+  background-color: #0b1e44;
+  border: 2px solid black;
+  padding: 4px 6px;
+}
+
+.mostrar_volver {
+  z-index: 200;
+  transition: color 0.3s, filter 0.3;
+  cursor: pointer;
+  font-size: 35px;
+  border: none;
+  background-color: transparent;
+  color: var(--light-blue-text);
+  position: fixed;
+  width: fit-content;
+  bottom: 57px;
+  left: 10px;
+  height: 45px;
+  display: block;
+  background-color: #0b1e44;
+  border: 2px solid black;
+  padding: 4px;
+}
+
+.mostrar_volver .icono_volver {
+  transform: translateY(-3px);
+}
+
+.mostrar_arriba:hover,
+.mostrar_arriba:active,
+.mostrar_volver:hover,
+.mostrar_volver:active {
+  color: white;
+  filter: brightness(1.2);
 }
 
 .resultado-imc,
@@ -1247,13 +1386,17 @@ function mostrarTodoPerfil(id) {
   align-items: center;
   font-size: clamp(20px, 2.2vw, 60px);
   gap: 20px;
+  color: var(--dark-blue);
+  font-weight: bold;
+}
+
+.candado_perfil {
+  margin-top: 80px;
 }
 
 .candado2 {
-  width: 20%;
-  height: 20%;
-  min-width: 100px;
   color: var(--dark-blue);
+  font-size: 110px;
 }
 
 @media (min-width: 875px) and (max-width: 1100px) {
@@ -1315,7 +1458,10 @@ function mostrarTodoPerfil(id) {
   #info {
     width: 100%;
     padding-top: 60px;
+  }
 
+  .vista {
+    margin-bottom: 50px;
   }
 
   #contenido {
@@ -1340,26 +1486,74 @@ function mostrarTodoPerfil(id) {
   }
 
   .publicaciones_esp {
-    margin-top: 50px;
     display: flex;
     flex-direction: column;
     width: 80%;
   }
 
-  .vista_esp {
+  .publicaciones_esp {
     margin-left: 0;
     padding-top: 0;
+    margin-top: 110px;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    min-height: 77.9vh;
+  }
+
+  .publicaciones_esp .max_tamano {
+    width: fit-content;
+    min-width: 100%;
+    min-height: 693px;
+  }
+
+  .publicaciones_esp div {
+    margin-left: 0;
+    padding-top: 0;
+    background-color: #0d285e;
+    margin-bottom: 40px;
+  }
+
+  .contenido_esp {
+    background-color: #0d285e;
+  }
+
+  .contenido_esp #forzar-publicacion {
+    height: fit-content;
+    aspect-ratio: 0;
+    border: 2px solid black;
+    border-radius: 12px;
+    margin: 25px 0 25px 0;
+    overflow: hidden;
+  }
+
+  .contenido_esp .max_tamano {
+    min-height: 0;
+    height: fit-content;
+    margin-bottom: 10px;
+  }
+
+  .vista.publicaciones_esp {
+    padding-bottom: 10px;
   }
 }
 
 @media (max-width: 625px) {
+  .contenido_esp #forzar-publicacion {
+    background-color: var(--black);
+    aspect-ratio: 0;
+    border: 1px solid black;
+    border-radius: 0;
+    margin: 0;
+  }
+
   .publicacion {
     border-radius: 0;
     margin: 2px;
   }
 
   #info-top {
-    gap: 0px;
+    gap: 20px;
   }
 
   .gymTag {
@@ -1389,7 +1583,6 @@ function mostrarTodoPerfil(id) {
 
   .def-sup h3 {
     min-height: fit-content;
-
   }
 
   .sup {
@@ -1402,12 +1595,59 @@ function mostrarTodoPerfil(id) {
     padding-top: 30px;
     width: 100%;
   }
+
+  .contenido_esp .max_tamano {
+    margin-bottom: 50px;
+  }
+
+  .nombre {
+    font-size: 18px;
+    margin-left: 7px;
+  }
+
+  .perfilPrivado {
+    margin: 0px 5px 30px;
+  }
+
+  .candado_perfil {
+    margin-top: 50px;
+  }
+
+  .camara_perfil{
+    transform: translateY(-60px);
+  }
+
+  .camara{
+    font-size: 80px;
+  }
+
+  .candado2{
+    font-size: 90px;
+  }
+}
+
+@media (max-width: 580px) {
+  .informacion {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 486px) {
+  .informacion {
+    max-width: 250px;
+  }
 }
 
 @media (max-width: 450px) {
   .foto {
     min-width: 100px;
     min-height: 100px;
+  }
+}
+
+@media (max-width: 380px) {
+  .informacion {
+    max-width: 200px;
   }
 }
 
@@ -1421,6 +1661,17 @@ function mostrarTodoPerfil(id) {
 
   .resultado-imc table tr td {
     height: auto;
+  }
+}
+
+
+@media (max-width: 325px) {
+  #info-top {
+    gap: 10px;
+  }
+
+  .informacion {
+    max-width: 180px;
   }
 }
 

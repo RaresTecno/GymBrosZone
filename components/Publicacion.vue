@@ -2345,6 +2345,10 @@ button.boton_quitar_imagen_comentario {
   .final .botones_seguir button.boton_quitar_imagen {
     transform: translateX(8px);
   }
+
+  .comentarios{
+    max-height: 410px;
+  }
 }
 
 @media (max-width: 470px) {
@@ -2502,6 +2506,10 @@ button.boton_quitar_imagen_comentario {
   .boton_deshabilitado {
     max-width: 50px;
   }
+
+  .comentarios{
+    max-height: 405px;
+  }
 }
 
 @media (max-width: 365px) {
@@ -2523,7 +2531,7 @@ button.boton_quitar_imagen_comentario {
 @media (max-height: 740px) and (max-width: 600px) {
 
   .cuerpo,
-  .contenido.mostrar {
+  .contenido.mostrar, .final .contenido {
     height: 580px;
     min-height: 582px;
   }
@@ -2539,6 +2547,7 @@ button.boton_quitar_imagen_comentario {
 
   .comentarios {
     flex-grow: 0;
+    max-height: 278px;
   }
 
   .botones_publicacion_grande {
@@ -2562,10 +2571,16 @@ button.boton_quitar_imagen_comentario {
   }
 }
 
+@media (max-height: 740px) and (max-width: 400px) {
+  .comentarios{
+    max-height: 287px;
+  }
+}
+
 @media (max-height: 600px) and (max-width: 600px) {
 
   .cuerpo,
-  .contenido.mostrar {
+  .contenido.mostrar, .final .contenido {
     height: 500px;
     min-height: 502px;
   }

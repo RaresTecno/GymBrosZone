@@ -9,7 +9,6 @@ import { userState } from "./clients/supabase";
 export const disponible = ref();
 disponible.value = true;
 
-
 export const state = reactive({
   headerKey: 0
 });
